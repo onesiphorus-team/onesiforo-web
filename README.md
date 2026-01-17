@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/tests.yml/badge.svg)](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/tests.yml)
 [![PHPStan](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/phpstan.yml/badge.svg)](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/phpstan.yml)
-[![Fix PHP Code Style](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/fix-php-code-style-issues.yml/badge.svg)](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/fix-php-code-style-issues.yml)
+[![Lint](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/lint.yml/badge.svg)](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/lint.yml)
 [![Deploy](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/deploy-on-release.yml/badge.svg)](https://github.com/onesiphorus-team/onesiforo-web/actions/workflows/deploy-on-release.yml)
 
 ![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?style=flat-square&logo=php&logoColor=white)

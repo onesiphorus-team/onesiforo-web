@@ -1,0 +1,32 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+
+parameters:
+
+    paths:
+        - app/
+
+    # Level 10 is the highest level
+    level: 7
+
+    ignoreErrors:
+        # chillerlan/php-qrcode library uses deprecated constants in outputType option
+        # The newer outputInterface option doesn't work correctly with base64 output
+        -
+            message: '#Fetching deprecated class constant .+ of interface chillerlan\\QRCode\\Output\\QROutputInterface#'
+            path: app/Services/QrCode/QrCodeGeneratorService.php
+        # Nullsafe access on nullable relationships with ?? fallback is defensive coding
+        # PHPStan incorrectly determines these relationships can't be null
+        -
+            identifier: nullsafe.neverNull
+        # Eloquent model ID properties have int<0, max> type from IDE Helper but we assign int
+        -
+            message: '#does not accept int#'
+            identifier: assign.propertyType
+            path: app/Filament/Winery/Resources/Wines/Actions/DuplicateWineAction.php
+#        - '#PHPDoc tag @var#'
+#
+#    excludePaths:
+#        - ./*/*/FileToBeExcluded.php

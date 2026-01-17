@@ -1,0 +1,15 @@
+{
+    "agents": [
+        "claude_code",
+        "copilot"
+    ],
+    "editors": [
+        "claude_code",
+        "phpstorm",
+        "vscode"
+    ],
+    "guidelines": [
+        "laravel/fortify"
+    ],
+    "herd_mcp": true
+}

@@ -1,0 +1,24 @@
+name: Deploy on Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    if: github.repository == 'onesiphorus-team/onesiforo-web'
+    name: Deploy to Production
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+#      - name: Run deploy script
+#        run: |
+#          cd /var/www/onesiforo-web
+#          ./deploy.sh ${{ github.ref_name }}
+
+      - name: Notify success
+        run: echo "Deployed ${{ github.ref_name }} successfully!"

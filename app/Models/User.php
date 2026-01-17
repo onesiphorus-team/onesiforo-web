@@ -18,8 +18,8 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
-    use LogsActivityAllDirty;
     use HasRoles;
+    use LogsActivityAllDirty;
 
     /**
      * The attributes that are mass assignable.

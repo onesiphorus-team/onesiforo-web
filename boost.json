@@ -1,7 +1,8 @@
 {
     "agents": [
         "claude_code",
-        "copilot"
+        "copilot",
+        "gemini"
     ],
     "editors": [
         "claude_code",

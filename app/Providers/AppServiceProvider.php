@@ -1,10 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -23,25 +32,67 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->configureDefaults();
-    }
 
-    protected function configureDefaults(): void
-    {
-        Date::use(CarbonImmutable::class);
+        // Implicitly grant "Super Admin" role all permissions
+        // ---> Before to decomment this, add the right condition
+        // ---> otherwise all policies will be ignored and all user
+        // ---> will not be able to perform any action
+        // Gate::before(fn (User $user, string $ability): bool => false); // TODO implement logic here
 
-        DB::prohibitDestructiveCommands(
-            app()->isProduction(),
-        );
+        // limit pulse dashboard access to admin and super-admin users
+        Gate::define('viewPulse', fn (User $user): bool => true);
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
-            ? Password::min(12)
-                ->mixedCase()
+        // limit api docs access to admin users
+        // Gate::define('viewApiDocs', fn (User $user): bool => false);   // TODO implement logic here
+
+        // limit telescope access to admin users
+        // Gate::define('viewTelescope', fn (User $user): bool => false); // TODO implement logic here
+
+        $this->configureCommands();
+        $this->configureModels();
+        $this->configureVite();
+        $this->configureDates();
+        $this->configureUrls();
+
+        if (App::isProduction()) {
+            // Define password validation rules
+            Password::defaults(fn () => Password::min(8)
                 ->letters()
+                ->mixedCase()
                 ->numbers()
                 ->symbols()
-                ->uncompromised()
-            : null
+                ->uncompromised());
+        }
+
+    }
+
+    private function configureCommands(): void
+    {
+        DB::prohibitDestructiveCommands(
+            (bool) $this->app->isProduction()
         );
+    }
+
+    private function configureModels(): void
+    {
+        Model::shouldBeStrict();
+        Model::unguard();
+    }
+
+    private function configureVite(): void
+    {
+        Vite::usePrefetchStrategy('aggressive');
+    }
+
+    private function configureDates(): void
+    {
+        Date::use(CarbonImmutable::class);
+    }
+
+    private function configureUrls(): void
+    {
+        if (App::isProduction()) {
+            URL::forceScheme('https');
+        }
     }
 }

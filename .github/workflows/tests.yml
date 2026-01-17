@@ -1,12 +1,20 @@
 name: tests
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  ci:
+  tests:
     if: github.repository == 'onesiphorus-team/onesiforo-web'
+    name: Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: Testing
 
     steps:
@@ -44,7 +52,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
-      - name: Add Flux Credentials Loaded From ENV
+      - name: Add Flux Credentials
         run: composer config http-basic.composer.fluxui.dev "${{ secrets.FLUX_USERNAME }}" "${{ secrets.FLUX_LICENSE_KEY }}"
 
       - name: Install Composer Dependencies

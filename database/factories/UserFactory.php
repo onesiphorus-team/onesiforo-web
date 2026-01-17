@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\Roles;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -57,5 +59,22 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
             'two_factor_confirmed_at' => now(),
         ]);
+    }
+
+    public function superAdmin(): static
+    {
+        return $this->role(Roles::SuperAdmin);
+    }
+
+    public function admin(): static
+    {
+        return $this->role(Roles::Admin);
+    }
+
+    public function role(Roles $role): static
+    {
+        return $this->afterCreating(function (User $user) use ($role): void {
+            $user->assignRole($role->value);
+        });
     }
 }

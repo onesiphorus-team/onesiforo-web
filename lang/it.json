@@ -1,0 +1,62 @@
+{
+    "User": "Utente",
+    "Users": "Utenti",
+    "Activity": "Attività",
+    "Activities": "Attività",
+    "Activity Log": "Log Attività",
+    "System": "Sistema",
+
+    "Name": "Nome",
+    "Email": "Email",
+    "Roles": "Ruoli",
+    "Role": "Ruolo",
+    "Last Login": "Ultimo Accesso",
+    "Status": "Stato",
+    "Never": "Mai",
+    "Date": "Data",
+    "Action": "Azione",
+    "Subject Type": "Tipo Soggetto",
+    "Subject ID": "ID Soggetto",
+    "Properties": "Proprietà",
+    "Details": "Dettagli",
+    "From": "Da",
+    "To": "A",
+    "Executed by": "Eseguita da",
+    "Action Type": "Tipo Azione",
+
+    "Super Admin": "Super Admin",
+    "Admin": "Admin",
+    "Caregiver": "Caregiver",
+
+    "Online (active in last 5 minutes)": "Online (attivo negli ultimi 5 minuti)",
+    "Offline": "Offline",
+    "Never connected": "Mai connesso",
+    "Unknown": "Sconosciuto",
+
+    "Activity Information": "Informazioni Attività",
+
+    "Invite User": "Invita Utente",
+    "Invite New User": "Invita Nuovo Utente",
+    "The user will receive an email with a link to set their password.": "L'utente riceverà un'email con un link per impostare la propria password.",
+    "User invited": "Utente invitato",
+    "The invitation has been sent to :email": "L'invito è stato inviato a :email",
+
+    "Send Email Verification": "Invia Verifica Email",
+    "Send Verification Email": "Invia Email di Verifica",
+    "Are you sure you want to send the verification email to this user?": "Sei sicuro di voler inviare l'email di verifica a questo utente?",
+    "Verification email sent": "Email di verifica inviata",
+    "The verification email has been sent to :email": "L'email di verifica è stata inviata a :email",
+
+    "Send Password Reset": "Invia Reset Password",
+    "Are you sure you want to send the password reset link to this user?": "Sei sicuro di voler inviare il link per reimpostare la password a questo utente?",
+    "Password reset email sent": "Email di reset password inviata",
+    "The password reset link has been sent to :email": "Il link per reimpostare la password è stato inviato a :email",
+
+    "You have been invited to :app": "Sei stato invitato su :app",
+    "Hello :name!": "Ciao :name!",
+    "You have been invited to join :app by :inviter.": "Sei stato invitato a unirti a :app da :inviter.",
+    "Click the button below to set your password and access the system.": "Clicca il pulsante qui sotto per impostare la tua password e accedere al sistema.",
+    "Set Password": "Imposta Password",
+    "This link will expire in :minutes minutes.": "Questo link scadrà tra :minutes minuti.",
+    "If you did not expect this invitation, you can ignore this email.": "Se non ti aspettavi questo invito, puoi ignorare questa email."
+}

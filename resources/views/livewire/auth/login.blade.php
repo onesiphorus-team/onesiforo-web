@@ -1,6 +1,29 @@
 <x-layouts::auth>
     <div class="flex flex-col gap-6">
         <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+        @if(config('app.env') === 'local')
+        <div class="w-full flex flex-col items-center justify-center">
+            <div class="text-xl my-8 font-medium font-mono">AMBIENTE LOCALE</div>
+
+            @if(App\Models\User::count() > 0)
+                <div class="text-base my-4 font-medium font-mono">Disponibile login automatico:</div>
+                @foreach(\App\Enums\Roles::cases() as $role)
+                    @if(!Oltrematica\RoleLite\Models\Role::where('name', $role->value)->first()?->users->first())
+                        @continue
+                    @endif
+                    <x-login-link
+                        :email="Oltrematica\RoleLite\Models\Role::where('name', $role->value)->first()->users->first()->email"
+                        :redirect-url="route('filament.admin.pages.dashboard')"
+                        class="cursor-pointer hover:font-bold"
+                        label="{{ strtoupper( $role->value ) . ': Click to login' }}"/>
+
+                @endforeach
+            @else
+                <div class="text-lg font-medium my-4">NON SONO PRESENTI UTENTI</div>
+            @endif
+        </div>
+        @endif
+
 
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />

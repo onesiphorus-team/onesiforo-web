@@ -35,10 +35,10 @@ describe('pages load without errors', function (): void {
             ->assertNoJavaScriptErrors();
     });
 
-    it('loads filament admin login page', function (): void {
-        $page = visit('/admin/login');
+    it('redirects to login when accessing admin as guest', function (): void {
+        $page = visit('/admin');
 
-        $page->assertPathIs('/admin/login')
+        $page->assertPathIs('/login')
             ->assertNoJavaScriptErrors();
     });
 });
@@ -82,23 +82,11 @@ describe('login functionality', function (): void {
         $this->assertAuthenticated();
     });
 
-    it('can login through filament admin panel', function (): void {
-        $user = User::factory()->create([
-            'email' => 'admin@example.com',
-        ]);
+    it('can access filament admin when authenticated with admin role', function (): void {
+        Oltrematica\RoleLite\Models\Role::query()->firstOrCreate(['name' => 'admin']);
 
-        $page = visit('/admin/login');
-
-        $page->type('input[type="email"]', 'admin@example.com')
-            ->type('input[type="password"]', 'password')->submit()
-            ->assertPathIs('/admin')
-            ->assertNoJavaScriptErrors();
-
-        $this->assertAuthenticated();
-    });
-
-    it('can access filament admin when already authenticated', function (): void {
         $user = User::factory()->create();
+        $user->assignRole('admin');
 
         $this->actingAs($user);
 

@@ -6,20 +6,28 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\LogsActivityAllDirty;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Oltrematica\RoleLite\Trait\HasRoles;
 
-class User extends Authenticatable
+/**
+ * @property \Illuminate\Support\Carbon|null $last_login_at
+ */
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     use HasRoles;
     use LogsActivityAllDirty;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -30,6 +38,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'last_login_at',
+        'email_verified_at',
     ];
 
     /**
@@ -57,6 +67,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Determine if the user can access the Filament admin panel.
+     * Only super-admin and admin roles can access.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        if ($panel->getId() === 'admin') {
+            return $this->hasAnyRoles('super-admin', 'admin');
+        }
+
+        return true;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -65,6 +88,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

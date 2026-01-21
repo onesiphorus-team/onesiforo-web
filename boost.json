@@ -1,8 +1,7 @@
 {
     "agents": [
         "claude_code",
-        "copilot",
-        "gemini"
+        "copilot"
     ],
     "editors": [
         "claude_code",
@@ -10,7 +9,8 @@
         "vscode"
     ],
     "guidelines": [
-        "laravel/fortify"
+        "laravel/fortify",
+        "filament/filament"
     ],
     "herd_mcp": true
 }

@@ -8,8 +8,10 @@ use App\Listeners\UpdateLastLogin;
 use App\Models\User;
 use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Auth\Events\Login;
-use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Date;
@@ -36,7 +38,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
         // Implicitly grant "Super Admin" role all permissions
         // ---> Before to decomment this, add the right condition
         // ---> otherwise all policies will be ignored and all user
@@ -63,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureVite();
         $this->configureDates();
         $this->configureUrls();
+        $this->configureScramble();
 
         if (App::isProduction()) {
             // Define password validation rules
@@ -79,7 +81,7 @@ class AppServiceProvider extends ServiceProvider
     private function configureCommands(): void
     {
         DB::prohibitDestructiveCommands(
-            (bool) $this->app->isProduction()
+            $this->app->isProduction()
         );
     }
 
@@ -104,5 +106,12 @@ class AppServiceProvider extends ServiceProvider
         if (App::isProduction()) {
             URL::forceScheme('https');
         }
+    }
+
+    private function configureScramble(): void
+    {
+        Scramble::afterOpenApiGenerated(function (OpenApi $openApi): void {
+            $openApi->secure(SecurityScheme::http('bearer'));
+        });
     }
 }

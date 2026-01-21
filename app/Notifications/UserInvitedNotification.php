@@ -29,7 +29,9 @@ class UserInvitedNotification extends Notification implements ShouldQueue
 
     public function toMail(User $notifiable): MailMessage
     {
-        $token = Password::broker()->createToken($notifiable);
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker();
+        $token = $broker->createToken($notifiable);
         $url = url(route('password.reset', [
             'token' => $token,
             'email' => $notifiable->getEmailForPasswordReset(),

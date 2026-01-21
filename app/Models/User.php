@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\LogsActivityAllDirty;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 use Oltrematica\RoleLite\Trait\HasRoles;
 
 /**
@@ -22,25 +23,16 @@ use Oltrematica\RoleLite\Trait\HasRoles;
  */
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
+    use HasApiTokens;
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory;
 
     use HasRoles;
     use LogsActivityAllDirty;
+    use Notifiable;
     use SoftDeletes;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'last_login_at',
-        'email_verified_at',
-    ];
+    use TwoFactorAuthenticatable;
 
     /**
      * The attributes that should be hidden for serialization.
@@ -62,7 +54,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->map(fn (string $word): string => Str::substr($word, 0, 1))
             ->implode('');
     }
 
@@ -77,6 +69,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         }
 
         return true;
+    }
+
+    /**
+     * Get the OnesiBoxes this user can manage.
+     *
+     * @return BelongsToMany<OnesiBox, $this>
+     */
+    public function onesiBoxes(): BelongsToMany
+    {
+        return $this->belongsToMany(OnesiBox::class)
+            ->withPivot('permission')
+            ->withTimestamps();
     }
 
     /**

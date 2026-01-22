@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.5.2 - 2026-01-22
+
+### What's Changed
+
+* Add JW.org URL validation for video/audio players by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/18
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.5.1...v0.5.2
+
 ## v0.5.1 - 2026-01-22
 
 ### What's Changed

@@ -122,7 +122,7 @@ test('heartbeat fails when onesibox is inactive', function (): void {
         ->assertForbidden()
         ->assertJson([
             'message' => 'Appliance disabilitata.',
-            'error_code' => 'E002',
+            'error_code' => 'E003',
         ]);
 });
 

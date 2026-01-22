@@ -40,6 +40,23 @@ class Recipient extends Model
     use SoftDeletes;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'phone',
+        'street',
+        'city',
+        'postal_code',
+        'province',
+        'emergency_contacts',
+        'notes',
+    ];
+
+    /**
      * Get the OnesiBox associated with this recipient.
      *
      * @return HasOne<OnesiBox, $this>

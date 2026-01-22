@@ -9,8 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\PlaybackEventRequest;
 use App\Http\Resources\Api\V1\PlaybackEventResource;
 use App\Models\PlaybackEvent;
-use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Handles playback event operations for OnesiBox appliances.
@@ -32,16 +30,9 @@ class PlaybackController extends Controller
      * @response 403 array{message: string, error_code: string}
      * @response 422 array{message: string, errors: array}
      */
-    public function store(PlaybackEventRequest $request): PlaybackEventResource|JsonResponse
+    public function store(PlaybackEventRequest $request): PlaybackEventResource
     {
         $onesiBox = $request->onesiBox();
-
-        if (! $onesiBox->is_active) {
-            return response()->json([
-                'message' => 'Appliance disabilitata.',
-                'error_code' => 'E003',
-            ], Response::HTTP_FORBIDDEN);
-        }
 
         $playbackEvent = PlaybackEvent::query()->create([
             'onesi_box_id' => $onesiBox->id,

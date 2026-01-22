@@ -80,7 +80,7 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
      */
     private function createCommand(OnesiBox $onesiBox, CommandType $type, array $payload): Command
     {
-        return Command::create([
+        return Command::query()->create([
             'onesi_box_id' => $onesiBox->id,
             'type' => $type,
             'payload' => $payload,

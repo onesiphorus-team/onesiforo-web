@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Enums\Roles;
+use App\Listeners\NotifyAdminsOfNewRegistration;
 use App\Listeners\UpdateLastLogin;
 use App\Models\OnesiBox;
 use App\Models\User;
@@ -17,6 +18,7 @@ use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Date;
@@ -60,6 +62,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Login event listener to update last_login_at
         Event::listen(Login::class, UpdateLastLogin::class);
+
+        // Notify admins when a new user registers
+        Event::listen(Registered::class, NotifyAdminsOfNewRegistration::class);
 
         // limit pulse dashboard access to admin and super-admin users
         Gate::define('viewPulse', fn (User $user): bool => $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin));

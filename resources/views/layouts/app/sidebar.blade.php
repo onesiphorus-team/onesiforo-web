@@ -80,6 +80,10 @@
 
         {{ $slot }}
 
+        <footer class="fixed bottom-2 right-3 text-xs text-zinc-400 dark:text-zinc-600">
+            {{ \App\Support\Version::get() }}
+        </footer>
+
         @fluxScripts
     </body>
 </html>

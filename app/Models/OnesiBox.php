@@ -119,10 +119,10 @@ class OnesiBox extends Model implements AuthenticatableContract
             return false;
         }
 
-        /** @var string|null $permission */
+        /** @var OnesiBoxPermission|null $permission */
         $permission = $caregiver->pivot->getAttribute('permission');
 
-        return $permission === OnesiBoxPermission::Full->value;
+        return $permission === OnesiBoxPermission::Full;
     }
 
     /**

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.5.0 - 2026-01-22
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.4.1...v0.5.0
+
+### What's Changed
+
+* Add caregiver assignment to OnesiBox via Filament RelationManager by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/15
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.4.1...v0.5.0
+
 ## v0.4.1 - 2026-01-22
 
 **Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.4.0...v0.4.1

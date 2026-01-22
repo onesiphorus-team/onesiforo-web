@@ -33,21 +33,17 @@ class CommandController extends Controller
      * @response 401 array{message: string}
      * @response 403 array{message: string, error_code: string}
      */
-    public function index(GetCommandsRequest $request): CommandCollection|JsonResponse
+    public function index(GetCommandsRequest $request): CommandCollection
     {
         $onesiBox = $request->onesiBox();
 
-        if (! $onesiBox->is_active) {
-            return response()->json([
-                'message' => 'Appliance disabilitata.',
-                'error_code' => 'E003',
-            ], Response::HTTP_FORBIDDEN);
-        }
-
-        // Mark expired pending commands
+        // Mark expired pending commands with a single bulk update
         $onesiBox->commands()
             ->expiredPending()
-            ->each(fn (Command $command) => $command->markAsExpired());
+            ->update([
+                'status' => CommandStatus::Expired,
+                'executed_at' => now(),
+            ]);
 
         // Get total and pending counts
         $totalCommands = $onesiBox->commands()->count();
@@ -84,13 +80,6 @@ class CommandController extends Controller
     public function acknowledge(AckCommandRequest $request, Command $command): AckCommandResource|JsonResponse
     {
         $onesiBox = $request->onesiBox();
-
-        if (! $onesiBox->is_active) {
-            return response()->json([
-                'message' => 'Appliance disabilitata.',
-                'error_code' => 'E003',
-            ], Response::HTTP_FORBIDDEN);
-        }
 
         // Verify command belongs to this appliance
         if ($command->onesi_box_id !== $onesiBox->id) {

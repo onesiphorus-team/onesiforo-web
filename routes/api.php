@@ -29,7 +29,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     | The token identifies the OnesiBox - no ID needed in the URL.
     |
     */
-    Route::middleware('auth:sanctum')
+    Route::middleware(['auth:sanctum', 'appliance.active'])
         ->prefix('appliances')
         ->name('appliances.')
         ->group(function (): void {
@@ -52,7 +52,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     | Uses UUID route key binding for the command parameter.
     |
     */
-    Route::middleware('auth:sanctum')
+    Route::middleware(['auth:sanctum', 'appliance.active'])
         ->prefix('commands')
         ->name('commands.')
         ->group(function (): void {

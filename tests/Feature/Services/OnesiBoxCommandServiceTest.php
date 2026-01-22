@@ -43,13 +43,9 @@ it('creates a PlayMedia command when sending audio', function (): void {
             'media_type' => 'audio',
         ]);
 
-    Queue::assertPushed(SendOnesiBoxCommand::class, function ($job) use ($command): bool {
-        return $job->command->id === $command->id;
-    });
+    Queue::assertPushed(SendOnesiBoxCommand::class, fn ($job): bool => $job->command->id === $command->id);
 
-    Event::assertDispatched(OnesiBoxCommandSent::class, function ($event) use ($command): bool {
-        return $event->command->id === $command->id;
-    });
+    Event::assertDispatched(OnesiBoxCommandSent::class, fn ($event): bool => $event->command->id === $command->id);
 });
 
 it('creates a PlayMedia command when sending video', function (): void {
@@ -152,7 +148,7 @@ it('end-to-end: dashboard command is retrievable by appliance API', function ():
     $token = $onesiBox->createToken('appliance-token');
 
     // Simulate creating command (service is called internally, so we create directly)
-    Command::create([
+    Command::query()->create([
         'onesi_box_id' => $onesiBox->id,
         'type' => CommandType::PlayMedia,
         'payload' => ['url' => 'https://example.com/audio.mp3', 'media_type' => 'audio'],

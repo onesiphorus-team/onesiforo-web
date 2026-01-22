@@ -49,6 +49,22 @@ class OnesiBox extends Model implements AuthenticatableContract
     use SoftDeletes;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'name',
+        'serial_number',
+        'recipient_id',
+        'firmware_version',
+        'last_seen_at',
+        'is_active',
+        'status',
+        'notes',
+    ];
+
+    /**
      * Get the recipient associated with this OnesiBox.
      *
      * @return BelongsTo<Recipient, $this>

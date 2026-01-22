@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Roles;
 use App\Traits\LogsActivityAllDirty;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -76,7 +77,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function canAccessPanel(Panel $panel): bool
     {
         if ($panel->getId() === 'admin') {
-            return $this->hasAnyRoles('super-admin', 'admin');
+            return $this->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
         }
 
         return true;

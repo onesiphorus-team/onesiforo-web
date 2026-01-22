@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\Roles;
 use Illuminate\Database\Seeder;
 use Oltrematica\RoleLite\Models\Role;
 
@@ -14,10 +15,8 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $roles = ['super-admin', 'admin', 'caregiver'];
-
-        foreach ($roles as $roleName) {
-            Role::query()->firstOrCreate(['name' => $roleName]);
+        foreach (Roles::cases() as $role) {
+            Role::query()->firstOrCreate(['name' => $role->value]);
         }
     }
 }

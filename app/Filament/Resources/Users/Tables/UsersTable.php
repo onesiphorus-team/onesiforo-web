@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Enums\Roles;
 use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -43,12 +44,9 @@ class UsersTable
                 TextColumn::make('roles.name')
                     ->label(__('Roles'))
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'super-admin' => 'danger',
-                        'admin' => 'warning',
-                        'caregiver' => 'success',
-                        default => 'gray',
-                    }),
+                    ->formatStateUsing(fn (string $state): string => Roles::tryFrom($state)?->getLabel() ?? $state)
+                    ->color(fn (string $state): string => Roles::tryFrom($state)?->getColor() ?? 'gray')
+                    ->icon(fn (string $state): ?string => Roles::tryFrom($state)?->getIcon()),
 
                 TextColumn::make('last_login_at')
                     ->label(__('Last Login'))

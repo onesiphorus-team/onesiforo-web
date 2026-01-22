@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Models\OnesiBox;
+use App\Events\NewCommandAvailable;
+use App\Models\Command;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -23,35 +24,37 @@ class SendOnesiBoxCommand implements ShouldQueue
 
     public int $backoff = 5;
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function __construct(
-        public OnesiBox $onesiBox,
-        public string $commandType,
-        public array $payload
+        public Command $command
     ) {}
 
     public function handle(): void
     {
-        // TODO: Implementare comunicazione con appliance
-        // Possibili approcci:
-        // 1. HTTP API verso appliance
-        // 2. MQTT publish
-        // 3. WebSocket push via Reverb
+        // Broadcast to appliance via WebSocket (Reverb)
+        // The appliance can listen on this channel for real-time notifications
+        // and/or poll the API endpoint for pending commands
+        broadcast(new NewCommandAvailable($this->command))->toOthers();
 
-        logger()->info('OnesiBox command sent', [
-            'onesibox_id' => $this->onesiBox->id,
-            'command' => $this->commandType,
-            'payload' => $this->payload,
+        logger()->info('OnesiBox command queued', [
+            'command_uuid' => $this->command->uuid,
+            'onesibox_id' => $this->command->onesi_box_id,
+            'type' => $this->command->type->value,
+            'payload' => $this->command->payload,
         ]);
     }
 
     public function failed(Throwable $exception): void
     {
-        logger()->error('OnesiBox command failed', [
-            'onesibox_id' => $this->onesiBox->id,
-            'command' => $this->commandType,
+        // Mark command as failed if job fails after all retries
+        $this->command->markAsFailed(
+            errorCode: 'JOB_FAILED',
+            errorMessage: $exception->getMessage()
+        );
+
+        logger()->error('OnesiBox command job failed', [
+            'command_uuid' => $this->command->uuid,
+            'onesibox_id' => $this->command->onesi_box_id,
+            'type' => $this->command->type->value,
             'error' => $exception->getMessage(),
         ]);
     }

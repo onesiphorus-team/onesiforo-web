@@ -1,34 +1,23 @@
 <x-layouts::auth>
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
-        @if(config('app.env') === 'local')
-        <div class="w-full flex flex-col items-center justify-center">
-            <div class="text-xl my-8 font-medium font-mono">AMBIENTE LOCALE</div>
-
-            @if(App\Models\User::count() > 0)
-                <div class="text-base my-4 font-medium font-mono">Disponibile login automatico:</div>
-                @foreach(\App\Enums\Roles::cases() as $role)
-                    @if(!Oltrematica\RoleLite\Models\Role::where('name', $role->value)->first()?->users->first())
-                        @continue
-                    @endif
-                    <x-login-link
-                        :email="Oltrematica\RoleLite\Models\Role::where('name', $role->value)->first()->users->first()->email"
-                        :redirect-url="route('filament.admin.pages.dashboard')"
-                        class="cursor-pointer hover:font-bold"
-                        label="{{ strtoupper( $role->value ) . ': Click to login' }}"/>
-
-                @endforeach
-            @else
-                <div class="text-lg font-medium my-4">NON SONO PRESENTI UTENTI</div>
-            @endif
-        </div>
-        @endif
-
-
-        <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
 
-        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6">
+        @if(config('app.env') === 'local' && App\Models\User::count() > 0)
+            <div class="flex flex-col gap-2 p-4 rounded-lg bg-stone-100 dark:bg-stone-800">
+                <span class="text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wide">Dev Login</span>
+                @foreach(\App\Enums\Roles::cases() as $role)
+                    @if($user = Oltrematica\RoleLite\Models\Role::where('name', $role->value)->first()?->users->first())
+                        <x-login-link
+                            :email="$user->email"
+                            :redirect-url="route('filament.admin.pages.dashboard')"
+                            class="text-sm text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white cursor-pointer"
+                            label="{{ ucfirst($role->value) }}"/>
+                    @endif
+                @endforeach
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-5">
             @csrf
 
             <!-- Email Address -->
@@ -73,7 +62,7 @@
         </form>
 
         @if (Route::has('register'))
-            <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
+            <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-stone-600 dark:text-stone-400">
                 <span>{{ __('Don\'t have an account?') }}</span>
                 <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
             </div>

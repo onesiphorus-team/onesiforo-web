@@ -5,15 +5,18 @@
     </flux:heading>
 
     <form wire:submit="playAudio" class="space-y-4">
-        <flux:input
-            wire:model="audioUrl"
-            label="URL Audio"
-            type="url"
-            placeholder="https://example.com/audio.mp3"
-        />
+        <div>
+            <flux:input
+                wire:model="audioUrl"
+                label="URL Audio da jw.org"
+                type="url"
+                placeholder="https://www.jw.org/it/.../audio/#it/mediaitems/..."
+                description="Apri l'audio su jw.org, poi copia l'URL dalla barra degli indirizzi del browser."
+            />
+        </div>
 
         <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled">
-            <span wire:loading.remove>Riproduci</span>
+            <span wire:loading.remove>Riproduci Audio</span>
             <span wire:loading>Invio in corso...</span>
         </flux:button>
     </form>

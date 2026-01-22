@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.6.0 - 2026-01-22
+
+### What's Changed
+
+* Improve caregiver dashboard UI for mobile by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/20
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.5.3...v0.6.0
+
 ## v0.5.3 - 2026-01-22
 
 ### What's Changed

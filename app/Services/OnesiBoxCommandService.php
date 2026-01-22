@@ -84,6 +84,31 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         $this->dispatchCommandSentEvent($onesiBox, $command);
     }
 
+    public function sendLeaveZoomCommand(OnesiBox $onesiBox): void
+    {
+        $this->ensureOnline($onesiBox);
+
+        $command = $this->createCommand($onesiBox, CommandType::LeaveZoom, []);
+
+        dispatch(new SendOnesiBoxCommand($command));
+
+        $this->dispatchCommandSentEvent($onesiBox, $command);
+    }
+
+    public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName = 'Rosa Iannascoli'): void
+    {
+        $this->ensureOnline($onesiBox);
+
+        $command = $this->createCommand($onesiBox, CommandType::JoinZoom, [
+            'meeting_url' => $zoomUrl,
+            'participant_name' => $participantName,
+        ]);
+
+        dispatch(new SendOnesiBoxCommand($command));
+
+        $this->dispatchCommandSentEvent($onesiBox, $command);
+    }
+
     /**
      * Create a command in the database.
      *

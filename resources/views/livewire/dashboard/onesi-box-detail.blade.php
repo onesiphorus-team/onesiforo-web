@@ -93,8 +93,11 @@
             <flux:heading size="lg">Controlli</flux:heading>
 
             @if($this->isOnline)
-                {{-- Media & Communication Controls --}}
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {{-- Stop All Playback Button - Prima di tutto --}}
+                <livewire:dashboard.controls.stop-all-playback :onesiBox="$onesiBox" wire:key="stop-all-{{ $onesiBox->id }}" />
+
+                {{-- Media & Communication Controls - Single column on mobile --}}
+                <div class="grid grid-cols-1 gap-4">
                     <livewire:dashboard.controls.audio-player :onesiBox="$onesiBox" wire:key="audio-{{ $onesiBox->id }}" />
                     <livewire:dashboard.controls.video-player :onesiBox="$onesiBox" wire:key="video-{{ $onesiBox->id }}" />
                     <livewire:dashboard.controls.zoom-call :onesiBox="$onesiBox" wire:key="zoom-{{ $onesiBox->id }}" />
@@ -104,7 +107,7 @@
                 @if($this->isAdmin)
                     <div class="pt-4 border-t border-zinc-200 dark:border-zinc-700">
                         <flux:heading size="lg" class="mb-4">Amministrazione</flux:heading>
-                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div class="grid grid-cols-1 gap-4">
                             <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
                         </div>
                     </div>

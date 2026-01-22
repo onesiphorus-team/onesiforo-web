@@ -19,11 +19,18 @@ class ZoomCall extends Component
 
     public OnesiBox $onesiBox;
 
-    #[Validate('required|regex:/^\d{9,11}$/')]
-    public string $meetingId = '';
-
-    #[Validate('nullable|max:10')]
-    public string $password = '';
+    #[Validate([
+        'zoomUrl' => [
+            'required',
+            'url',
+            'regex:/^https:\/\/[a-z0-9]+\.zoom\.us\/j\/[0-9]+(\?pwd=.+)?$/i',
+        ],
+    ], message: [
+        'zoomUrl.required' => 'Il link Zoom è obbligatorio.',
+        'zoomUrl.url' => 'Inserisci un URL valido.',
+        'zoomUrl.regex' => 'Il link deve essere un URL Zoom valido (es: https://us05web.zoom.us/j/123456789?pwd=...)',
+    ])]
+    public string $zoomUrl = '';
 
     public function startCall(OnesiBoxCommandServiceInterface $commandService): void
     {
@@ -32,25 +39,13 @@ class ZoomCall extends Component
         $this->validate();
 
         try {
-            $commandService->sendZoomCommand(
+            $commandService->sendZoomUrlCommand(
                 $this->onesiBox,
-                $this->meetingId,
-                $this->password ?: null
+                $this->zoomUrl,
+                'Rosa Iannascoli'
             );
-            Flux::toast('Chiamata Zoom avviata');
-            $this->reset(['meetingId', 'password']);
-        } catch (OnesiBoxOfflineException) {
-            Flux::toast('OnesiBox non raggiungibile', variant: 'danger');
-        }
-    }
-
-    public function endCall(OnesiBoxCommandServiceInterface $commandService): void
-    {
-        $this->authorize('control', $this->onesiBox);
-
-        try {
-            $commandService->sendStopCommand($this->onesiBox);
-            Flux::toast('Comando di stop inviato');
+            Flux::toast('Connessione alla riunione Zoom in corso...');
+            $this->reset('zoomUrl');
         } catch (OnesiBoxOfflineException) {
             Flux::toast('OnesiBox non raggiungibile', variant: 'danger');
         }

@@ -10,21 +10,24 @@
                 wire:model="audioUrl"
                 label="URL Audio da jw.org"
                 type="url"
-                placeholder="https://www.jw.org/it/.../audio/#it/mediaitems/..."
-                description="Apri l'audio su jw.org, poi copia l'URL dalla barra degli indirizzi del browser."
+                inputmode="url"
+                autocomplete="off"
+                autocapitalize="off"
+                placeholder="https://www.jw.org/it/..."
+                description="Copia e incolla l'URL della pagina jw.org contenente l'audio."
+                class="[&_input]:text-base [&_input]:py-3"
             />
         </div>
 
-        <div class="flex gap-2">
-            <flux:button type="submit" variant="primary" class="flex-1" wire:loading.attr="disabled">
-                <flux:icon name="play" class="w-4 h-4" />
-                <span wire:loading.remove>Riproduci</span>
-                <span wire:loading>Invio...</span>
-            </flux:button>
-
-            <flux:button type="button" variant="danger" wire:click="stopPlayback" wire:loading.attr="disabled">
-                <flux:icon name="stop" class="w-4 h-4" />
-            </flux:button>
-        </div>
+        <flux:button
+            type="submit"
+            variant="primary"
+            class="w-full py-4 text-base font-medium"
+            icon="play"
+            wire:loading.attr="disabled"
+        >
+            <span wire:loading.remove wire:target="playAudio">Riproduci Audio</span>
+            <span wire:loading wire:target="playAudio">Invio in corso...</span>
+        </flux:button>
     </form>
 </div>

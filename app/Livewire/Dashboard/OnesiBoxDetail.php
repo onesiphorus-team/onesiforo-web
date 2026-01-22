@@ -57,10 +57,10 @@ class OnesiBoxDetail extends Component
             return null;
         }
 
-        /** @var string|null $permission */
+        /** @var OnesiBoxPermission|null $permission */
         $permission = $pivot->getAttribute('permission');
 
-        return $permission !== null ? OnesiBoxPermission::tryFrom($permission) : null;
+        return $permission;
     }
 
     /**

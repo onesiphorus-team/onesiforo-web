@@ -86,12 +86,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     /**
      * Get the OnesiBoxes this user can manage.
      *
-     * @return BelongsToMany<OnesiBox, $this>
+     * @return BelongsToMany<OnesiBox, $this, OnesiBoxUser, 'pivot'>
      */
     public function onesiBoxes(): BelongsToMany
     {
         return $this->belongsToMany(OnesiBox::class)
-            ->withPivot('permission')
+            ->using(OnesiBoxUser::class)
+            ->withPivot('id', 'permission')
             ->withTimestamps();
     }
 

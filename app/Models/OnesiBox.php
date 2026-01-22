@@ -77,12 +77,13 @@ class OnesiBox extends Model implements AuthenticatableContract
     /**
      * Get the caregivers (users) who can manage this OnesiBox.
      *
-     * @return BelongsToMany<User, $this>
+     * @return BelongsToMany<User, $this, OnesiBoxUser, 'pivot'>
      */
     public function caregivers(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
-            ->withPivot('permission')
+            ->using(OnesiBoxUser::class)
+            ->withPivot('id', 'permission')
             ->withTimestamps();
     }
 
@@ -118,10 +119,10 @@ class OnesiBox extends Model implements AuthenticatableContract
             return false;
         }
 
-        /** @var string|null $permission */
+        /** @var OnesiBoxPermission|null $permission */
         $permission = $caregiver->pivot->getAttribute('permission');
 
-        return $permission === OnesiBoxPermission::Full->value;
+        return $permission === OnesiBoxPermission::Full;
     }
 
     /**

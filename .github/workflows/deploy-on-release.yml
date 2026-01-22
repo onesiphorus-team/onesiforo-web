@@ -1,6 +1,8 @@
 name: Deploy on Release
 
 on:
+  release:
+    types: [published]
   push:
     tags:
       - 'v*'
@@ -9,16 +11,18 @@ jobs:
   deploy:
     if: github.repository == 'onesiphorus-team/onesiforo-web'
     name: Deploy to Production
-    runs-on: self-hosted
+    runs-on: [self-hosted, production]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Deploy release
+        run: |
+          echo "🚀 Deploying ${{ github.ref_name }} to production..."
+          sudo -u www-data /var/www/onesiforo-web/deploy.sh ${{ github.ref_name }}
 
-#      - name: Run deploy script
-#        run: |
-#          cd /var/www/onesiforo-web
-#          ./deploy.sh ${{ github.ref_name }}
+      - name: Verify deployment
+        run: |
+          echo "✅ Verifying deployment..."
+          curl -sf https://onesiforo.a80.it > /dev/null && echo "Site is up!" || exit 1
 
       - name: Notify success
-        run: echo "Deployed ${{ github.ref_name }} successfully!"
+        run: echo "🎉 Deployed ${{ github.ref_name }} successfully!"

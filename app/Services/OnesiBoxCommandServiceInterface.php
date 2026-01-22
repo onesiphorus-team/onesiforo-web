@@ -41,4 +41,12 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendStopCommand(OnesiBox $onesiBox): void;
+
+    /**
+     * Invia comando di riavvio del dispositivo.
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendRebootCommand(OnesiBox $onesiBox): void;
 }

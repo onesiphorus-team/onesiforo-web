@@ -89,15 +89,26 @@
 
     {{-- Controls (only for Full permission and online devices) --}}
     @if($this->canControl)
-        <div class="space-y-4">
+        <div class="space-y-6">
             <flux:heading size="lg">Controlli</flux:heading>
 
             @if($this->isOnline)
+                {{-- Media & Communication Controls --}}
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <livewire:dashboard.controls.audio-player :onesiBox="$onesiBox" wire:key="audio-{{ $onesiBox->id }}" />
                     <livewire:dashboard.controls.video-player :onesiBox="$onesiBox" wire:key="video-{{ $onesiBox->id }}" />
                     <livewire:dashboard.controls.zoom-call :onesiBox="$onesiBox" wire:key="zoom-{{ $onesiBox->id }}" />
                 </div>
+
+                {{-- System Controls (Admin only) --}}
+                @if($this->isAdmin)
+                    <div class="pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                        <flux:heading size="lg" class="mb-4">Amministrazione</flux:heading>
+                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
+                        </div>
+                    </div>
+                @endif
             @else
                 <flux:callout icon="wifi" class="mb-4">
                     <flux:callout.heading>Dispositivo offline</flux:callout.heading>

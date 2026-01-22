@@ -65,3 +65,31 @@ it('validates video URL must be from jw.org', function (): void {
         ->call('playVideo')
         ->assertHasErrors(['videoUrl']);
 });
+
+it('stops video playback with full permission', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('sendStopCommand')
+            ->once()
+            ->withArgs(fn ($box): bool => $box instanceof OnesiBox);
+    });
+
+    Livewire::actingAs($user)
+        ->test(VideoPlayer::class, ['onesiBox' => $onesiBox])
+        ->call('stopPlayback')
+        ->assertHasNoErrors();
+});
+
+it('blocks stop video with readonly permission', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::ReadOnly->value]);
+
+    Livewire::actingAs($user)
+        ->test(VideoPlayer::class, ['onesiBox' => $onesiBox])
+        ->call('stopPlayback')
+        ->assertForbidden();
+});

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Dashboard;
 
 use App\Enums\OnesiBoxPermission;
+use App\Enums\Roles;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
 use App\Models\User;
@@ -79,6 +80,18 @@ class OnesiBoxDetail extends Component
     public function isOnline(): bool
     {
         return $this->onesiBox->isOnline();
+    }
+
+    /**
+     * Check if the current user is an admin.
+     */
+    #[Computed]
+    public function isAdmin(): bool
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        return $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
     }
 
     /**

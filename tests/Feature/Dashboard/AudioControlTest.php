@@ -77,3 +77,31 @@ it('validates audio URL must be from jw.org', function (): void {
         ->call('playAudio')
         ->assertHasErrors(['audioUrl']);
 });
+
+it('stops audio playback with full permission', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('sendStopCommand')
+            ->once()
+            ->withArgs(fn ($box): bool => $box instanceof OnesiBox);
+    });
+
+    Livewire::actingAs($user)
+        ->test(AudioPlayer::class, ['onesiBox' => $onesiBox])
+        ->call('stopPlayback')
+        ->assertHasNoErrors();
+});
+
+it('blocks stop playback with readonly permission', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::ReadOnly->value]);
+
+    Livewire::actingAs($user)
+        ->test(AudioPlayer::class, ['onesiBox' => $onesiBox])
+        ->call('stopPlayback')
+        ->assertForbidden();
+});

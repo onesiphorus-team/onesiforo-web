@@ -18,14 +18,17 @@ class Version
             // First try to read from VERSION file (for production without .git)
             $versionFile = base_path('VERSION');
             if (file_exists($versionFile)) {
-                return trim(file_get_contents($versionFile));
+                $content = file_get_contents($versionFile);
+                if ($content !== false) {
+                    return trim($content);
+                }
             }
 
             // Fallback to git describe
             if (is_dir(base_path('.git'))) {
                 $result = Process::run('git describe --tags --abbrev=0 2>/dev/null');
 
-                if ($result->successful() && ! empty(trim($result->output()))) {
+                if ($result->successful() && ! in_array(trim($result->output()), ['', '0'], true)) {
                     return trim($result->output());
                 }
             }

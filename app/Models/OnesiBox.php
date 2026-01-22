@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
+use App\Enums\OnesiBoxStatus;
 use App\Traits\LogsActivityAllDirty;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,6 +28,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $firmware_version
  * @property Carbon|null $last_seen_at
  * @property bool $is_active
+ * @property OnesiBoxStatus $status
  * @property string|null $notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -203,6 +205,7 @@ class OnesiBox extends Model implements AuthenticatableContract
         return [
             'last_seen_at' => 'datetime',
             'is_active' => 'boolean',
+            'status' => OnesiBoxStatus::class,
         ];
     }
 }

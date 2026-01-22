@@ -8,8 +8,12 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('dashboard', App\Livewire\Dashboard\OnesiBoxList::class)
+        ->name('dashboard');
+
+    Route::get('dashboard/{onesiBox}', App\Livewire\Dashboard\OnesiBoxDetail::class)
+        ->name('dashboard.show');
+});
 
 require __DIR__.'/settings.php';

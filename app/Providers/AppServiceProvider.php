@@ -70,7 +70,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('viewPulse', fn (User $user): bool => $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin));
 
         // limit api docs access to admin users
-        // Gate::define('viewApiDocs', fn (User $user): bool => false);   // TODO implement logic here
+        Gate::define('viewApiDocs', fn (User $user): bool => true);
 
         // limit telescope access to admin users
         // Gate::define('viewTelescope', fn (User $user): bool => false); // TODO implement logic here

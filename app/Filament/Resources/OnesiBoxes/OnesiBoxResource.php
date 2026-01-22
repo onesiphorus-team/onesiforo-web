@@ -7,6 +7,7 @@ namespace App\Filament\Resources\OnesiBoxes;
 use App\Filament\Resources\OnesiBoxes\Pages\CreateOnesiBox;
 use App\Filament\Resources\OnesiBoxes\Pages\EditOnesiBox;
 use App\Filament\Resources\OnesiBoxes\Pages\ListOnesiBoxes;
+use App\Filament\Resources\OnesiBoxes\RelationManagers\CaregiversRelationManager;
 use App\Filament\Resources\OnesiBoxes\RelationManagers\TokensRelationManager;
 use App\Filament\Resources\OnesiBoxes\Schemas\OnesiBoxForm;
 use App\Filament\Resources\OnesiBoxes\Tables\OnesiBoxesTable;
@@ -53,6 +54,7 @@ class OnesiBoxResource extends Resource
     public static function getRelations(): array
     {
         return [
+            CaregiversRelationManager::class,
             TokensRelationManager::class,
         ];
     }

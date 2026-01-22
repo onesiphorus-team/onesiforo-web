@@ -15,15 +15,17 @@ it('sends audio command with full permission', function (): void {
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
-    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {
+    $validJwOrgUrl = 'https://www.jw.org/it/biblioteca/audio/#it/mediaitems/VODMinistryTools/pub-mwbv_202401_1_AUDIO';
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock) use ($validJwOrgUrl): void {
         $mock->shouldReceive('sendAudioCommand')
             ->once()
-            ->withArgs(fn ($box, $url): bool => $box instanceof OnesiBox && $url === 'https://example.com/audio.mp3');
+            ->withArgs(fn ($box, $url): bool => $box instanceof OnesiBox && $url === $validJwOrgUrl);
     });
 
     Livewire::actingAs($user)
         ->test(AudioPlayer::class, ['onesiBox' => $onesiBox])
-        ->set('audioUrl', 'https://example.com/audio.mp3')
+        ->set('audioUrl', $validJwOrgUrl)
         ->call('playAudio')
         ->assertHasNoErrors();
 });
@@ -35,7 +37,7 @@ it('blocks audio command with readonly permission', function (): void {
 
     Livewire::actingAs($user)
         ->test(AudioPlayer::class, ['onesiBox' => $onesiBox])
-        ->set('audioUrl', 'https://example.com/audio.mp3')
+        ->set('audioUrl', 'https://www.jw.org/it/biblioteca/audio/#it/mediaitems/VODMinistryTools/pub-mwbv_202401_1_AUDIO')
         ->call('playAudio')
         ->assertForbidden();
 });
@@ -62,4 +64,16 @@ it('validates audio URL format', function (): void {
         ->set('audioUrl', 'not-a-valid-url')
         ->call('playAudio')
         ->assertHasErrors(['audioUrl' => 'url']);
+});
+
+it('validates audio URL must be from jw.org', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(AudioPlayer::class, ['onesiBox' => $onesiBox])
+        ->set('audioUrl', 'https://example.com/audio.mp3')
+        ->call('playAudio')
+        ->assertHasErrors(['audioUrl']);
 });

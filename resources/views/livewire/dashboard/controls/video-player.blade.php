@@ -5,15 +5,18 @@
     </flux:heading>
 
     <form wire:submit="playVideo" class="space-y-4">
-        <flux:input
-            wire:model="videoUrl"
-            label="URL Video"
-            type="url"
-            placeholder="https://example.com/video.mp4"
-        />
+        <div>
+            <flux:input
+                wire:model="videoUrl"
+                label="URL Video da jw.org"
+                type="url"
+                placeholder="https://www.jw.org/it/.../video/#it/mediaitems/..."
+                description="Apri il video su jw.org, poi copia l'URL dalla barra degli indirizzi del browser."
+            />
+        </div>
 
         <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled">
-            <span wire:loading.remove>Riproduci</span>
+            <span wire:loading.remove>Riproduci Video</span>
             <span wire:loading>Invio in corso...</span>
         </flux:button>
     </form>

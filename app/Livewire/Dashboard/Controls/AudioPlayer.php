@@ -6,11 +6,11 @@ namespace App\Livewire\Dashboard\Controls;
 
 use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\OnesiBox;
+use App\Rules\JwOrgUrl;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class AudioPlayer extends Component
@@ -19,7 +19,6 @@ class AudioPlayer extends Component
 
     public OnesiBox $onesiBox;
 
-    #[Validate('required|url|max:2048')]
     public string $audioUrl = '';
 
     public function playAudio(OnesiBoxCommandServiceInterface $commandService): void
@@ -40,5 +39,17 @@ class AudioPlayer extends Component
     public function render(): View
     {
         return view('livewire.dashboard.controls.audio-player');
+    }
+
+    /**
+     * Get the validation rules.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    protected function rules(): array
+    {
+        return [
+            'audioUrl' => ['required', 'url', 'max:2048', new JwOrgUrl],
+        ];
     }
 }

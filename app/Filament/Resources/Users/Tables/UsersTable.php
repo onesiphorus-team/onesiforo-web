@@ -37,9 +37,25 @@ class UsersTable
                 TextColumn::make('email')
                     ->label(__('Email'))
                     ->searchable()
-                    ->sortable()
-                    ->icon(fn (User $record): string => $record->hasVerifiedEmail() ? 'heroicon-o-check-badge' : 'heroicon-o-exclamation-circle')
-                    ->iconColor(fn (User $record): string => $record->hasVerifiedEmail() ? 'success' : 'warning'),
+                    ->sortable(),
+
+                IconColumn::make('email_verified_at')
+                    ->label(__('Verified'))
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-badge')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->tooltip(function (User $record): string {
+                        if (! $record->hasVerifiedEmail()) {
+                            return __('Email not verified');
+                        }
+
+                        /** @var \Illuminate\Support\Carbon $verifiedAt */
+                        $verifiedAt = $record->email_verified_at;
+
+                        return __('Email verified on :date', ['date' => $verifiedAt->format('d/m/Y H:i')]);
+                    }),
 
                 TextColumn::make('roles.name')
                     ->label(__('Roles'))

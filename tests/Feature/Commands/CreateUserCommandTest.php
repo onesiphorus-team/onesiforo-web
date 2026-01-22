@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
 use Oltrematica\RoleLite\Models\Role;
 
 use function Pest\Laravel\artisan;
@@ -13,7 +15,9 @@ beforeEach(function (): void {
     Role::query()->firstOrCreate(['name' => 'caregiver']);
 });
 
-it('creates a user without roles', function (): void {
+it('creates a user without roles and sends verification email', function (): void {
+    Notification::fake();
+
     artisan('app:create-user')
         ->expectsQuestion('Nome completo', 'Test User')
         ->expectsQuestion('Email', 'user@test.com')
@@ -26,7 +30,9 @@ it('creates a user without roles', function (): void {
     expect($user)->not->toBeNull()
         ->and($user->name)->toBe('Test User')
         ->and($user->roles)->toHaveCount(0)
-        ->and($user->hasVerifiedEmail())->toBeTrue();
+        ->and($user->hasVerifiedEmail())->toBeFalse();
+
+    Notification::assertSentTo($user, VerifyEmail::class);
 });
 
 it('creates a user with single role', function (): void {

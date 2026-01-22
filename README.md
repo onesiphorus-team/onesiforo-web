@@ -134,6 +134,124 @@ php artisan test
 php artisan reverb:start
 ```
 
+## Deployment in Produzione
+
+### Auto-Deploy
+
+Il sistema utilizza **GitHub Actions** con un **self-hosted runner** per il deploy automatico.
+
+**Il deploy viene attivato automaticamente quando:**
+
+- Viene pubblicata una nuova **Release** su GitHub
+- Viene pushato un **tag** con prefisso `v*` (es. `v1.0.0`, `v1.2.3`)
+
+```bash
+# Deploy tramite tag
+git tag v1.0.0
+git push origin v1.0.0
+
+# Oppure crea una Release dalla UI di GitHub
+# Repository → Releases → Create a new release
+```
+
+### Struttura Server
+
+```
+/var/www/onesiforo-web/
+├── current/          → Symlink alla release attiva
+├── releases/         → Storico delle release (ultime 5)
+│   ├── 20260122_153824_main/
+│   └── 20260122_160000_v1.0.0/
+├── shared/           → File condivisi tra release
+│   ├── .env
+│   └── storage/
+└── deploy.sh         → Script di deploy
+```
+
+### Servizi di Sistema
+
+| Servizio | Descrizione | Comando |
+|----------|-------------|---------|
+| **Queue Worker** | Processa i job in coda | `onesiforo-web-worker.service` |
+| **Scheduler** | Esegue i task schedulati ogni minuto | `onesiforo-web-scheduler.timer` |
+| **PHP-FPM** | Processa le richieste PHP | `php8.4-fpm.service` |
+| **Nginx** | Web server | `nginx.service` |
+| **GitHub Runner** | Esegue i deploy automatici | `actions.runner.*.service` |
+
+### Verifica Stato Servizi
+
+```bash
+# Connessione al server
+ssh -p 65100 onesiforo-web
+
+# Stato del worker
+sudo systemctl status onesiforo-web-worker
+
+# Stato dello scheduler
+sudo systemctl status onesiforo-web-scheduler.timer
+
+# Stato del runner GitHub
+sudo systemctl status actions.runner.onesiphorus-team-onesiforo-web.onesiforo-web-runner
+```
+
+### Logs
+
+```bash
+# Log applicativo Laravel
+tail -f /var/www/onesiforo-web/shared/storage/logs/laravel.log
+
+# Log del worker
+tail -f /var/www/onesiforo-web/shared/storage/logs/worker.log
+
+# Log dello scheduler
+tail -f /var/www/onesiforo-web/shared/storage/logs/scheduler.log
+
+# Log di Nginx
+sudo tail -f /var/log/nginx/onesiforo-web-error.log
+```
+
+### Rollback
+
+In caso di problemi con una release, è possibile effettuare un rollback immediato:
+
+```bash
+# Lista delle release disponibili
+ls -la /var/www/onesiforo-web/releases/
+
+# Rollback a una release precedente
+sudo ln -sfn /var/www/onesiforo-web/releases/<nome_release> /var/www/onesiforo-web/current
+
+# Riavvia i servizi
+sudo systemctl restart onesiforo-web-worker
+sudo systemctl reload php8.4-fpm
+```
+
+### Deploy Manuale
+
+Se necessario, è possibile eseguire un deploy manuale:
+
+```bash
+ssh -p 65100 onesiforo-web
+sudo -u www-data /var/www/onesiforo-web/deploy.sh <tag_o_branch>
+
+# Esempio
+sudo -u www-data /var/www/onesiforo-web/deploy.sh v1.0.0
+sudo -u www-data /var/www/onesiforo-web/deploy.sh main
+```
+
+### Riavvio Servizi
+
+```bash
+# Riavvia il worker (dopo modifiche ai job)
+sudo systemctl restart onesiforo-web-worker
+
+# Ricarica PHP-FPM (dopo modifiche alla configurazione)
+sudo systemctl reload php8.4-fpm
+
+# Riavvia Nginx
+sudo systemctl reload nginx
+```
+
 ## Documentazione
 
 La documentazione tecnica completa e disponibile nella cartella `/docs`:

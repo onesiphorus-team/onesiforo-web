@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Enums\Roles;
 use App\Models\User;
 
 class UserPolicy
@@ -14,7 +15,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRoles('super-admin', 'admin');
+        return $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
     }
 
     /**
@@ -23,7 +24,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->hasAnyRoles('super-admin', 'admin');
+        return $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
     }
 
     /**
@@ -32,7 +33,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRoles('super-admin', 'admin');
+        return $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
     }
 
     /**
@@ -41,7 +42,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->hasAnyRoles('super-admin', 'admin');
+        return $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
     }
 
     /**
@@ -51,7 +52,7 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        if (! $user->hasRole('super-admin')) {
+        if (! $user->hasRole(Roles::SuperAdmin)) {
             return false;
         }
 
@@ -64,7 +65,7 @@ class UserPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->hasRole('super-admin');
+        return $user->hasRole(Roles::SuperAdmin);
     }
 
     /**
@@ -73,7 +74,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return $user->hasRole('super-admin');
+        return $user->hasRole(Roles::SuperAdmin);
     }
 
     /**
@@ -84,7 +85,7 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): bool
     {
-        if (! $user->hasRole('super-admin')) {
+        if (! $user->hasRole(Roles::SuperAdmin)) {
             return false;
         }
 
@@ -93,9 +94,9 @@ class UserPolicy
         }
 
         // Check if model is the last super-admin
-        if ($model->hasRole('super-admin')) {
+        if ($model->hasRole(Roles::SuperAdmin)) {
             $activeSuperAdminCount = User::query()->whereHas('roles', function ($query): void {
-                $query->where('name', 'super-admin');
+                $query->where('name', Roles::SuperAdmin->value);
             })->whereNull('deleted_at')->count();
 
             if ($activeSuperAdminCount <= 1) {
@@ -112,7 +113,7 @@ class UserPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->hasRole('super-admin');
+        return $user->hasRole(Roles::SuperAdmin);
     }
 
     /**
@@ -122,12 +123,12 @@ class UserPolicy
      */
     public function assignRole(User $user, User $model, string $role): bool
     {
-        if ($user->hasRole('super-admin')) {
+        if ($user->hasRole(Roles::SuperAdmin)) {
             return true;
         }
 
-        if ($user->hasRole('admin')) {
-            return $role === 'caregiver';
+        if ($user->hasRole(Roles::Admin)) {
+            return $role === Roles::Caregiver->value;
         }
 
         return false;
@@ -140,11 +141,11 @@ class UserPolicy
      */
     public function removeRole(User $user, User $model, string $role): bool
     {
-        if ($user->hasRole('super-admin')) {
+        if ($user->hasRole(Roles::SuperAdmin)) {
             // Cannot remove super-admin role if last one
-            if ($role === 'super-admin') {
+            if ($role === Roles::SuperAdmin->value) {
                 $activeSuperAdminCount = User::query()->whereHas('roles', function ($query): void {
-                    $query->where('name', 'super-admin');
+                    $query->where('name', Roles::SuperAdmin->value);
                 })->whereNull('deleted_at')->count();
 
                 return $activeSuperAdminCount > 1;
@@ -153,8 +154,8 @@ class UserPolicy
             return true;
         }
 
-        if ($user->hasRole('admin')) {
-            return $role === 'caregiver';
+        if ($user->hasRole(Roles::Admin)) {
+            return $role === Roles::Caregiver->value;
         }
 
         return false;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\Roles;
 use App\Listeners\UpdateLastLogin;
 use App\Models\OnesiBox;
 use App\Models\User;
@@ -61,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, UpdateLastLogin::class);
 
         // limit pulse dashboard access to admin and super-admin users
-        Gate::define('viewPulse', fn (User $user): bool => $user->hasAnyRoles('super-admin', 'admin'));
+        Gate::define('viewPulse', fn (User $user): bool => $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin));
 
         // limit api docs access to admin users
         // Gate::define('viewApiDocs', fn (User $user): bool => false);   // TODO implement logic here

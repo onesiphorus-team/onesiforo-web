@@ -24,10 +24,10 @@ class EnsureApplianceIsActive
      */
     public function handle(Request $request, Closure $next): Response
     {
-        /** @var OnesiBox|\App\Models\User|null $user */
-        $user = $request->user();
+        /** @var \App\Models\User|OnesiBox|null $appliance */
+        $appliance = $request->user();
 
-        if ($user instanceof OnesiBox && ! $user->is_active) {
+        if ($appliance instanceof OnesiBox && ! $appliance->is_active) {
             return response()->json([
                 'message' => 'Appliance disabilitata.',
                 'error_code' => 'E003',

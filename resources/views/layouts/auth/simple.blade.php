@@ -3,16 +3,27 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div class="flex w-full max-w-sm flex-col gap-2">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="flex h-9 w-9 mb-1 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                    </span>
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
-                </a>
-                <div class="flex flex-col gap-6">
+    <body class="min-h-screen bg-white antialiased dark:bg-stone-950">
+        <div class="flex min-h-svh">
+            {{-- Left Panel --}}
+            <div class="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-center lg:px-16 xl:px-24 bg-gradient-to-br from-stone-300 via-stone-200 to-stone-100 dark:from-stone-900 dark:via-stone-900 dark:to-stone-950">
+                <div class="max-w-md">
+                    <h1 class="text-6xl font-semibold tracking-tight text-stone-900 dark:text-stone-100 xl:text-7xl">
+                        Onesiforo
+                    </h1>
+                </div>
+            </div>
+
+            {{-- Right Panel --}}
+            <div class="flex w-full flex-col items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12 bg-white dark:bg-stone-950">
+                <div class="w-full max-w-sm">
+                    {{-- Mobile Logo --}}
+                    <div class="mb-10 lg:hidden">
+                        <h1 class="text-4xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">
+                            Onesiforo
+                        </h1>
+                    </div>
+
                     {{ $slot }}
                 </div>
             </div>

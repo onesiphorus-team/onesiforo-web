@@ -37,46 +37,46 @@ class OnesiBoxPolicy
 
     /**
      * Determina se l'utente può creare nuove OnesiBox.
-     * (Out of scope per questa feature - solo admin via Filament)
+     * Admin e super-admin possono creare OnesiBox via Filament.
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasAnyRoles('super-admin', 'admin');
     }
 
     /**
      * Determina se l'utente può modificare questa OnesiBox.
-     * (Out of scope per questa feature - solo admin via Filament)
+     * Admin e super-admin possono modificare OnesiBox via Filament.
      */
     public function update(User $user, OnesiBox $onesiBox): bool
     {
-        return false;
+        return $user->hasAnyRoles('super-admin', 'admin');
     }
 
     /**
      * Determina se l'utente può eliminare questa OnesiBox.
-     * (Out of scope per questa feature - solo admin via Filament)
+     * Solo super-admin può eliminare OnesiBox.
      */
     public function delete(User $user, OnesiBox $onesiBox): bool
     {
-        return false;
+        return $user->hasRole('super-admin');
     }
 
     /**
      * Determina se l'utente può eliminare in bulk le OnesiBox.
-     * (Out of scope per questa feature - solo admin via Filament)
+     * Solo super-admin può eliminare in bulk.
      */
     public function deleteAny(User $user): bool
     {
-        return false;
+        return $user->hasRole('super-admin');
     }
 
     /**
      * Determina se l'utente può forzare l'eliminazione in bulk delle OnesiBox.
-     * (Out of scope per questa feature - solo admin via Filament)
+     * Solo super-admin può forzare l'eliminazione.
      */
     public function forceDeleteAny(User $user): bool
     {
-        return false;
+        return $user->hasRole('super-admin');
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Resources\OnesiBoxes\Tables;
 
 use App\Models\OnesiBox;
-use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -15,7 +14,6 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -120,7 +118,6 @@ class OnesiBoxesTable
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
-                    self::generateTokenAction(),
                     DeleteAction::make(),
                     RestoreAction::make(),
                     ForceDeleteAction::make(),
@@ -147,33 +144,5 @@ class OnesiBoxesTable
         }
 
         return $record->isOnline() ? 'online' : 'offline';
-    }
-
-    private static function generateTokenAction(): Action
-    {
-        return Action::make('generate_token')
-            ->label(__('Generate Token'))
-            ->icon('heroicon-o-key')
-            ->color('warning')
-            ->requiresConfirmation()
-            ->modalHeading(__('Generate New API Token'))
-            ->modalDescription(__('Warning: this will invalidate all previous tokens. The appliance will need to be reconfigured with the new token.'))
-            ->action(function (OnesiBox $record): void {
-                $record->tokens()->delete();
-
-                $token = $record->createToken('onesibox-api-token');
-
-                activity()
-                    ->performedOn($record)
-                    ->causedBy(auth()->user())
-                    ->log('API token regenerated');
-
-                Notification::make()
-                    ->title(__('Token generated'))
-                    ->body(__('The new token is: :token', ['token' => $token->plainTextToken]))
-                    ->success()
-                    ->persistent()
-                    ->send();
-            });
     }
 }

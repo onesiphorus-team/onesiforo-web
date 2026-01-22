@@ -1,0 +1,361 @@
+openapi: 3.0.3
+info:
+  title: Onesiforo API - OnesiBox Webservices
+  description: |
+    API per la comunicazione tra appliance OnesiBox e la piattaforma Onesiforo.
+    Queste API permettono alle appliance di recuperare comandi, confermare esecuzioni
+    e aggiornare lo stato di riproduzione multimediale.
+  version: 1.0.0
+  contact:
+    name: Onesiforo Team
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Commands
+    description: Gestione comandi per appliance
+  - name: Playback
+    description: Eventi di riproduzione multimediale
+
+paths:
+  /appliances/commands:
+    get:
+      tags:
+        - Commands
+      summary: Recupera comandi pendenti
+      description: |
+        Restituisce la lista dei comandi pendenti per l'appliance autenticata.
+        I comandi sono ordinati per priorita (alta prima) e poi per data di creazione.
+        I comandi scaduti vengono automaticamente marcati come "expired" e esclusi.
+      operationId: getCommands
+      parameters:
+        - name: status
+          in: query
+          description: Filtra per stato
+          schema:
+            type: string
+            enum: [pending, all]
+            default: pending
+        - name: limit
+          in: query
+          description: Numero massimo di comandi da restituire
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Lista comandi recuperata con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandCollection'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /commands/{command}/ack:
+    post:
+      tags:
+        - Commands
+      summary: Conferma esecuzione comando
+      description: |
+        Conferma l'esecuzione di un comando da parte dell'appliance.
+        L'operazione e idempotente: confermare un comando gia processato
+        restituisce successo senza modificare lo stato.
+      operationId: acknowledgeCommand
+      parameters:
+        - name: command
+          in: path
+          required: true
+          description: UUID del comando
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AckCommandRequest'
+      responses:
+        '200':
+          description: Comando confermato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckCommandResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /appliances/playback:
+    post:
+      tags:
+        - Playback
+      summary: Aggiorna stato riproduzione
+      description: |
+        Notifica un evento di riproduzione multimediale (avvio, pausa, stop, errore, etc.).
+        Gli eventi vengono persistiti per 30 giorni per la cronologia.
+      operationId: updatePlaybackStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaybackEventRequest'
+      responses:
+        '200':
+          description: Evento registrato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaybackEventResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Token Sanctum dell'appliance OnesiBox
+
+  schemas:
+    Command:
+      type: object
+      required:
+        - id
+        - type
+        - priority
+        - status
+        - created_at
+        - expires_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID del comando
+        type:
+          type: string
+          enum:
+            - play_media
+            - stop_media
+            - pause_media
+            - resume_media
+            - set_volume
+            - join_zoom
+            - leave_zoom
+            - start_jitsi
+            - stop_jitsi
+            - speak_text
+            - show_message
+            - reboot
+            - shutdown
+            - start_vnc
+            - stop_vnc
+            - update_config
+          description: Tipo di comando
+        payload:
+          type: object
+          nullable: true
+          description: Dati specifici del comando
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Priorita (1=alta, 5=bassa)
+        status:
+          type: string
+          enum: [pending, completed, failed, expired]
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+
+    CommandCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Command'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Numero totale di comandi (inclusi scaduti)
+            pending:
+              type: integer
+              description: Numero comandi pendenti validi
+
+    AckCommandRequest:
+      type: object
+      required:
+        - status
+        - executed_at
+      properties:
+        status:
+          type: string
+          enum: [success, failed, skipped]
+          description: Esito dell'esecuzione
+        error_code:
+          type: string
+          maxLength: 10
+          nullable: true
+          description: Codice errore (se status=failed)
+        error_message:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Messaggio errore (se status=failed)
+        executed_at:
+          type: string
+          format: date-time
+          description: Timestamp esecuzione
+
+    AckCommandResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            acknowledged:
+              type: boolean
+              description: Conferma ricezione
+            command_id:
+              type: string
+              format: uuid
+            status:
+              type: string
+              enum: [completed, failed, expired]
+
+    PlaybackEventRequest:
+      type: object
+      required:
+        - event
+        - media_url
+        - media_type
+      properties:
+        event:
+          type: string
+          enum: [started, paused, resumed, stopped, completed, error]
+          description: Tipo di evento
+        media_url:
+          type: string
+          format: uri
+          maxLength: 2048
+          description: URL del contenuto
+        media_type:
+          type: string
+          enum: [audio, video]
+          description: Tipo di media
+        position:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Posizione corrente in secondi
+        duration:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Durata totale in secondi
+        error_message:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Messaggio errore (se event=error)
+
+    PlaybackEventResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            logged:
+              type: boolean
+              description: Conferma registrazione evento
+            event_id:
+              type: integer
+
+    Error:
+      type: object
+      required:
+        - message
+        - error_code
+      properties:
+        message:
+          type: string
+          description: Messaggio di errore leggibile
+        error_code:
+          type: string
+          description: Codice errore (E001-E010)
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Dettagli errori di validazione
+
+  responses:
+    Unauthorized:
+      description: Token di autenticazione non valido o mancante
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Token di autenticazione non fornito.
+            error_code: E001
+
+    Forbidden:
+      description: Appliance non autorizzata o disabilitata
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Appliance disabilitata.
+            error_code: E003
+
+    NotFound:
+      description: Risorsa non trovata
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Comando non trovato.
+            error_code: E002
+
+    ValidationError:
+      description: Errore di validazione
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: I dati forniti non sono validi.
+            errors:
+              status:
+                - Lo stato e obbligatorio.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
 use App\Traits\LogsActivityAllDirty;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
@@ -31,6 +33,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon|null $deleted_at
  * @property-read Recipient|null $recipient
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $caregivers
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Command> $commands
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackEvent> $playbackEvents
  */
 class OnesiBox extends Model implements AuthenticatableContract
 {
@@ -108,6 +112,40 @@ class OnesiBox extends Model implements AuthenticatableContract
     public function userCanView(User $user): bool
     {
         return $this->caregivers()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Get the commands for this OnesiBox.
+     *
+     * @return HasMany<Command, $this>
+     */
+    public function commands(): HasMany
+    {
+        return $this->hasMany(Command::class);
+    }
+
+    /**
+     * Get pending commands for this OnesiBox.
+     * Commands are ordered by priority (highest first) and then by creation date (oldest first).
+     *
+     * @return HasMany<Command, $this>
+     */
+    public function pendingCommands(): HasMany
+    {
+        return $this->commands()
+            ->where('status', CommandStatus::Pending)
+            ->where('expires_at', '>', now())
+            ->orderBy('priority')->oldest();
+    }
+
+    /**
+     * Get playback events for this OnesiBox.
+     *
+     * @return HasMany<PlaybackEvent, $this>
+     */
+    public function playbackEvents(): HasMany
+    {
+        return $this->hasMany(PlaybackEvent::class);
     }
 
     // ========================================

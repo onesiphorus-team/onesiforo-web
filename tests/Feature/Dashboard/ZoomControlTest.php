@@ -10,21 +10,22 @@ use App\Services\OnesiBoxCommandServiceInterface;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 
-it('sends zoom command with full permission', function (): void {
+it('sends zoom url command with full permission', function (): void {
     $user = User::factory()->create();
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
-    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {
-        $mock->shouldReceive('sendZoomCommand')
+    $validZoomUrl = 'https://us05web.zoom.us/j/85099838349?pwd=DATUPWNZhaXXUwkvuiA5OKWUfgbdTb.1';
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock) use ($validZoomUrl): void {
+        $mock->shouldReceive('sendZoomUrlCommand')
             ->once()
-            ->withArgs(fn ($box, $id, $pass): bool => $box instanceof OnesiBox && $id === '123456789' && $pass === 'secret');
+            ->withArgs(fn ($box, $url, $name): bool => $box instanceof OnesiBox && $url === $validZoomUrl && $name === 'Rosa Iannascoli');
     });
 
     Livewire::actingAs($user)
         ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
-        ->set('meetingId', '123456789')
-        ->set('password', 'secret')
+        ->set('zoomUrl', $validZoomUrl)
         ->call('startCall')
         ->assertHasNoErrors();
 });
@@ -36,36 +37,76 @@ it('blocks zoom command with readonly permission', function (): void {
 
     Livewire::actingAs($user)
         ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
-        ->set('meetingId', '123456789')
+        ->set('zoomUrl', 'https://us05web.zoom.us/j/85099838349?pwd=test')
         ->call('startCall')
         ->assertForbidden();
 });
 
-it('validates meeting ID format', function (): void {
+it('validates zoom url is required', function (): void {
     $user = User::factory()->create();
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
     Livewire::actingAs($user)
         ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
-        ->set('meetingId', '123')  // Too short
+        ->set('zoomUrl', '')
         ->call('startCall')
-        ->assertHasErrors(['meetingId' => 'regex']);
+        ->assertHasErrors(['zoomUrl' => 'required']);
 });
 
-it('sends end call command with full permission', function (): void {
+it('validates zoom url format', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
+        ->set('zoomUrl', 'not-a-valid-url')
+        ->call('startCall')
+        ->assertHasErrors(['zoomUrl' => 'url']);
+});
+
+it('validates zoom url must be from zoom.us', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
+        ->set('zoomUrl', 'https://example.com/meeting')
+        ->call('startCall')
+        ->assertHasErrors(['zoomUrl' => 'regex']);
+});
+
+it('validates zoom url must contain meeting id', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
+        ->set('zoomUrl', 'https://zoom.us/')
+        ->call('startCall')
+        ->assertHasErrors(['zoomUrl' => 'regex']);
+});
+
+it('accepts zoom urls with various subdomains', function (string $zoomUrl): void {
     $user = User::factory()->create();
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
     $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {
-        $mock->shouldReceive('sendStopCommand')
-            ->once()
-            ->withArgs(fn ($box): bool => $box instanceof OnesiBox);
+        $mock->shouldReceive('sendZoomUrlCommand')
+            ->once();
     });
 
     Livewire::actingAs($user)
         ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
-        ->call('endCall')
+        ->set('zoomUrl', $zoomUrl)
+        ->call('startCall')
         ->assertHasNoErrors();
-});
+})->with([
+    'us05web subdomain' => ['https://us05web.zoom.us/j/85099838349?pwd=DATUPWNZhaXXUwkvuiA5OKWUfgbdTb.1'],
+    'us02web subdomain' => ['https://us02web.zoom.us/j/123456789?pwd=abc123'],
+    'jworg subdomain' => ['https://jworg.zoom.us/j/85942985883?pwd=xyz'],
+]);

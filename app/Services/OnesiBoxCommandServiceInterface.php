@@ -49,4 +49,20 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendRebootCommand(OnesiBox $onesiBox): void;
+
+    /**
+     * Invia comando per uscire dalla chiamata Zoom.
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendLeaveZoomCommand(OnesiBox $onesiBox): void;
+
+    /**
+     * Invia comando per avviare chiamata Zoom tramite URL.
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName = 'Rosa Iannascoli'): void;
 }

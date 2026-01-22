@@ -77,12 +77,13 @@ class CreateUserCommand extends Command
             'name' => $name,
             'email' => $email,
             'password' => Hash::make($passwordValue),
-            'email_verified_at' => now(),
         ]);
 
         foreach ($selectedRoles as $role) {
             $user->assignRole($role);
         }
+
+        $user->sendEmailVerificationNotification();
 
         $rolesDisplay = count($selectedRoles) > 0
             ? implode(', ', $selectedRoles)
@@ -90,6 +91,7 @@ class CreateUserCommand extends Command
 
         $this->info("Utente {$email} creato con successo!");
         $this->line("Ruoli assegnati: {$rolesDisplay}");
+        $this->line("Email di verifica inviata a: {$email}");
 
         return Command::SUCCESS;
     }

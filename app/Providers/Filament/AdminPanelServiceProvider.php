@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -41,6 +42,12 @@ class AdminPanelServiceProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+            ])
+            ->userMenuItems([
+                Action::make('dashboard')
+                    ->label(__('Torna alla Dashboard'))
+                    ->url(fn (): string => route('dashboard'))
+                    ->icon('heroicon-o-home'),
             ])
             ->middleware([
                 EncryptCookies::class,

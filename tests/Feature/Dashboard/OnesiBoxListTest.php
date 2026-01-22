@@ -3,13 +3,14 @@
 declare(strict_types=1);
 
 use App\Enums\OnesiBoxPermission;
+use App\Enums\Roles;
 use App\Livewire\Dashboard\OnesiBoxList;
 use App\Models\OnesiBox;
 use App\Models\User;
 use Livewire\Livewire;
 
 it('shows the OnesiBox list component to authenticated users', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->role(Roles::Caregiver)->create();
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -20,7 +21,7 @@ it('shows the OnesiBox list component to authenticated users', function (): void
 });
 
 it('displays assigned OnesiBoxes for the authenticated caregiver', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->role(Roles::Caregiver)->create();
     $onesiBox1 = OnesiBox::factory()->online()->create(['name' => 'OnesiBox Alpha']);
     $onesiBox2 = OnesiBox::factory()->offline()->create(['name' => 'OnesiBox Beta']);
 
@@ -34,7 +35,7 @@ it('displays assigned OnesiBoxes for the authenticated caregiver', function (): 
 });
 
 it('shows empty state when caregiver has no assigned OnesiBoxes', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->role(Roles::Caregiver)->create();
 
     Livewire::actingAs($user)
         ->test(OnesiBoxList::class)
@@ -42,7 +43,7 @@ it('shows empty state when caregiver has no assigned OnesiBoxes', function (): v
 });
 
 it('shows online status for OnesiBox with recent heartbeat', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->role(Roles::Caregiver)->create();
     $onesiBox = OnesiBox::factory()->online()->create(['name' => 'OnesiBox Online']);
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -53,7 +54,7 @@ it('shows online status for OnesiBox with recent heartbeat', function (): void {
 });
 
 it('shows offline status for OnesiBox without recent heartbeat', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->role(Roles::Caregiver)->create();
     $onesiBox = OnesiBox::factory()->offline()->create(['name' => 'OnesiBox Offline']);
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -64,7 +65,7 @@ it('shows offline status for OnesiBox without recent heartbeat', function (): vo
 });
 
 it('does not show unassigned OnesiBoxes', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->role(Roles::Caregiver)->create();
     $assignedBox = OnesiBox::factory()->create(['name' => 'Assigned Box']);
     $unassignedBox = OnesiBox::factory()->create(['name' => 'Unassigned Box']);
 
@@ -77,7 +78,7 @@ it('does not show unassigned OnesiBoxes', function (): void {
 });
 
 it('navigates to OnesiBox detail when selectOnesiBox is called', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->role(Roles::Caregiver)->create();
     $onesiBox = OnesiBox::factory()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 

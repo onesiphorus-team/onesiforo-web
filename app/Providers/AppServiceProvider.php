@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Listeners\UpdateLastLogin;
+use App\Models\OnesiBox;
 use App\Models\User;
+use App\Policies\OnesiBoxPolicy;
 use App\Policies\UserPolicy;
+use App\Services\OnesiBoxCommandService;
+use App\Services\OnesiBoxCommandServiceInterface;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -30,7 +34,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            OnesiBoxCommandServiceInterface::class,
+            OnesiBoxCommandService::class
+        );
     }
 
     /**
@@ -46,6 +53,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Register UserPolicy explicitly (also auto-discovered by convention)
         Gate::policy(User::class, UserPolicy::class);
+
+        // Register OnesiBoxPolicy for caregiver dashboard authorization
+        Gate::policy(OnesiBox::class, OnesiBoxPolicy::class);
 
         // Register Login event listener to update last_login_at
         Event::listen(Login::class, UpdateLastLogin::class);

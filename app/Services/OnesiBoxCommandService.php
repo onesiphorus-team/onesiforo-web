@@ -73,6 +73,17 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         $this->dispatchCommandSentEvent($onesiBox, $command);
     }
 
+    public function sendRebootCommand(OnesiBox $onesiBox): void
+    {
+        $this->ensureOnline($onesiBox);
+
+        $command = $this->createCommand($onesiBox, CommandType::Reboot, []);
+
+        dispatch(new SendOnesiBoxCommand($command));
+
+        $this->dispatchCommandSentEvent($onesiBox, $command);
+    }
+
     /**
      * Create a command in the database.
      *

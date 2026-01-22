@@ -15,9 +15,16 @@
             />
         </div>
 
-        <flux:button type="submit" variant="primary" class="w-full" wire:loading.attr="disabled">
-            <span wire:loading.remove>Riproduci Audio</span>
-            <span wire:loading>Invio in corso...</span>
-        </flux:button>
+        <div class="flex gap-2">
+            <flux:button type="submit" variant="primary" class="flex-1" wire:loading.attr="disabled">
+                <flux:icon name="play" class="w-4 h-4" />
+                <span wire:loading.remove>Riproduci</span>
+                <span wire:loading>Invio...</span>
+            </flux:button>
+
+            <flux:button type="button" variant="danger" wire:click="stopPlayback" wire:loading.attr="disabled">
+                <flux:icon name="stop" class="w-4 h-4" />
+            </flux:button>
+        </div>
     </form>
 </div>

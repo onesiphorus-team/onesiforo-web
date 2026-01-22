@@ -36,6 +36,18 @@ class AudioPlayer extends Component
         }
     }
 
+    public function stopPlayback(OnesiBoxCommandServiceInterface $commandService): void
+    {
+        $this->authorize('control', $this->onesiBox);
+
+        try {
+            $commandService->sendStopCommand($this->onesiBox);
+            Flux::toast('Riproduzione interrotta');
+        } catch (OnesiBoxOfflineException) {
+            Flux::toast('OnesiBox non raggiungibile', variant: 'danger');
+        }
+    }
+
     public function render(): View
     {
         return view('livewire.dashboard.controls.audio-player');

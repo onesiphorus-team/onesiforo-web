@@ -590,6 +590,8 @@ Fortify is a headless authentication backend that provides authentication routes
 ## Active Technologies
 - PHP 8.4.17 (001-user-management)
 - SQLite (development), tabelle esistenti: users, roles, role_user, activity_log, password_reset_tokens (001-user-management)
+- PHP 8.4.17 + Laravel 12.47.0, Sanctum 4.2.4, Filament 5.0.0, dedoc/scramble (003-onesibox-api-ws)
+- SQLite (development), con supporto per MySQL/PostgreSQL in produzione (003-onesibox-api-ws)
 
 ## Recent Changes
 - 001-user-management: Added PHP 8.4.17

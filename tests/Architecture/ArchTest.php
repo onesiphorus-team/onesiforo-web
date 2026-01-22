@@ -24,5 +24,6 @@ test('all policies to have methods deleteAny and forceDeleteAny', function (): v
 });
 
 arch()->preset()->php();
-arch()->preset()->laravel();
+arch()->preset()->laravel()
+    ->ignoring(App\Http\Controllers\Api\V1\CommandController::class); // Has action method 'acknowledge' for POST /commands/{uuid}/ack
 arch()->preset()->security();

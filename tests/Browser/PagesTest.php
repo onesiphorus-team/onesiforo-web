@@ -5,10 +5,10 @@ declare(strict_types=1);
 use App\Models\User;
 
 describe('pages load without errors', function (): void {
-    it('loads home page', function (): void {
+    it('redirects home to login', function (): void {
         $page = visit('/');
 
-        $page->assertPathIs('/')
+        $page->assertPathIs('/login')
             ->assertNoJavaScriptErrors();
     });
 

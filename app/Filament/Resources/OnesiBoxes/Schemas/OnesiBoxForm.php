@@ -54,7 +54,9 @@ class OnesiBoxForm
                             ->searchable(['first_name', 'last_name'])
                             ->preload()
                             ->nullable()
-                            ->helperText(__('Select the recipient who will use this OnesiBox.')),
+                            ->createOptionForm(RecipientFieldset::getSchema())
+                            ->createOptionUsing(fn (array $data): int => Recipient::query()->create($data)->id)
+                            ->helperText(__('Select an existing recipient or create a new one.')),
                     ]),
 
                 Section::make(__('Notes'))

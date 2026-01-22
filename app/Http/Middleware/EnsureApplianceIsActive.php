@@ -24,6 +24,7 @@ class EnsureApplianceIsActive
      */
     public function handle(Request $request, Closure $next): Response
     {
+        /** @var OnesiBox|\App\Models\User|null $user */
         $user = $request->user();
 
         if ($user instanceof OnesiBox && ! $user->is_active) {

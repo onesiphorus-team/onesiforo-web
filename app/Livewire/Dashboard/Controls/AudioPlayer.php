@@ -21,18 +21,6 @@ class AudioPlayer extends Component
 
     public string $audioUrl = '';
 
-    /**
-     * Get the validation rules.
-     *
-     * @return array<string, array<int, mixed>>
-     */
-    protected function rules(): array
-    {
-        return [
-            'audioUrl' => ['required', 'url', 'max:2048', new JwOrgUrl],
-        ];
-    }
-
     public function playAudio(OnesiBoxCommandServiceInterface $commandService): void
     {
         $this->authorize('control', $this->onesiBox);
@@ -51,5 +39,17 @@ class AudioPlayer extends Component
     public function render(): View
     {
         return view('livewire.dashboard.controls.audio-player');
+    }
+
+    /**
+     * Get the validation rules.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    protected function rules(): array
+    {
+        return [
+            'audioUrl' => ['required', 'url', 'max:2048', new JwOrgUrl],
+        ];
     }
 }

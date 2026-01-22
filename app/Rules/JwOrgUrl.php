@@ -19,7 +19,7 @@ class JwOrgUrl implements ValidationRule
     /**
      * Valid JW.org domains.
      */
-    private const VALID_DOMAINS = [
+    private const array VALID_DOMAINS = [
         'jw.org',
         'www.jw.org',
         'wol.jw.org',
@@ -28,16 +28,16 @@ class JwOrgUrl implements ValidationRule
     /**
      * Pattern to match JW.org media URLs.
      */
-    private const MEDIA_PATTERN = '/#[a-z]{2,3}\/mediaitems\/[^\/]+\/[a-zA-Z0-9_-]+/i';
+    private const string MEDIA_PATTERN = '/#[a-z]{2,3}\/mediaitems\/[^\/]+\/[a-zA-Z0-9_-]+/i';
 
     /**
      * Run the validation rule.
      *
-     * @param  \Closure(string, ?string=): \Illuminate\Translation\PotentiallyTranslatedString  $fail
+     * @param  Closure(string, ?string=): \Illuminate\Translation\PotentiallyTranslatedString  $fail
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! is_string($value) || empty($value)) {
+        if (! is_string($value) || ($value === '' || $value === '0')) {
             $fail('L\'URL è obbligatorio.');
 
             return;
@@ -71,7 +71,7 @@ class JwOrgUrl implements ValidationRule
         $fragment = $parsed['fragment'] ?? '';
         $fullUrl = $value;
 
-        if (! preg_match(self::MEDIA_PATTERN, '#' . $fragment) &&
+        if (! preg_match(self::MEDIA_PATTERN, '#'.$fragment) &&
             ! preg_match(self::MEDIA_PATTERN, $fullUrl)) {
             $fail('L\'URL deve essere un link diretto a un video o audio di jw.org. Apri il video su jw.org e copia l\'URL dalla barra degli indirizzi.');
 
@@ -90,10 +90,6 @@ class JwOrgUrl implements ValidationRule
         }
 
         // Subdomain of jw.org
-        if (str_ends_with($host, '.jw.org')) {
-            return true;
-        }
-
-        return false;
+        return str_ends_with($host, '.jw.org');
     }
 }

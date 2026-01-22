@@ -21,18 +21,6 @@ class VideoPlayer extends Component
 
     public string $videoUrl = '';
 
-    /**
-     * Get the validation rules.
-     *
-     * @return array<string, array<int, mixed>>
-     */
-    protected function rules(): array
-    {
-        return [
-            'videoUrl' => ['required', 'url', 'max:2048', new JwOrgUrl],
-        ];
-    }
-
     public function playVideo(OnesiBoxCommandServiceInterface $commandService): void
     {
         $this->authorize('control', $this->onesiBox);
@@ -51,5 +39,17 @@ class VideoPlayer extends Component
     public function render(): View
     {
         return view('livewire.dashboard.controls.video-player');
+    }
+
+    /**
+     * Get the validation rules.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    protected function rules(): array
+    {
+        return [
+            'videoUrl' => ['required', 'url', 'max:2048', new JwOrgUrl],
+        ];
     }
 }

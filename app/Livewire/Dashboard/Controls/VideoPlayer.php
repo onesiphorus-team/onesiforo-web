@@ -4,64 +4,40 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
-use App\Exceptions\OnesiBoxOfflineException;
-use App\Models\OnesiBox;
-use App\Rules\JwOrgUrl;
 use App\Services\OnesiBoxCommandServiceInterface;
-use Flux\Flux;
-use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
 
-class VideoPlayer extends Component
+/**
+ * Livewire component for video playback controls.
+ */
+class VideoPlayer extends MediaPlayer
 {
-    use AuthorizesRequests;
-
-    public OnesiBox $onesiBox;
-
     public string $videoUrl = '';
 
+    /**
+     * Play video - delegates to parent playMedia method.
+     */
     public function playVideo(OnesiBoxCommandServiceInterface $commandService): void
     {
-        $this->authorize('control', $this->onesiBox);
-
-        $this->validate();
-
-        try {
-            $commandService->sendVideoCommand($this->onesiBox, $this->videoUrl);
-            Flux::toast('Comando video inviato con successo');
-            $this->reset('videoUrl');
-        } catch (OnesiBoxOfflineException) {
-            Flux::toast('OnesiBox non raggiungibile', variant: 'danger');
-        }
+        $this->playMedia($commandService);
     }
 
-    public function stopPlayback(OnesiBoxCommandServiceInterface $commandService): void
+    protected function getMediaType(): string
     {
-        $this->authorize('control', $this->onesiBox);
-
-        try {
-            $commandService->sendStopCommand($this->onesiBox);
-            Flux::toast('Riproduzione interrotta');
-        } catch (OnesiBoxOfflineException) {
-            Flux::toast('OnesiBox non raggiungibile', variant: 'danger');
-        }
+        return 'video';
     }
 
-    public function render(): View
+    protected function getMediaUrlProperty(): string
     {
-        return view('livewire.dashboard.controls.video-player');
+        return 'videoUrl';
     }
 
-    /**
-     * Get the validation rules.
-     *
-     * @return array<string, array<int, mixed>>
-     */
-    protected function rules(): array
+    protected function getPlaySuccessMessage(): string
     {
-        return [
-            'videoUrl' => ['required', 'url', 'max:2048', new JwOrgUrl],
-        ];
+        return 'Comando video inviato con successo';
+    }
+
+    protected function getViewName(): string
+    {
+        return 'livewire.dashboard.controls.video-player';
     }
 }

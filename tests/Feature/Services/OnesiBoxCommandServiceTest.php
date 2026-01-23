@@ -167,3 +167,25 @@ it('end-to-end: dashboard command is retrievable by appliance API', function ():
         ->assertJsonPath('data.0.type', 'play_media')
         ->assertJsonPath('data.0.payload.url', 'https://example.com/audio.mp3');
 });
+
+it('creates a PlayMedia command using generic sendMediaCommand', function (string $mediaType): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+
+    $this->actingAs($user);
+
+    $service = new OnesiBoxCommandService;
+    $service->sendMediaCommand($onesiBox, "https://example.com/media.{$mediaType}", $mediaType);
+
+    $command = Command::query()->first();
+    expect($command)
+        ->not->toBeNull()
+        ->type->toBe(CommandType::PlayMedia)
+        ->payload->toMatchArray([
+            'url' => "https://example.com/media.{$mediaType}",
+            'media_type' => $mediaType,
+        ]);
+
+    Queue::assertPushed(SendOnesiBoxCommand::class, fn ($job): bool => $job->command->id === $command->id);
+    Event::assertDispatched(OnesiBoxCommandSent::class, fn ($event): bool => $event->command->id === $command->id);
+})->with(['audio', 'video']);

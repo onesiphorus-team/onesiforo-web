@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.6.1 - 2026-01-23
+
+### What's Changed
+
+* Refactor codebase with traits, actions, and improve test coverage by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/21
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.6.0...v0.6.1
+
 ## v0.6.0 - 2026-01-22
 
 ### What's Changed

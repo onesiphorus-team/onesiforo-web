@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Concerns\AuthorizesAsOnesiBox;
 use App\Enums\PlaybackEventType;
-use App\Models\OnesiBox;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 /**
@@ -23,38 +21,7 @@ use Illuminate\Validation\Rule;
  */
 class PlaybackEventRequest extends FormRequest
 {
-    /**
-     * Determine if the appliance is authorized to make this request.
-     * The token must belong to an OnesiBox instance.
-     */
-    public function authorize(): bool
-    {
-        /** @var AuthenticatableContract|null $tokenable */
-        $tokenable = $this->user();
-
-        if ($tokenable instanceof OnesiBox) {
-            Log::debug('PlaybackEvent authorized', ['onesibox_id' => $tokenable->id]);
-
-            return true;
-        }
-
-        Log::warning('PlaybackEvent unauthorized - not an OnesiBox', [
-            'tokenable_type' => $tokenable !== null ? $tokenable::class : 'null',
-        ]);
-
-        return false;
-    }
-
-    /**
-     * Get the authenticated OnesiBox instance.
-     */
-    public function onesiBox(): OnesiBox
-    {
-        /** @var OnesiBox $onesiBox */
-        $onesiBox = $this->user();
-
-        return $onesiBox;
-    }
+    use AuthorizesAsOnesiBox;
 
     /**
      * Get the validation rules that apply to the request.

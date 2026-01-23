@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
+use App\Concerns\HandlesOnesiBoxErrors;
 use App\Enums\Roles;
-use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Flux\Flux;
@@ -17,6 +17,7 @@ use Livewire\Component;
 class SystemControls extends Component
 {
     use AuthorizesRequests;
+    use HandlesOnesiBoxErrors;
 
     public OnesiBox $onesiBox;
 
@@ -54,12 +55,13 @@ class SystemControls extends Component
             return;
         }
 
-        try {
-            $commandService->sendRebootCommand($this->onesiBox);
-            Flux::toast('Comando di riavvio inviato');
+        $success = $this->executeWithErrorHandling(
+            callback: fn () => $commandService->sendRebootCommand($this->onesiBox),
+            successMessage: 'Comando di riavvio inviato'
+        );
+
+        if ($success) {
             $this->showRebootConfirm = false;
-        } catch (OnesiBoxOfflineException) {
-            Flux::toast('OnesiBox non raggiungibile', variant: 'danger');
         }
     }
 

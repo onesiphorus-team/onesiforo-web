@@ -22,25 +22,21 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
     public function sendAudioCommand(OnesiBox $onesiBox, string $audioUrl): void
     {
-        $this->ensureOnline($onesiBox);
-
-        $command = $this->createCommand($onesiBox, CommandType::PlayMedia, [
-            'url' => $audioUrl,
-            'media_type' => 'audio',
-        ]);
-
-        dispatch(new SendOnesiBoxCommand($command));
-
-        $this->dispatchCommandSentEvent($onesiBox, $command);
+        $this->sendMediaCommand($onesiBox, $audioUrl, 'audio');
     }
 
     public function sendVideoCommand(OnesiBox $onesiBox, string $videoUrl): void
     {
+        $this->sendMediaCommand($onesiBox, $videoUrl, 'video');
+    }
+
+    public function sendMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType): void
+    {
         $this->ensureOnline($onesiBox);
 
         $command = $this->createCommand($onesiBox, CommandType::PlayMedia, [
-            'url' => $videoUrl,
-            'media_type' => 'video',
+            'url' => $mediaUrl,
+            'media_type' => $mediaType,
         ]);
 
         dispatch(new SendOnesiBoxCommand($command));

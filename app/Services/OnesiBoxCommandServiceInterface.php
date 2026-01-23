@@ -65,4 +65,14 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName = 'Rosa Iannascoli'): void;
+
+    /**
+     * Invia comando generico di riproduzione media.
+     *
+     * @param  string  $mediaType  'audio' or 'video'
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType): void;
 }

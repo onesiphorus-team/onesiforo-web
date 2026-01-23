@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
-use App\Exceptions\OnesiBoxOfflineException;
+use App\Concerns\HandlesOnesiBoxErrors;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandServiceInterface;
-use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Validate;
@@ -16,6 +15,7 @@ use Livewire\Component;
 class ZoomCall extends Component
 {
     use AuthorizesRequests;
+    use HandlesOnesiBoxErrors;
 
     public OnesiBox $onesiBox;
 
@@ -38,16 +38,17 @@ class ZoomCall extends Component
 
         $this->validate();
 
-        try {
-            $commandService->sendZoomUrlCommand(
+        $success = $this->executeWithErrorHandling(
+            callback: fn () => $commandService->sendZoomUrlCommand(
                 $this->onesiBox,
                 $this->zoomUrl,
                 'Rosa Iannascoli'
-            );
-            Flux::toast('Connessione alla riunione Zoom in corso...');
+            ),
+            successMessage: 'Connessione alla riunione Zoom in corso...'
+        );
+
+        if ($success) {
             $this->reset('zoomUrl');
-        } catch (OnesiBoxOfflineException) {
-            Flux::toast('OnesiBox non raggiungibile', variant: 'danger');
         }
     }
 

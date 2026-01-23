@@ -18,9 +18,9 @@ it('sends audio command with full permission', function (): void {
     $validJwOrgUrl = 'https://www.jw.org/it/biblioteca/audio/#it/mediaitems/VODMinistryTools/pub-mwbv_202401_1_AUDIO';
 
     $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock) use ($validJwOrgUrl): void {
-        $mock->shouldReceive('sendAudioCommand')
+        $mock->shouldReceive('sendMediaCommand')
             ->once()
-            ->withArgs(fn ($box, $url): bool => $box instanceof OnesiBox && $url === $validJwOrgUrl);
+            ->withArgs(fn ($box, $url, $type): bool => $box instanceof OnesiBox && $url === $validJwOrgUrl && $type === 'audio');
     });
 
     Livewire::actingAs($user)

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
+use App\Concerns\HandlesOnesiBoxErrors;
 use App\Enums\OnesiBoxStatus;
-use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandServiceInterface;
-use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Locked;
@@ -17,6 +16,7 @@ use Livewire\Component;
 class StopAllPlayback extends Component
 {
     use AuthorizesRequests;
+    use HandlesOnesiBoxErrors;
 
     #[Locked]
     public OnesiBox $onesiBox;
@@ -37,19 +37,18 @@ class StopAllPlayback extends Component
     {
         $this->authorize('control', $this->onesiBox);
 
-        try {
-            // Send stop media command (works for both audio and video)
-            $commandService->sendStopCommand($this->onesiBox);
+        $this->executeWithErrorHandling(
+            callback: function () use ($commandService): void {
+                // Send stop media command (works for both audio and video)
+                $commandService->sendStopCommand($this->onesiBox);
 
-            // If in a Zoom call, also send leave command
-            if ($this->onesiBox->status === OnesiBoxStatus::Calling) {
-                $commandService->sendLeaveZoomCommand($this->onesiBox);
-            }
-
-            Flux::toast('Tutte le riproduzioni sono state interrotte.');
-        } catch (OnesiBoxOfflineException) {
-            Flux::toast('OnesiBox non raggiungibile', variant: 'danger');
-        }
+                // If in a Zoom call, also send leave command
+                if ($this->onesiBox->status === OnesiBoxStatus::Calling) {
+                    $commandService->sendLeaveZoomCommand($this->onesiBox);
+                }
+            },
+            successMessage: 'Tutte le riproduzioni sono state interrotte.'
+        );
 
         $this->showConfirmation = false;
     }

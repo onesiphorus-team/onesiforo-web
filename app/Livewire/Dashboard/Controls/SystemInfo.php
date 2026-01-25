@@ -106,6 +106,62 @@ class SystemInfo extends Component
     }
 
     /**
+     * Check if detailed memory info is available.
+     */
+    #[Computed]
+    public function hasDetailedMemory(): bool
+    {
+        return $this->onesiBox->memory_total !== null
+            && $this->onesiBox->memory_used !== null;
+    }
+
+    /**
+     * Format bytes to human-readable string.
+     */
+    public function formatBytes(?int $bytes): string
+    {
+        if ($bytes === null || $bytes === 0) {
+            return '0 B';
+        }
+
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $i = 0;
+        $value = $bytes;
+
+        while ($value >= 1024 && $i < count($units) - 1) {
+            $value /= 1024;
+            $i++;
+        }
+
+        return number_format($value, $i > 1 ? 1 : 0).' '.$units[$i];
+    }
+
+    /**
+     * Get memory breakdown for the progress bar.
+     *
+     * @return array{used: float, buffers: float, cached: float, free: float}
+     */
+    #[Computed]
+    public function memoryBreakdown(): array
+    {
+        $total = $this->onesiBox->memory_total ?? 1;
+        $used = $this->onesiBox->memory_used ?? 0;
+        $buffers = $this->onesiBox->memory_buffers ?? 0;
+        $cached = $this->onesiBox->memory_cached ?? 0;
+
+        // Calculate percentages
+        // "Used" from OnesiBox includes buffers and cached, so we need to subtract
+        $actualUsed = max(0, $used - $buffers - $cached);
+
+        return [
+            'used' => ($actualUsed / $total) * 100,
+            'buffers' => ($buffers / $total) * 100,
+            'cached' => ($cached / $total) * 100,
+            'free' => 100 - (($actualUsed + $buffers + $cached) / $total) * 100,
+        ];
+    }
+
+    /**
      * Request a system info refresh from the OnesiBox.
      */
     public function requestRefresh(): void

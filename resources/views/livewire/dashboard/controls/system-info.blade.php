@@ -57,19 +57,73 @@
 
             {{-- Memory Usage --}}
             @if($onesiBox->memory_usage !== null)
-                <div class="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
+                <div class="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg {{ $this->hasDetailedMemory ? 'sm:col-span-2' : '' }}">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-sm font-medium text-zinc-600 dark:text-zinc-300">Memoria</span>
                         <span class="text-sm font-semibold {{ $onesiBox->memory_usage > 80 ? 'text-red-500' : ($onesiBox->memory_usage > 60 ? 'text-amber-500' : 'text-green-500') }}">
                             {{ $onesiBox->memory_usage }}%
                         </span>
                     </div>
-                    <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
-                        <div
-                            class="h-2 rounded-full {{ $onesiBox->memory_usage > 80 ? 'bg-red-500' : ($onesiBox->memory_usage > 60 ? 'bg-amber-500' : 'bg-green-500') }}"
-                            style="width: {{ $onesiBox->memory_usage }}%"
-                        ></div>
-                    </div>
+
+                    @if($this->hasDetailedMemory)
+                        {{-- Detailed Memory Bar with breakdown --}}
+                        @php
+                            $breakdown = $this->memoryBreakdown;
+                        @endphp
+                        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-3 flex overflow-hidden">
+                            <div class="h-3 bg-red-400" style="width: {{ $breakdown['used'] }}%" title="Usata"></div>
+                            <div class="h-3 bg-amber-400" style="width: {{ $breakdown['buffers'] }}%" title="Buffers"></div>
+                            <div class="h-3 bg-blue-400" style="width: {{ $breakdown['cached'] }}%" title="Cache"></div>
+                        </div>
+
+                        {{-- Legend --}}
+                        <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs">
+                            <div class="flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                                <span class="text-zinc-500 dark:text-zinc-400">
+                                    Usata: {{ $this->formatBytes($onesiBox->memory_used - ($onesiBox->memory_buffers ?? 0) - ($onesiBox->memory_cached ?? 0)) }}
+                                </span>
+                            </div>
+                            @if($onesiBox->memory_buffers)
+                                <div class="flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                                    <span class="text-zinc-500 dark:text-zinc-400">
+                                        Buffers: {{ $this->formatBytes($onesiBox->memory_buffers) }}
+                                    </span>
+                                </div>
+                            @endif
+                            @if($onesiBox->memory_cached)
+                                <div class="flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                                    <span class="text-zinc-500 dark:text-zinc-400">
+                                        Cache: {{ $this->formatBytes($onesiBox->memory_cached) }}
+                                    </span>
+                                </div>
+                            @endif
+                            <div class="flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+                                <span class="text-zinc-500 dark:text-zinc-400">
+                                    Libera: {{ $this->formatBytes($onesiBox->memory_free) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Total / Available --}}
+                        <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                            Totale: {{ $this->formatBytes($onesiBox->memory_total) }}
+                            @if($onesiBox->memory_available)
+                                | Disponibile: {{ $this->formatBytes($onesiBox->memory_available) }}
+                            @endif
+                        </div>
+                    @else
+                        {{-- Simple progress bar --}}
+                        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
+                            <div
+                                class="h-2 rounded-full {{ $onesiBox->memory_usage > 80 ? 'bg-red-500' : ($onesiBox->memory_usage > 60 ? 'bg-amber-500' : 'bg-green-500') }}"
+                                style="width: {{ $onesiBox->memory_usage }}%"
+                            ></div>
+                        </div>
+                    @endif
                 </div>
             @endif
 

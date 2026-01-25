@@ -6,9 +6,37 @@
 
     @if($this->isAdmin)
         <div class="space-y-4">
+            {{-- Restart Service --}}
+            @if($showRestartServiceConfirm)
+                <flux:callout variant="warning" icon="exclamation-triangle">
+                    <flux:callout.heading>Conferma riavvio servizio</flux:callout.heading>
+                    <flux:callout.text>
+                        Sei sicuro di voler riavviare il servizio OnesiBox? L'applicazione si riavvierà senza riavviare il dispositivo.
+                    </flux:callout.text>
+                </flux:callout>
+
+                <div class="flex gap-2">
+                    <flux:button variant="primary" wire:click="restartService" class="flex-1" wire:loading.attr="disabled">
+                        <flux:icon name="arrow-path-rounded-square" class="w-4 h-4" />
+                        <span wire:loading.remove wire:target="restartService">Conferma Riavvio Servizio</span>
+                        <span wire:loading wire:target="restartService">Invio...</span>
+                    </flux:button>
+
+                    <flux:button variant="subtle" wire:click="cancelRestartService">
+                        Annulla
+                    </flux:button>
+                </div>
+            @else
+                <flux:button variant="subtle" wire:click="confirmRestartService" class="w-full">
+                    <flux:icon name="arrow-path-rounded-square" class="w-4 h-4" />
+                    Riavvia Servizio OnesiBox
+                </flux:button>
+            @endif
+
+            {{-- Reboot Device --}}
             @if($showRebootConfirm)
                 <flux:callout variant="warning" icon="exclamation-triangle">
-                    <flux:callout.heading>Conferma riavvio</flux:callout.heading>
+                    <flux:callout.heading>Conferma riavvio dispositivo</flux:callout.heading>
                     <flux:callout.text>
                         Sei sicuro di voler riavviare il dispositivo? La connessione verrà interrotta temporaneamente.
                     </flux:callout.text>
@@ -17,8 +45,8 @@
                 <div class="flex gap-2">
                     <flux:button variant="danger" wire:click="reboot" class="flex-1" wire:loading.attr="disabled">
                         <flux:icon name="arrow-path" class="w-4 h-4" />
-                        <span wire:loading.remove>Conferma Riavvio</span>
-                        <span wire:loading>Invio...</span>
+                        <span wire:loading.remove wire:target="reboot">Conferma Riavvio</span>
+                        <span wire:loading wire:target="reboot">Invio...</span>
                     </flux:button>
 
                     <flux:button variant="subtle" wire:click="cancelReboot">

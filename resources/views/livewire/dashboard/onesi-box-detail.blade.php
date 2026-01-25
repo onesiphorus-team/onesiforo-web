@@ -16,17 +16,30 @@
                 @endif
             </div>
 
-            <div class="flex items-center gap-2">
-                @if($this->isOnline)
-                    <flux:badge color="green" size="sm">Online</flux:badge>
-                @else
-                    <flux:badge color="zinc" size="sm">Offline</flux:badge>
-                @endif
+            <div class="flex items-center gap-3">
+                {{-- Online Status with Pulse Indicator --}}
+                <div class="flex items-center gap-2">
+                    @if($this->isOnline)
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        </span>
+                        <span class="text-sm font-medium text-green-600 dark:text-green-400">Online</span>
+                    @else
+                        <span class="h-3 w-3 rounded-full bg-zinc-400"></span>
+                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Offline</span>
+                    @endif
+                </div>
 
                 @if($onesiBox->status)
                     <flux:badge :color="$onesiBox->status->getColor()" size="sm">
                         {{ $onesiBox->status->getLabel() }}
                     </flux:badge>
+                @endif
+
+                {{-- App Version --}}
+                @if($onesiBox->app_version)
+                    <flux:badge color="zinc" size="sm">v{{ $onesiBox->app_version }}</flux:badge>
                 @endif
             </div>
         </div>
@@ -117,6 +130,11 @@
     {{-- System Information (visible to all caregivers) --}}
     <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" class="mb-6" />
 
+    {{-- Network Information (visible to all caregivers) --}}
+    <div class="mb-6">
+        <livewire:dashboard.controls.network-info :onesiBox="$onesiBox" wire:key="network-info-{{ $onesiBox->id }}" />
+    </div>
+
     {{-- Controls (only for Full permission and online devices) --}}
     @if($this->canControl)
         <div class="space-y-6">
@@ -145,6 +163,7 @@
                         <flux:heading size="lg" class="mb-4">Amministrazione</flux:heading>
                         <div class="grid grid-cols-1 gap-4">
                             <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
+                            <livewire:dashboard.controls.log-viewer :onesiBox="$onesiBox" wire:key="logs-{{ $onesiBox->id }}" />
                         </div>
                     </div>
                 @endif

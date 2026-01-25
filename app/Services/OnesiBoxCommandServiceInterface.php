@@ -75,4 +75,12 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType): void;
+
+    /**
+     * Invia comando di riavvio del servizio OnesiBox.
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendRestartServiceCommand(OnesiBox $onesiBox): void;
 }

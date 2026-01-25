@@ -42,6 +42,25 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int|null $disk_usage
  * @property float|null $temperature
  * @property int|null $uptime
+ * @property string|null $network_type
+ * @property string|null $network_interface
+ * @property string|null $ip_address
+ * @property string|null $netmask
+ * @property string|null $gateway
+ * @property string|null $mac_address
+ * @property array<string>|null $dns_servers
+ * @property string|null $wifi_ssid
+ * @property int|null $wifi_signal_dbm
+ * @property int|null $wifi_signal_percent
+ * @property int|null $wifi_channel
+ * @property int|null $wifi_frequency
+ * @property int|null $memory_total
+ * @property int|null $memory_used
+ * @property int|null $memory_free
+ * @property int|null $memory_available
+ * @property int|null $memory_buffers
+ * @property int|null $memory_cached
+ * @property string|null $app_version
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -85,6 +104,25 @@ class OnesiBox extends Model implements AuthenticatableContract
         'disk_usage',
         'temperature',
         'uptime',
+        'network_type',
+        'network_interface',
+        'ip_address',
+        'netmask',
+        'gateway',
+        'mac_address',
+        'dns_servers',
+        'wifi_ssid',
+        'wifi_signal_dbm',
+        'wifi_signal_percent',
+        'wifi_channel',
+        'wifi_frequency',
+        'memory_total',
+        'memory_used',
+        'memory_free',
+        'memory_available',
+        'memory_buffers',
+        'memory_cached',
+        'app_version',
     ];
 
     /**
@@ -253,6 +291,17 @@ class OnesiBox extends Model implements AuthenticatableContract
             'disk_usage' => 'integer',
             'temperature' => 'float',
             'uptime' => 'integer',
+            'dns_servers' => 'array',
+            'wifi_signal_dbm' => 'integer',
+            'wifi_signal_percent' => 'integer',
+            'wifi_channel' => 'integer',
+            'wifi_frequency' => 'integer',
+            'memory_total' => 'integer',
+            'memory_used' => 'integer',
+            'memory_free' => 'integer',
+            'memory_available' => 'integer',
+            'memory_buffers' => 'integer',
+            'memory_cached' => 'integer',
         ];
     }
 }

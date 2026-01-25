@@ -93,6 +93,26 @@ class HeartbeatRequest extends FormRequest
                 'integer',
                 'min:0',
             ],
+            'current_media.title' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'current_meeting' => [
+                'nullable',
+                'array',
+            ],
+            'current_meeting.meeting_id' => [
+                'required_with:current_meeting',
+                'string',
+                'max:50',
+            ],
+            'volume' => [
+                'nullable',
+                'integer',
+                'min:0',
+                'max:100',
+            ],
         ];
     }
 
@@ -119,6 +139,11 @@ class HeartbeatRequest extends FormRequest
             'current_media.url.url' => 'L\'URL del media deve essere un URL valido.',
             'current_media.type.required_with' => 'Il tipo di media è obbligatorio quando si fornisce current_media.',
             'current_media.type.in' => 'Il tipo di media deve essere audio o video.',
+            'current_media.title.max' => 'Il titolo del media non può superare 255 caratteri.',
+            'current_meeting.meeting_id.required_with' => 'L\'ID meeting è obbligatorio quando si fornisce current_meeting.',
+            'current_meeting.meeting_id.max' => 'L\'ID meeting non può superare 50 caratteri.',
+            'volume.min' => 'Il volume deve essere almeno 0.',
+            'volume.max' => 'Il volume non può superare 100.',
         ];
     }
 
@@ -141,6 +166,10 @@ class HeartbeatRequest extends FormRequest
             'current_media.type' => 'tipo media',
             'current_media.position' => 'posizione media',
             'current_media.duration' => 'durata media',
+            'current_media.title' => 'titolo media',
+            'current_meeting' => 'meeting corrente',
+            'current_meeting.meeting_id' => 'ID meeting',
+            'volume' => 'volume',
         ];
     }
 

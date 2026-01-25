@@ -38,6 +38,10 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
     // Configuration
     case UpdateConfig = 'update_config';
 
+    // Diagnostics
+    case GetSystemInfo = 'get_system_info';
+    case GetLogs = 'get_logs';
+
     /**
      * Get the default expiration time in minutes for this command type.
      *
@@ -54,6 +58,9 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::StopVnc => 5,
 
             self::UpdateConfig => 1440,
+
+            self::GetSystemInfo,
+            self::GetLogs => 5,
 
             default => 60,
         };
@@ -78,6 +85,8 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::StartVnc => __('Avvia VNC'),
             self::StopVnc => __('Termina VNC'),
             self::UpdateConfig => __('Aggiorna configurazione'),
+            self::GetSystemInfo => __('Info sistema'),
+            self::GetLogs => __('Recupera log'),
         };
     }
 
@@ -98,6 +107,8 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::StartVnc => 'heroicon-o-computer-desktop',
             self::StopVnc => 'heroicon-o-x-circle',
             self::UpdateConfig => 'heroicon-o-cog-6-tooth',
+            self::GetSystemInfo => 'heroicon-o-cpu-chip',
+            self::GetLogs => 'heroicon-o-document-text',
         };
     }
 
@@ -114,6 +125,8 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::Shutdown => 'danger',
             self::StartVnc, self::StopVnc => 'gray',
             self::UpdateConfig => 'info',
+            self::GetSystemInfo => 'info',
+            self::GetLogs => 'info',
         };
     }
 }

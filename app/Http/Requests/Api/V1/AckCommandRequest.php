@@ -15,6 +15,7 @@ use Illuminate\Validation\Rule;
  * @property-read string|null $error_code
  * @property-read string|null $error_message
  * @property-read string $executed_at
+ * @property-read array<string, mixed>|null $result
  */
 class AckCommandRequest extends FormRequest
 {
@@ -47,6 +48,10 @@ class AckCommandRequest extends FormRequest
                 'required',
                 'date',
             ],
+            'result' => [
+                'nullable',
+                'array',
+            ],
         ];
     }
 
@@ -64,6 +69,7 @@ class AckCommandRequest extends FormRequest
             'error_message.max' => 'Il messaggio di errore non può superare 1000 caratteri.',
             'executed_at.required' => 'Il timestamp di esecuzione è obbligatorio.',
             'executed_at.date' => 'Il timestamp di esecuzione deve essere una data valida.',
+            'result.array' => 'Il risultato deve essere un oggetto JSON.',
         ];
     }
 
@@ -79,6 +85,7 @@ class AckCommandRequest extends FormRequest
             'error_code' => 'codice errore',
             'error_message' => 'messaggio di errore',
             'executed_at' => 'timestamp di esecuzione',
+            'result' => 'risultato',
         ];
     }
 }

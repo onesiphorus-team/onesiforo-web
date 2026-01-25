@@ -14,6 +14,7 @@ enum CommandStatus: string implements HasColor, HasIcon, HasLabel
     case Completed = 'completed';
     case Failed = 'failed';
     case Expired = 'expired';
+    case Cancelled = 'cancelled';
 
     public function getLabel(): string
     {
@@ -22,6 +23,7 @@ enum CommandStatus: string implements HasColor, HasIcon, HasLabel
             self::Completed => __('Completato'),
             self::Failed => __('Fallito'),
             self::Expired => __('Scaduto'),
+            self::Cancelled => __('Annullato'),
         };
     }
 
@@ -32,6 +34,7 @@ enum CommandStatus: string implements HasColor, HasIcon, HasLabel
             self::Completed => 'heroicon-o-check-circle',
             self::Failed => 'heroicon-o-x-circle',
             self::Expired => 'heroicon-o-exclamation-triangle',
+            self::Cancelled => 'heroicon-o-x-mark',
         };
     }
 
@@ -42,6 +45,7 @@ enum CommandStatus: string implements HasColor, HasIcon, HasLabel
             self::Completed => 'success',
             self::Failed => 'danger',
             self::Expired => 'gray',
+            self::Cancelled => 'zinc',
         };
     }
 
@@ -58,6 +62,14 @@ enum CommandStatus: string implements HasColor, HasIcon, HasLabel
      */
     public function isProcessed(): bool
     {
-        return in_array($this, [self::Completed, self::Failed, self::Expired], true);
+        return in_array($this, [self::Completed, self::Failed, self::Expired, self::Cancelled], true);
+    }
+
+    /**
+     * Check if the command can be cancelled.
+     */
+    public function isCancellable(): bool
+    {
+        return $this === self::Pending;
     }
 }

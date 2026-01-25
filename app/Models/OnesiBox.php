@@ -8,6 +8,7 @@ use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
 use App\Traits\LogsActivityAllDirty;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +31,17 @@ use Laravel\Sanctum\HasApiTokens;
  * @property bool $is_active
  * @property OnesiBoxStatus $status
  * @property string|null $notes
+ * @property string|null $current_media_url
+ * @property string|null $current_media_type
+ * @property string|null $current_media_title
+ * @property string|null $current_meeting_id
+ * @property int $volume
+ * @property CarbonInterface|null $last_system_info_at
+ * @property int|null $cpu_usage
+ * @property int|null $memory_usage
+ * @property int|null $disk_usage
+ * @property float|null $temperature
+ * @property int|null $uptime
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -62,6 +74,17 @@ class OnesiBox extends Model implements AuthenticatableContract
         'is_active',
         'status',
         'notes',
+        'current_media_url',
+        'current_media_type',
+        'current_media_title',
+        'current_meeting_id',
+        'volume',
+        'last_system_info_at',
+        'cpu_usage',
+        'memory_usage',
+        'disk_usage',
+        'temperature',
+        'uptime',
     ];
 
     /**
@@ -223,6 +246,13 @@ class OnesiBox extends Model implements AuthenticatableContract
             'last_seen_at' => 'datetime',
             'is_active' => 'boolean',
             'status' => OnesiBoxStatus::class,
+            'volume' => 'integer',
+            'last_system_info_at' => 'datetime',
+            'cpu_usage' => 'integer',
+            'memory_usage' => 'integer',
+            'disk_usage' => 'integer',
+            'temperature' => 'float',
+            'uptime' => 'integer',
         ];
     }
 }

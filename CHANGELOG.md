@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.0 - 2026-01-25
+
+### What's Changed
+
+* Bump filament/filament from 5.0.0 to 5.1.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/23
+* Bump laravel/framework from 12.47.0 to 12.48.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/25
+* Bump larastan/larastan from 3.8.1 to 3.9.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/26
+* Bump livewire/livewire from 4.0.1 to 4.0.3 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/27
+* Bump livewire/flux from 2.10.2 to 2.11.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/28
+* Add OnesiBox caregiver controls (US1-US4) by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/29
+
+### New Contributors
+
+* @dependabot[bot] made their first contribution in https://github.com/onesiphorus-team/onesiforo-web/pull/23
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.6.1...v0.7.0
+
 ## v0.6.1 - 2026-01-23
 
 ### What's Changed

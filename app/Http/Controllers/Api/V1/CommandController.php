@@ -101,9 +101,10 @@ class CommandController extends Controller
         // Process the acknowledgment
         $status = $request->input('status');
         $executedAt = \Illuminate\Support\Facades\Date::parse($request->input('executed_at'));
+        $result = $request->input('result');
 
         if ($status === 'success') {
-            $command->markAsCompleted($executedAt);
+            $command->markAsCompleted($executedAt, $result);
         } elseif ($status === 'failed') {
             $command->markAsFailed(
                 $request->input('error_code'),

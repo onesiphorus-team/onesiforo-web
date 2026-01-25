@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
  * @property CarbonInterface|null $executed_at
  * @property string|null $error_code
  * @property string|null $error_message
+ * @property array<string, mixed>|null $result
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  * @property-read OnesiBox $onesiBox
@@ -55,6 +56,7 @@ class Command extends Model
         'executed_at',
         'error_code',
         'error_message',
+        'result',
     ];
 
     /**
@@ -108,12 +110,15 @@ class Command extends Model
 
     /**
      * Mark the command as completed.
+     *
+     * @param  array<string, mixed>|null  $result  Optional result data from diagnostic commands
      */
-    public function markAsCompleted(?CarbonInterface $executedAt = null): void
+    public function markAsCompleted(?CarbonInterface $executedAt = null, ?array $result = null): void
     {
         $this->update([
             'status' => CommandStatus::Completed,
             'executed_at' => $executedAt ?? now(),
+            'result' => $result,
         ]);
     }
 
@@ -200,6 +205,7 @@ class Command extends Model
             'status' => CommandStatus::class,
             'expires_at' => 'datetime',
             'executed_at' => 'datetime',
+            'result' => 'array',
         ];
     }
 }

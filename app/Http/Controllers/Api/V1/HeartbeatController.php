@@ -23,6 +23,53 @@ class HeartbeatController extends Controller
     public function store(HeartbeatRequest $request): HeartbeatResource
     {
         $onesiBox = $request->onesiBox();
+        $validated = $request->validated();
+
+        // Update status if provided
+        if (isset($validated['status'])) {
+            $onesiBox->status = $validated['status'];
+        }
+
+        // Update media info if playing
+        $currentMedia = $validated['current_media'] ?? null;
+        $onesiBox->current_media_url = $currentMedia['url'] ?? null;
+        $onesiBox->current_media_type = $currentMedia['type'] ?? null;
+        $onesiBox->current_media_title = $currentMedia['title'] ?? null;
+
+        // Update meeting info if in call
+        $currentMeeting = $validated['current_meeting'] ?? null;
+        $onesiBox->current_meeting_id = $currentMeeting['meeting_id'] ?? null;
+
+        // Update volume if provided
+        if (isset($validated['volume'])) {
+            $onesiBox->volume = $validated['volume'];
+        }
+
+        // Update system info if provided
+        $hasSystemInfo = false;
+        if (isset($validated['cpu_usage'])) {
+            $onesiBox->cpu_usage = $validated['cpu_usage'];
+            $hasSystemInfo = true;
+        }
+        if (isset($validated['memory_usage'])) {
+            $onesiBox->memory_usage = $validated['memory_usage'];
+            $hasSystemInfo = true;
+        }
+        if (isset($validated['disk_usage'])) {
+            $onesiBox->disk_usage = $validated['disk_usage'];
+            $hasSystemInfo = true;
+        }
+        if (isset($validated['temperature'])) {
+            $onesiBox->temperature = $validated['temperature'];
+            $hasSystemInfo = true;
+        }
+        if (isset($validated['uptime'])) {
+            $onesiBox->uptime = $validated['uptime'];
+            $hasSystemInfo = true;
+        }
+        if ($hasSystemInfo) {
+            $onesiBox->last_system_info_at = \Illuminate\Support\Facades\Date::now();
+        }
 
         $onesiBox->recordHeartbeat();
 

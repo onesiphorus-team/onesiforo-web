@@ -41,6 +41,15 @@ class OnesiBoxStatusUpdated implements ShouldBroadcast
             'status' => $this->onesiBox->status->value ?? null,
             'is_online' => $this->onesiBox->isOnline(),
             'last_seen_at' => $this->onesiBox->last_seen_at?->toISOString(),
+            'current_media' => $this->onesiBox->current_media_url !== null ? [
+                'url' => $this->onesiBox->current_media_url,
+                'type' => $this->onesiBox->current_media_type,
+                'title' => $this->onesiBox->current_media_title,
+            ] : null,
+            'current_meeting' => $this->onesiBox->current_meeting_id !== null ? [
+                'meeting_id' => $this->onesiBox->current_meeting_id,
+            ] : null,
+            'volume' => $this->onesiBox->volume,
         ];
     }
 

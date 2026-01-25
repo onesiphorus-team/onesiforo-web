@@ -30,6 +30,33 @@
                 @endif
             </div>
         </div>
+
+        {{-- Contextual Status Info --}}
+        @if($this->currentMediaInfo)
+            <div class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div class="flex items-center gap-2 text-green-700 dark:text-green-300">
+                    <flux:icon name="{{ $this->currentMediaInfo['type'] === 'video' ? 'video-camera' : 'musical-note' }}" class="w-5 h-5" />
+                    <span class="font-medium">
+                        {{ $this->currentMediaInfo['type'] === 'video' ? 'Video' : 'Audio' }} in riproduzione
+                    </span>
+                </div>
+                <p class="mt-1 text-sm text-green-600 dark:text-green-400 truncate">
+                    {{ $this->currentMediaInfo['title'] ?? $this->currentMediaInfo['url'] }}
+                </p>
+            </div>
+        @endif
+
+        @if($this->currentMeetingInfo)
+            <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <flux:icon name="phone" class="w-5 h-5" />
+                    <span class="font-medium">Chiamata in corso</span>
+                </div>
+                <p class="mt-1 text-sm text-blue-600 dark:text-blue-400">
+                    Meeting ID: {{ $this->currentMeetingInfo['meeting_id'] }}
+                </p>
+            </div>
+        @endif
     </div>
 
     {{-- Recipient Contacts --}}
@@ -87,6 +114,9 @@
         </flux:callout>
     @endif
 
+    {{-- System Information (visible to all caregivers) --}}
+    <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" class="mb-6" />
+
     {{-- Controls (only for Full permission and online devices) --}}
     @if($this->canControl)
         <div class="space-y-6">
@@ -95,6 +125,12 @@
             @if($this->isOnline)
                 {{-- Stop All Playback Button - Prima di tutto --}}
                 <livewire:dashboard.controls.stop-all-playback :onesiBox="$onesiBox" wire:key="stop-all-{{ $onesiBox->id }}" />
+
+                {{-- Volume Control --}}
+                <livewire:dashboard.controls.volume-control :onesiBox="$onesiBox" wire:key="volume-{{ $onesiBox->id }}" />
+
+                {{-- Command Queue --}}
+                <livewire:dashboard.controls.command-queue :onesiBox="$onesiBox" wire:key="command-queue-{{ $onesiBox->id }}" />
 
                 {{-- Media & Communication Controls - Single column on mobile --}}
                 <div class="grid grid-cols-1 gap-4">

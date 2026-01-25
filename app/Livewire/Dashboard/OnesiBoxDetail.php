@@ -95,6 +95,51 @@ class OnesiBoxDetail extends Component
     }
 
     /**
+     * Get current media information if playing.
+     *
+     * @return array{url: string|null, type: string|null, title: string|null}|null
+     */
+    #[Computed]
+    public function currentMediaInfo(): ?array
+    {
+        if ($this->onesiBox->current_media_url === null) {
+            return null;
+        }
+
+        return [
+            'url' => $this->onesiBox->current_media_url,
+            'type' => $this->onesiBox->current_media_type,
+            'title' => $this->onesiBox->current_media_title,
+        ];
+    }
+
+    /**
+     * Get current meeting information if in a call.
+     *
+     * @return array{meeting_id: string}|null
+     */
+    #[Computed]
+    public function currentMeetingInfo(): ?array
+    {
+        if ($this->onesiBox->current_meeting_id === null) {
+            return null;
+        }
+
+        return [
+            'meeting_id' => $this->onesiBox->current_meeting_id,
+        ];
+    }
+
+    /**
+     * Get the current volume level.
+     */
+    #[Computed]
+    public function currentVolume(): int
+    {
+        return $this->onesiBox->volume ?? 80;
+    }
+
+    /**
      * Handle real-time status update from Echo.
      *
      * @param  array<string, mixed>  $payload

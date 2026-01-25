@@ -1,0 +1,507 @@
+openapi: 3.0.3
+info:
+  title: OnesiBox API - Caregiver Controls Extensions
+  version: 1.1.0
+  description: |
+    Estensioni API per le funzionalità di controllo caregiver.
+    Queste API estendono le esistenti definite in feature 003-onesibox-api-ws.
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+paths:
+  /appliances/heartbeat:
+    post:
+      summary: Record heartbeat (Extended)
+      description: |
+        Estensione del heartbeat esistente per includere:
+        - Informazioni media corrente (URL, tipo, posizione)
+        - Informazioni meeting corrente (meeting ID)
+        - Volume corrente
+      tags:
+        - Appliance
+      security:
+        - sanctum: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeartbeatRequestExtended'
+      responses:
+        '200':
+          description: Heartbeat recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeartbeatResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /commands/{uuid}:
+    delete:
+      summary: Cancel a pending command
+      description: |
+        Annulla un comando in stato pending. Restituisce 409 se il comando
+        non è più cancellabile (già eseguito, completato, fallito o scaduto).
+      tags:
+        - Commands
+      security:
+        - sanctum: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Command cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandCancelledResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Command cannot be cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error:
+                  code: E_COMMAND_NOT_CANCELLABLE
+                  message: Il comando non può essere annullato perché non è più in stato pending
+
+  /appliances/{onesiBox}/commands/pending:
+    get:
+      summary: List pending commands for an OnesiBox
+      description: |
+        Restituisce la lista dei comandi pendenti per una specifica OnesiBox.
+        Usato dalla dashboard caregiver per visualizzare la coda.
+      tags:
+        - Commands
+      security:
+        - sanctum: []
+      parameters:
+        - name: onesiBox
+          in: path
+          required: true
+          description: ID della OnesiBox
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of pending commands
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CommandResource'
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 3
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    delete:
+      summary: Cancel all pending commands
+      description: |
+        Annulla tutti i comandi pendenti per una specifica OnesiBox.
+        Restituisce il conteggio dei comandi annullati.
+      tags:
+        - Commands
+      security:
+        - sanctum: []
+      parameters:
+        - name: onesiBox
+          in: path
+          required: true
+          description: ID della OnesiBox
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Commands cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  cancelled_count:
+                    type: integer
+                    example: 5
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /commands/{uuid}/ack:
+    post:
+      summary: Acknowledge command execution (Extended)
+      description: |
+        Estensione dell'ACK esistente per supportare payload di risposta
+        per comandi get_system_info e get_logs.
+      tags:
+        - Commands
+      security:
+        - sanctum: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AckRequest'
+                - $ref: '#/components/schemas/AckRequestSystemInfo'
+                - $ref: '#/components/schemas/AckRequestLogs'
+      responses:
+        '200':
+          description: Acknowledgment recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum Token
+
+  schemas:
+    HeartbeatRequestExtended:
+      type: object
+      required:
+        - status
+        - cpu_usage
+        - memory_usage
+        - disk_usage
+        - temperature
+        - uptime
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [idle, playing, calling, error]
+        current_media:
+          type: object
+          nullable: true
+          properties:
+            url:
+              type: string
+              format: uri
+              maxLength: 500
+            type:
+              type: string
+              enum: [video, audio]
+            position:
+              type: integer
+              minimum: 0
+              description: Posizione corrente in secondi
+            duration:
+              type: integer
+              minimum: 0
+              nullable: true
+              description: Durata totale in secondi
+        current_meeting:
+          type: object
+          nullable: true
+          properties:
+            meeting_id:
+              type: string
+              maxLength: 50
+        cpu_usage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        memory_usage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        disk_usage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 150
+        uptime:
+          type: integer
+          minimum: 0
+          description: Uptime in secondi
+        volume:
+          type: integer
+          minimum: 0
+          maximum: 100
+        timestamp:
+          type: string
+          format: date-time
+
+    HeartbeatResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    CommandResource:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [play_media, stop_media, pause_media, resume_media, set_volume, join_zoom, leave_zoom, start_jitsi, stop_jitsi, speak_text, show_message, reboot, shutdown, start_vnc, stop_vnc, update_config, get_system_info, get_logs]
+        payload:
+          type: object
+          nullable: true
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 5
+        status:
+          type: string
+          enum: [pending, completed, failed, expired, cancelled]
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+
+    CommandCancelledResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        command:
+          $ref: '#/components/schemas/CommandResource'
+
+    AckRequest:
+      type: object
+      required:
+        - status
+        - executed_at
+      properties:
+        status:
+          type: string
+          enum: [success, failed]
+        error_code:
+          type: string
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+        executed_at:
+          type: string
+          format: date-time
+
+    AckRequestSystemInfo:
+      allOf:
+        - $ref: '#/components/schemas/AckRequest'
+        - type: object
+          properties:
+            result:
+              $ref: '#/components/schemas/SystemInfoPayload'
+
+    AckRequestLogs:
+      allOf:
+        - $ref: '#/components/schemas/AckRequest'
+        - type: object
+          properties:
+            result:
+              $ref: '#/components/schemas/LogsPayload'
+
+    SystemInfoPayload:
+      type: object
+      properties:
+        uptime_seconds:
+          type: integer
+          minimum: 0
+        uptime_formatted:
+          type: string
+          example: "2 giorni, 3 ore"
+        load_average:
+          type: object
+          properties:
+            1m:
+              type: number
+            5m:
+              type: number
+            15m:
+              type: number
+        memory:
+          type: object
+          properties:
+            used_bytes:
+              type: integer
+            total_bytes:
+              type: integer
+            percent:
+              type: integer
+        cpu_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        disk:
+          type: object
+          properties:
+            used_bytes:
+              type: integer
+            total_bytes:
+              type: integer
+            percent:
+              type: integer
+        network:
+          type: object
+          properties:
+            ip:
+              type: string
+            wifi_ssid:
+              type: string
+              nullable: true
+        timestamp:
+          type: string
+          format: date-time
+
+    LogsPayload:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogEntry'
+        total_lines:
+          type: integer
+        returned_lines:
+          type: integer
+        log_file:
+          type: string
+
+    LogEntry:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        level:
+          type: string
+          enum: [debug, info, warn, error]
+        message:
+          type: string
+        context:
+          type: object
+          nullable: true
+
+    AckResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+  responses:
+    Unauthorized:
+      description: Token non valido o mancante
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: E_UNAUTHORIZED
+              message: Token non valido
+
+    Forbidden:
+      description: Accesso negato
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: E_FORBIDDEN
+              message: Appliance disabilitata o accesso non autorizzato
+
+    NotFound:
+      description: Risorsa non trovata
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: E_NOT_FOUND
+              message: Comando non trovato
+
+    ValidationError:
+      description: Errore di validazione
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string

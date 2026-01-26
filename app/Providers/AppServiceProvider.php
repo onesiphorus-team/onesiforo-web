@@ -19,12 +19,15 @@ use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -81,6 +84,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDates();
         $this->configureUrls();
         $this->configureScramble();
+        $this->configureRateLimiting();
 
         if (App::isProduction()) {
             // Define password validation rules
@@ -128,6 +132,47 @@ class AppServiceProvider extends ServiceProvider
     {
         Scramble::afterOpenApiGenerated(function (OpenApi $openApi): void {
             $openApi->secure(SecurityScheme::http('bearer'));
+        });
+    }
+
+    /**
+     * Configure rate limiting for API endpoints.
+     *
+     * Rate limits are based on the OnesiBox appliance token to prevent abuse
+     * while allowing legitimate device communication.
+     */
+    private function configureRateLimiting(): void
+    {
+        // Heartbeat: 4 requests per minute per appliance (normal interval is 30s)
+        RateLimiter::for('heartbeat', function (Request $request): Limit {
+            $user = $request->user();
+            $key = $user !== null ? (string) $user->id : $request->ip();
+
+            return Limit::perMinute(4)->by('heartbeat:'.$key);
+        });
+
+        // Commands polling: 20 requests per minute per appliance (normal interval is 5s)
+        RateLimiter::for('commands', function (Request $request): Limit {
+            $user = $request->user();
+            $key = $user !== null ? (string) $user->id : $request->ip();
+
+            return Limit::perMinute(20)->by('commands:'.$key);
+        });
+
+        // Playback events: 30 requests per minute per appliance
+        RateLimiter::for('playback', function (Request $request): Limit {
+            $user = $request->user();
+            $key = $user !== null ? (string) $user->id : $request->ip();
+
+            return Limit::perMinute(30)->by('playback:'.$key);
+        });
+
+        // Command acknowledgment: 60 requests per minute per appliance
+        RateLimiter::for('command-ack', function (Request $request): Limit {
+            $user = $request->user();
+            $key = $user !== null ? (string) $user->id : $request->ip();
+
+            return Limit::perMinute(60)->by('command-ack:'.$key);
         });
     }
 }

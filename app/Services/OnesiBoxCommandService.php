@@ -32,84 +32,66 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
     public function sendMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType): void
     {
-        $this->ensureOnline($onesiBox);
-
-        $command = $this->createCommand($onesiBox, CommandType::PlayMedia, [
+        $this->sendCommand($onesiBox, CommandType::PlayMedia, [
             'url' => $mediaUrl,
             'media_type' => $mediaType,
         ]);
-
-        dispatch(new SendOnesiBoxCommand($command));
-
-        $this->dispatchCommandSentEvent($onesiBox, $command);
     }
 
     public function sendZoomCommand(OnesiBox $onesiBox, string $meetingId, ?string $password = null): void
     {
-        $this->ensureOnline($onesiBox);
-
-        $command = $this->createCommand($onesiBox, CommandType::JoinZoom, [
+        $this->sendCommand($onesiBox, CommandType::JoinZoom, [
             'meeting_id' => $meetingId,
             'password' => $password,
         ]);
-
-        dispatch(new SendOnesiBoxCommand($command));
-
-        $this->dispatchCommandSentEvent($onesiBox, $command);
     }
 
     public function sendStopCommand(OnesiBox $onesiBox): void
     {
-        $this->ensureOnline($onesiBox);
-
-        $command = $this->createCommand($onesiBox, CommandType::StopMedia, []);
-
-        dispatch(new SendOnesiBoxCommand($command));
-
-        $this->dispatchCommandSentEvent($onesiBox, $command);
+        $this->sendCommand($onesiBox, CommandType::StopMedia);
     }
 
     public function sendRebootCommand(OnesiBox $onesiBox): void
     {
-        $this->ensureOnline($onesiBox);
-
-        $command = $this->createCommand($onesiBox, CommandType::Reboot, []);
-
-        dispatch(new SendOnesiBoxCommand($command));
-
-        $this->dispatchCommandSentEvent($onesiBox, $command);
+        $this->sendCommand($onesiBox, CommandType::Reboot);
     }
 
     public function sendLeaveZoomCommand(OnesiBox $onesiBox): void
     {
-        $this->ensureOnline($onesiBox);
-
-        $command = $this->createCommand($onesiBox, CommandType::LeaveZoom, []);
-
-        dispatch(new SendOnesiBoxCommand($command));
-
-        $this->dispatchCommandSentEvent($onesiBox, $command);
+        $this->sendCommand($onesiBox, CommandType::LeaveZoom);
     }
 
     public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName = 'Rosa Iannascoli'): void
     {
-        $this->ensureOnline($onesiBox);
-
-        $command = $this->createCommand($onesiBox, CommandType::JoinZoom, [
+        $this->sendCommand($onesiBox, CommandType::JoinZoom, [
             'meeting_url' => $zoomUrl,
             'participant_name' => $participantName,
         ]);
-
-        dispatch(new SendOnesiBoxCommand($command));
-
-        $this->dispatchCommandSentEvent($onesiBox, $command);
     }
 
     public function sendRestartServiceCommand(OnesiBox $onesiBox): void
     {
+        $this->sendCommand($onesiBox, CommandType::RestartService);
+    }
+
+    /**
+     * Send a command to an OnesiBox appliance.
+     *
+     * This is the central method that handles:
+     * - Online status verification
+     * - Command creation in database
+     * - Job dispatching for WebSocket notification
+     * - Event dispatching for audit logging
+     *
+     * @param  array<string, mixed>  $payload
+     *
+     * @throws OnesiBoxOfflineException
+     */
+    private function sendCommand(OnesiBox $onesiBox, CommandType $type, array $payload = []): void
+    {
         $this->ensureOnline($onesiBox);
 
-        $command = $this->createCommand($onesiBox, CommandType::RestartService, []);
+        $command = $this->createCommand($onesiBox, $type, $payload);
 
         dispatch(new SendOnesiBoxCommand($command));
 

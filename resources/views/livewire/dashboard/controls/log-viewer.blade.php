@@ -40,12 +40,12 @@
                         wire:loading.attr="disabled"
                         :disabled="$isLoading"
                         variant="primary"
+                        icon="arrow-down-tray"
                     >
-                        <flux:icon name="arrow-down-tray" class="w-4 h-4" />
                         @if($isLoading)
-                            <span>Caricamento...</span>
+                            Caricamento...
                         @else
-                            <span>Richiedi Log</span>
+                            Richiedi Log
                         @endif
                     </flux:button>
 
@@ -53,8 +53,8 @@
                         <flux:button
                             wire:click="clearLogs"
                             variant="subtle"
+                            icon="x-mark"
                         >
-                            <flux:icon name="x-mark" class="w-4 h-4" />
                             Cancella
                         </flux:button>
                     @endif
@@ -78,9 +78,9 @@
                         <flux:button
                             size="xs"
                             variant="subtle"
+                            icon="clipboard-document"
                             x-on:click="navigator.clipboard.writeText($refs.logsContent.textContent); $flux.toast('Log copiati negli appunti')"
                         >
-                            <flux:icon name="clipboard-document" class="w-4 h-4" />
                             Copia
                         </flux:button>
                     </div>

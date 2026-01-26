@@ -16,8 +16,7 @@
                 </flux:callout>
 
                 <div class="flex gap-2">
-                    <flux:button variant="primary" wire:click="restartService" class="flex-1" wire:loading.attr="disabled">
-                        <flux:icon name="arrow-path-rounded-square" class="w-4 h-4" />
+                    <flux:button variant="primary" wire:click="restartService" class="flex-1" wire:loading.attr="disabled" icon="arrow-path-rounded-square">
                         <span wire:loading.remove wire:target="restartService">Conferma Riavvio Servizio</span>
                         <span wire:loading wire:target="restartService">Invio...</span>
                     </flux:button>
@@ -27,8 +26,7 @@
                     </flux:button>
                 </div>
             @else
-                <flux:button variant="subtle" wire:click="confirmRestartService" class="w-full">
-                    <flux:icon name="arrow-path-rounded-square" class="w-4 h-4" />
+                <flux:button variant="subtle" wire:click="confirmRestartService" class="w-full" icon="arrow-path-rounded-square">
                     Riavvia Servizio OnesiBox
                 </flux:button>
             @endif
@@ -43,8 +41,7 @@
                 </flux:callout>
 
                 <div class="flex gap-2">
-                    <flux:button variant="danger" wire:click="reboot" class="flex-1" wire:loading.attr="disabled">
-                        <flux:icon name="arrow-path" class="w-4 h-4" />
+                    <flux:button variant="danger" wire:click="reboot" class="flex-1" wire:loading.attr="disabled" icon="arrow-path">
                         <span wire:loading.remove wire:target="reboot">Conferma Riavvio</span>
                         <span wire:loading wire:target="reboot">Invio...</span>
                     </flux:button>
@@ -54,8 +51,7 @@
                     </flux:button>
                 </div>
             @else
-                <flux:button variant="filled" wire:click="confirmReboot" class="w-full">
-                    <flux:icon name="arrow-path" class="w-4 h-4" />
+                <flux:button variant="filled" wire:click="confirmReboot" class="w-full" icon="arrow-path">
                     Riavvia Dispositivo
                 </flux:button>
             @endif

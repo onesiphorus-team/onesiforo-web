@@ -2,6 +2,14 @@
   "permissions": {
     "allow": [
       "mcp__laravel-boost__database-schema"
+    ],
+    "additionalDirectories": [
+      "/Users/ryuujin/workspace/dev2geek/repos/Progetto Onesiforo/onesi-box"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "laravel-boost",
+    "herd"
+  ]
 }

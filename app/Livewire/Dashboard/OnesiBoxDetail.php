@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard;
 
+use App\Concerns\ChecksOnesiBoxPermission;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\Roles;
 use App\Models\OnesiBox;
@@ -22,6 +23,7 @@ use Livewire\Component;
 class OnesiBoxDetail extends Component
 {
     use AuthorizesRequests;
+    use ChecksOnesiBoxPermission;
 
     public OnesiBox $onesiBox;
 
@@ -62,15 +64,6 @@ class OnesiBoxDetail extends Component
         $permission = $pivot->getAttribute('permission');
 
         return $permission;
-    }
-
-    /**
-     * Check if the current user can control this OnesiBox.
-     */
-    #[Computed]
-    public function canControl(): bool
-    {
-        return $this->permission() === OnesiBoxPermission::Full;
     }
 
     /**

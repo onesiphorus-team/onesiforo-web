@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Livewire\Dashboard\Controls;
 
 use App\Actions\Commands\CreateVolumeCommandAction;
+use App\Concerns\ChecksOnesiBoxPermission;
 use App\Concerns\HandlesOnesiBoxErrors;
-use App\Enums\OnesiBoxPermission;
 use App\Models\OnesiBox;
-use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\ValidationException;
@@ -24,6 +23,7 @@ use Livewire\Component;
 class VolumeControl extends Component
 {
     use AuthorizesRequests;
+    use ChecksOnesiBoxPermission;
     use HandlesOnesiBoxErrors;
 
     #[Locked]
@@ -43,30 +43,6 @@ class VolumeControl extends Component
     public function currentVolume(): int
     {
         return $this->onesiBox->volume ?? 80;
-    }
-
-    /**
-     * Check if the current user can control this OnesiBox.
-     */
-    #[Computed]
-    public function canControl(): bool
-    {
-        /** @var User $user */
-        $user = auth()->user();
-
-        $pivot = $this->onesiBox->caregivers()
-            ->where('user_id', $user->id)
-            ->first()
-            ?->pivot;
-
-        if ($pivot === null) {
-            return false;
-        }
-
-        /** @var OnesiBoxPermission|null $permission */
-        $permission = $pivot->getAttribute('permission');
-
-        return $permission === OnesiBoxPermission::Full;
     }
 
     /**

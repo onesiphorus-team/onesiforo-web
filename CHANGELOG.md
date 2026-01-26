@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.2 - 2026-01-26
+
+### What's Changed
+
+* Fix button icon alignment in dashboard views by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/31
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.1...v0.7.2
+
 ## v0.7.1 - 2026-01-26
 
 ### What's Changed

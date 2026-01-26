@@ -105,3 +105,76 @@ it('blocks reboot with readonly permission', function (): void {
         ->call('reboot')
         ->assertForbidden();
 });
+
+// RestartService tests
+
+it('shows restart service button for admin user', function (): void {
+    $user = User::factory()->admin()->create();
+
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(SystemControls::class, ['onesiBox' => $onesiBox])
+        ->assertSee('Riavvia Servizio OnesiBox');
+});
+
+it('shows confirmation dialog when restart service is clicked', function (): void {
+    $user = User::factory()->admin()->create();
+
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(SystemControls::class, ['onesiBox' => $onesiBox])
+        ->call('confirmRestartService')
+        ->assertSet('showRestartServiceConfirm', true)
+        ->assertSee('Conferma riavvio servizio');
+});
+
+it('hides confirmation dialog when cancel restart service is clicked', function (): void {
+    $user = User::factory()->admin()->create();
+
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(SystemControls::class, ['onesiBox' => $onesiBox])
+        ->set('showRestartServiceConfirm', true)
+        ->call('cancelRestartService')
+        ->assertSet('showRestartServiceConfirm', false);
+});
+
+it('sends restart service command for admin with full permission', function (): void {
+    $user = User::factory()->admin()->create();
+
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('sendRestartServiceCommand')
+            ->once()
+            ->withArgs(fn ($box): bool => $box instanceof OnesiBox);
+    });
+
+    Livewire::actingAs($user)
+        ->test(SystemControls::class, ['onesiBox' => $onesiBox])
+        ->set('showRestartServiceConfirm', true)
+        ->call('restartService')
+        ->assertSet('showRestartServiceConfirm', false);
+});
+
+it('blocks restart service for non-admin user', function (): void {
+    $user = User::factory()->role(Roles::Caregiver)->create();
+
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {
+        $mock->shouldNotReceive('sendRestartServiceCommand');
+    });
+
+    Livewire::actingAs($user)
+        ->test(SystemControls::class, ['onesiBox' => $onesiBox])
+        ->call('restartService');
+});

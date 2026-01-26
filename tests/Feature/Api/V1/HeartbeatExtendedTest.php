@@ -198,3 +198,174 @@ test('heartbeat updates status field on onesibox', function (): void {
     $onesiBox->refresh();
     expect($onesiBox->status)->toBe(OnesiBoxStatus::Playing);
 });
+
+// Extended diagnostics tests
+
+test('heartbeat persists app_version to onesibox', function (): void {
+    $onesiBox = OnesiBox::factory()->create();
+    $token = $onesiBox->createToken('onesibox-api-token');
+
+    $response = $this->postJson(
+        route('api.v1.appliances.heartbeat'),
+        [
+            'status' => OnesiBoxStatus::Idle->value,
+            'app_version' => '1.2.3',
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    $response->assertOk();
+
+    $onesiBox->refresh();
+    expect($onesiBox->app_version)->toBe('1.2.3');
+});
+
+test('heartbeat persists network info to onesibox', function (): void {
+    $onesiBox = OnesiBox::factory()->create();
+    $token = $onesiBox->createToken('onesibox-api-token');
+
+    $response = $this->postJson(
+        route('api.v1.appliances.heartbeat'),
+        [
+            'status' => OnesiBoxStatus::Idle->value,
+            'network' => [
+                'type' => 'wifi',
+                'interface' => 'wlan0',
+                'ip' => '192.168.1.100',
+                'netmask' => '255.255.255.0',
+                'gateway' => '192.168.1.1',
+                'mac' => 'aa:bb:cc:dd:ee:ff',
+                'dns' => ['8.8.8.8', '8.8.4.4'],
+            ],
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    $response->assertOk();
+
+    $onesiBox->refresh();
+    expect($onesiBox->network_type)->toBe('wifi');
+    expect($onesiBox->network_interface)->toBe('wlan0');
+    expect($onesiBox->ip_address)->toBe('192.168.1.100');
+    expect($onesiBox->netmask)->toBe('255.255.255.0');
+    expect($onesiBox->gateway)->toBe('192.168.1.1');
+    expect($onesiBox->mac_address)->toBe('aa:bb:cc:dd:ee:ff');
+    expect($onesiBox->dns_servers)->toBe(['8.8.8.8', '8.8.4.4']);
+});
+
+test('heartbeat persists wifi info to onesibox', function (): void {
+    $onesiBox = OnesiBox::factory()->create();
+    $token = $onesiBox->createToken('onesibox-api-token');
+
+    $response = $this->postJson(
+        route('api.v1.appliances.heartbeat'),
+        [
+            'status' => OnesiBoxStatus::Idle->value,
+            'wifi' => [
+                'ssid' => 'MyNetwork',
+                'signal_dbm' => -65,
+                'signal_percent' => 70,
+                'channel' => 6,
+                'frequency' => 2437,
+            ],
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    $response->assertOk();
+
+    $onesiBox->refresh();
+    expect($onesiBox->wifi_ssid)->toBe('MyNetwork');
+    expect($onesiBox->wifi_signal_dbm)->toBe(-65);
+    expect($onesiBox->wifi_signal_percent)->toBe(70);
+    expect($onesiBox->wifi_channel)->toBe(6);
+    expect($onesiBox->wifi_frequency)->toBe(2437);
+});
+
+test('heartbeat persists detailed memory info to onesibox', function (): void {
+    $onesiBox = OnesiBox::factory()->create();
+    $token = $onesiBox->createToken('onesibox-api-token');
+
+    $response = $this->postJson(
+        route('api.v1.appliances.heartbeat'),
+        [
+            'status' => OnesiBoxStatus::Idle->value,
+            'memory' => [
+                'total' => 4294967296,  // 4GB
+                'used' => 2147483648,    // 2GB
+                'free' => 1073741824,    // 1GB
+                'available' => 2147483648,
+                'buffers' => 268435456,  // 256MB
+                'cached' => 536870912,   // 512MB
+            ],
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    $response->assertOk();
+
+    $onesiBox->refresh();
+    expect($onesiBox->memory_total)->toBe(4294967296);
+    expect($onesiBox->memory_used)->toBe(2147483648);
+    expect($onesiBox->memory_free)->toBe(1073741824);
+    expect($onesiBox->memory_available)->toBe(2147483648);
+    expect($onesiBox->memory_buffers)->toBe(268435456);
+    expect($onesiBox->memory_cached)->toBe(536870912);
+});
+
+test('heartbeat validates network type must be wifi or ethernet', function (): void {
+    $onesiBox = OnesiBox::factory()->create();
+    $token = $onesiBox->createToken('onesibox-api-token');
+
+    $response = $this->postJson(
+        route('api.v1.appliances.heartbeat'),
+        [
+            'status' => OnesiBoxStatus::Idle->value,
+            'network' => [
+                'type' => 'invalid',
+            ],
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['network.type']);
+});
+
+test('heartbeat validates wifi signal_dbm must be negative', function (): void {
+    $onesiBox = OnesiBox::factory()->create();
+    $token = $onesiBox->createToken('onesibox-api-token');
+
+    $response = $this->postJson(
+        route('api.v1.appliances.heartbeat'),
+        [
+            'status' => OnesiBoxStatus::Idle->value,
+            'wifi' => [
+                'signal_dbm' => 50,  // Should be negative
+            ],
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['wifi.signal_dbm']);
+});
+
+test('heartbeat validates wifi signal_percent must be 0-100', function (): void {
+    $onesiBox = OnesiBox::factory()->create();
+    $token = $onesiBox->createToken('onesibox-api-token');
+
+    $response = $this->postJson(
+        route('api.v1.appliances.heartbeat'),
+        [
+            'status' => OnesiBoxStatus::Idle->value,
+            'wifi' => [
+                'signal_percent' => 150,
+            ],
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['wifi.signal_percent']);
+});

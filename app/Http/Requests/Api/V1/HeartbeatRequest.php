@@ -113,6 +113,133 @@ class HeartbeatRequest extends FormRequest
                 'min:0',
                 'max:100',
             ],
+            // App version
+            'app_version' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+            // Network info
+            'network' => [
+                'nullable',
+                'array',
+            ],
+            'network.type' => [
+                'nullable',
+                'string',
+                Rule::in(['wifi', 'ethernet']),
+            ],
+            'network.interface' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+            'network.ip' => [
+                'nullable',
+                'ip',
+            ],
+            'network.netmask' => [
+                'nullable',
+                'string',
+                'max:45',
+            ],
+            'network.gateway' => [
+                'nullable',
+                'ip',
+            ],
+            'network.mac' => [
+                'nullable',
+                'string',
+                'max:17',
+            ],
+            'network.dns' => [
+                'nullable',
+                'array',
+                'max:3',
+            ],
+            'network.dns.*' => [
+                'nullable',
+                'string',
+            ],
+            // WiFi info
+            'wifi' => [
+                'nullable',
+                'array',
+            ],
+            'wifi.ssid' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'wifi.signal_dbm' => [
+                'nullable',
+                'integer',
+                'min:-150',
+                'max:0',
+            ],
+            'wifi.signal_percent' => [
+                'nullable',
+                'integer',
+                'min:0',
+                'max:100',
+            ],
+            'wifi.channel' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:200',
+            ],
+            'wifi.frequency' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'wifi.security' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+            // Detailed memory
+            'memory' => [
+                'nullable',
+                'array',
+            ],
+            'memory.total' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'memory.used' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'memory.free' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'memory.available' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'memory.buffers' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'memory.cached' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'memory.percent' => [
+                'nullable',
+                'integer',
+                'min:0',
+                'max:100',
+            ],
         ];
     }
 
@@ -170,6 +297,28 @@ class HeartbeatRequest extends FormRequest
             'current_meeting' => 'meeting corrente',
             'current_meeting.meeting_id' => 'ID meeting',
             'volume' => 'volume',
+            'app_version' => 'versione app',
+            'network' => 'rete',
+            'network.type' => 'tipo connessione',
+            'network.interface' => 'interfaccia di rete',
+            'network.ip' => 'indirizzo IP',
+            'network.netmask' => 'netmask',
+            'network.gateway' => 'gateway',
+            'network.mac' => 'indirizzo MAC',
+            'network.dns' => 'server DNS',
+            'wifi' => 'WiFi',
+            'wifi.ssid' => 'SSID WiFi',
+            'wifi.signal_dbm' => 'segnale WiFi (dBm)',
+            'wifi.signal_percent' => 'segnale WiFi (%)',
+            'wifi.channel' => 'canale WiFi',
+            'wifi.frequency' => 'frequenza WiFi',
+            'memory' => 'memoria',
+            'memory.total' => 'memoria totale',
+            'memory.used' => 'memoria usata',
+            'memory.free' => 'memoria libera',
+            'memory.available' => 'memoria disponibile',
+            'memory.buffers' => 'buffers',
+            'memory.cached' => 'cached',
         ];
     }
 

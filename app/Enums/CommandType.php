@@ -30,6 +30,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
     // System
     case Reboot = 'reboot';
     case Shutdown = 'shutdown';
+    case RestartService = 'restart_service';
 
     // Remote Access
     case StartVnc = 'start_vnc';
@@ -45,7 +46,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
     /**
      * Get the default expiration time in minutes for this command type.
      *
-     * - Urgent commands (reboot, shutdown, VNC): 5 minutes
+     * - Urgent commands (reboot, shutdown, restart_service, VNC): 5 minutes
      * - Media commands: 60 minutes
      * - Configuration commands: 1440 minutes (24 hours)
      */
@@ -54,6 +55,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::Reboot,
             self::Shutdown,
+            self::RestartService,
             self::StartVnc,
             self::StopVnc => 5,
 
@@ -82,6 +84,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::ShowMessage => __('Mostra messaggio'),
             self::Reboot => __('Riavvia'),
             self::Shutdown => __('Spegni'),
+            self::RestartService => __('Riavvia servizio'),
             self::StartVnc => __('Avvia VNC'),
             self::StopVnc => __('Termina VNC'),
             self::UpdateConfig => __('Aggiorna configurazione'),
@@ -104,6 +107,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::ShowMessage => 'heroicon-o-chat-bubble-left',
             self::Reboot => 'heroicon-o-arrow-path',
             self::Shutdown => 'heroicon-o-power',
+            self::RestartService => 'heroicon-o-arrow-path-rounded-square',
             self::StartVnc => 'heroicon-o-computer-desktop',
             self::StopVnc => 'heroicon-o-x-circle',
             self::UpdateConfig => 'heroicon-o-cog-6-tooth',
@@ -121,7 +125,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::JoinZoom, self::StartJitsi => 'primary',
             self::LeaveZoom, self::StopJitsi => 'gray',
             self::SpeakText, self::ShowMessage => 'info',
-            self::Reboot => 'warning',
+            self::Reboot, self::RestartService => 'warning',
             self::Shutdown => 'danger',
             self::StartVnc, self::StopVnc => 'gray',
             self::UpdateConfig => 'info',

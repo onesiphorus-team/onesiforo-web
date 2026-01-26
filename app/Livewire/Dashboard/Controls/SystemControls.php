@@ -23,6 +23,8 @@ class SystemControls extends Component
 
     public bool $showRebootConfirm = false;
 
+    public bool $showRestartServiceConfirm = false;
+
     /**
      * Check if the current user is an admin.
      */
@@ -62,6 +64,36 @@ class SystemControls extends Component
 
         if ($success) {
             $this->showRebootConfirm = false;
+        }
+    }
+
+    public function confirmRestartService(): void
+    {
+        $this->showRestartServiceConfirm = true;
+    }
+
+    public function cancelRestartService(): void
+    {
+        $this->showRestartServiceConfirm = false;
+    }
+
+    public function restartService(OnesiBoxCommandServiceInterface $commandService): void
+    {
+        $this->authorize('control', $this->onesiBox);
+
+        if (! $this->isAdmin()) {
+            Flux::toast('Non autorizzato', variant: 'danger');
+
+            return;
+        }
+
+        $success = $this->executeWithErrorHandling(
+            callback: fn () => $commandService->sendRestartServiceCommand($this->onesiBox),
+            successMessage: 'Comando di riavvio servizio inviato'
+        );
+
+        if ($success) {
+            $this->showRestartServiceConfirm = false;
         }
     }
 

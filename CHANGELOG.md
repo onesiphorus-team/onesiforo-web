@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.5 - 2026-01-31
+
+### What's Changed
+
+* laravel boost 2 and skiils update by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/46
+* Add volume synchronization with nearest preset rounding by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/47
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.4...v0.7.5
+
 ## v0.7.4 - 2026-01-31
 
 ### What's Changed

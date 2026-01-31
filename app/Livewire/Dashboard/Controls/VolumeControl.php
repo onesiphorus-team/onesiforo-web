@@ -37,12 +37,14 @@ class VolumeControl extends Component
     public array $volumeLevels = [20, 40, 60, 80, 100];
 
     /**
-     * Get the current volume level from the OnesiBox.
+     * Get the current volume level from the OnesiBox, rounded to the nearest preset.
      */
     #[Computed]
     public function currentVolume(): int
     {
-        return $this->onesiBox->volume ?? 80;
+        $actualVolume = $this->onesiBox->volume ?? 80;
+
+        return $this->findNearestPreset($actualVolume);
     }
 
     /**
@@ -93,5 +95,15 @@ class VolumeControl extends Component
     public function render(): View
     {
         return view('livewire.dashboard.controls.volume-control');
+    }
+
+    /**
+     * Find the nearest preset value for a given volume.
+     */
+    private function findNearestPreset(int $volume): int
+    {
+        return collect($this->volumeLevels)
+            ->sortBy(fn (int $preset): int => abs($volume - $preset))
+            ->first();
     }
 }

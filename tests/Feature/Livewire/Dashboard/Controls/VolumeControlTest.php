@@ -114,3 +114,30 @@ test('volume control dispatches notification on successful command', function ()
         ->call('setVolume', 60)
         ->assertDispatched('notify');
 });
+
+test('volume control rounds to nearest preset when volume is between presets', function (int $actualVolume, int $expectedPreset): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create(['volume' => $actualVolume]);
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full]);
+
+    Livewire::actingAs($user)
+        ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
+        ->assertSet('currentVolume', $expectedPreset);
+})->with([
+    '45% rounds to 40%' => [45, 40],
+    '75% rounds to 80%' => [75, 80],
+    '95% rounds to 100%' => [95, 100],
+    '15% rounds to 20%' => [15, 20],
+    '30% rounds to 20% (equidistant favors lower)' => [30, 20],
+    '50% rounds to 40% (equidistant favors lower)' => [50, 40],
+]);
+
+test('volume control shows exact preset when volume matches', function (int $preset): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create(['volume' => $preset]);
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full]);
+
+    Livewire::actingAs($user)
+        ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
+        ->assertSet('currentVolume', $preset);
+})->with([20, 40, 60, 80, 100]);

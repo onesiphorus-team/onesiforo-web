@@ -22,7 +22,7 @@ class RecipientFactory extends Factory
         return [
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
-            'phone' => fake()->phoneNumber(),
+            'phone' => '+39 '.fake()->numerify('## ########'),
             'street' => fake()->streetAddress(),
             'city' => fake()->city(),
             'postal_code' => fake()->numerify('#####'),
@@ -41,8 +41,8 @@ class RecipientFactory extends Factory
             'emergency_contacts' => [
                 [
                     'name' => fake()->name(),
-                    'phone' => fake()->phoneNumber(),
-                    'relationship' => fake()->randomElement(['Son', 'Daughter', 'Neighbor', 'Friend']),
+                    'phone' => '+39 '.fake()->numerify('### #######'),
+                    'relationship' => fake()->randomElement(['Figlio', 'Figlia', 'Vicino', 'Amico']),
                 ],
             ],
         ]);

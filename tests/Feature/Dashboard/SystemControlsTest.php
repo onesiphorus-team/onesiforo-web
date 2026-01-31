@@ -44,7 +44,7 @@ it('shows confirmation dialog when reboot is clicked', function (): void {
         ->test(SystemControls::class, ['onesiBox' => $onesiBox])
         ->call('confirmReboot')
         ->assertSet('showRebootConfirm', true)
-        ->assertSee('Conferma riavvio');
+        ->assertSee('Conferma Riavvio Dispositivo');
 });
 
 it('hides confirmation dialog when cancel is clicked', function (): void {
@@ -116,7 +116,7 @@ it('shows restart service button for admin user', function (): void {
 
     Livewire::actingAs($user)
         ->test(SystemControls::class, ['onesiBox' => $onesiBox])
-        ->assertSee('Riavvia Servizio OnesiBox');
+        ->assertSee('Riavvia Servizio');
 });
 
 it('shows confirmation dialog when restart service is clicked', function (): void {

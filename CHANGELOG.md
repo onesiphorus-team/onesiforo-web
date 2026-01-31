@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.3 - 2026-01-31
+
+### What's Changed
+
+* Improve security, DRY principles, and code organization by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/32
+* Bump barryvdh/laravel-debugbar from 3.16.3 to 4.0.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/22
+* Bump laravel/boost from 2.0.0 to 2.0.4 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/33
+* Bump filament/filament from 5.1.0 to 5.1.3 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/34
+* Bump spatie/laravel-ray from 1.43.3 to 1.43.5 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/35
+* Bump barryvdh/laravel-debugbar from 4.0.2 to 4.0.5 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/36
+* Bump dedoc/scramble from 0.13.10 to 0.13.11 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/37
+* Bump laravel/fortify from 1.33.0 to 1.34.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/38
+* Bump laravel/framework from 12.48.1 to 12.49.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/39
+* Bump livewire/livewire from 4.0.3 to 4.1.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/40
+* Bump pestphp/pest from 4.3.1 to 4.3.2 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/41
+* Bump laravel/sanctum from 4.2.4 to 4.3.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/43
+* Make Zoom participant name configurable based on recipient by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/44
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.2...v0.7.3
+
 ## v0.7.2 - 2026-01-26
 
 ### What's Changed

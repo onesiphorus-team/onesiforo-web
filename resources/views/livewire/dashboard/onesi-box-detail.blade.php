@@ -126,14 +126,6 @@
         </flux:callout>
     @endif
 
-    {{-- System Information (visible to all caregivers) --}}
-    <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" class="mb-6" />
-
-    {{-- Network Information (visible to all caregivers) --}}
-    <div class="mb-6">
-        <livewire:dashboard.controls.network-info :onesiBox="$onesiBox" wire:key="network-info-{{ $onesiBox->id }}" />
-    </div>
-
     {{-- Controls (only for Full permission and online devices) --}}
     @if($this->canControl)
         <div class="space-y-6">
@@ -155,17 +147,6 @@
                     <livewire:dashboard.controls.video-player :onesiBox="$onesiBox" wire:key="video-{{ $onesiBox->id }}" />
                     <livewire:dashboard.controls.zoom-call :onesiBox="$onesiBox" wire:key="zoom-{{ $onesiBox->id }}" />
                 </div>
-
-                {{-- System Controls (Admin only) --}}
-                @if($this->isAdmin)
-                    <div class="pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                        <flux:heading size="lg" class="mb-4">Amministrazione</flux:heading>
-                        <div class="grid grid-cols-1 gap-4">
-                            <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
-                            <livewire:dashboard.controls.log-viewer :onesiBox="$onesiBox" wire:key="logs-{{ $onesiBox->id }}" />
-                        </div>
-                    </div>
-                @endif
             @else
                 <flux:callout icon="wifi" class="mb-4">
                     <flux:callout.heading>Dispositivo offline</flux:callout.heading>
@@ -174,6 +155,32 @@
                     </flux:callout.text>
                 </flux:callout>
             @endif
+        </div>
+    @endif
+
+    {{-- Admin Section (visible only to admin and super-admin) --}}
+    @if($this->isAdmin)
+        <div class="mt-8 pt-6 border-t border-zinc-300 dark:border-zinc-600">
+            <flux:heading size="lg" class="mb-4">
+                <flux:icon name="shield-check" class="w-5 h-5 inline-block mr-2" />
+                Amministrazione
+            </flux:heading>
+
+            <div class="space-y-4">
+                {{-- System Information --}}
+                <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" />
+
+                {{-- Network Information --}}
+                <livewire:dashboard.controls.network-info :onesiBox="$onesiBox" wire:key="network-info-{{ $onesiBox->id }}" />
+
+                @if($this->isOnline)
+                    {{-- System Controls --}}
+                    <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
+
+                    {{-- Log Viewer --}}
+                    <livewire:dashboard.controls.log-viewer :onesiBox="$onesiBox" wire:key="logs-{{ $onesiBox->id }}" />
+                @endif
+            </div>
         </div>
     @endif
 </div>

@@ -64,7 +64,7 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxOfflineException
      * @throws OnesiBoxCommandException
      */
-    public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName = 'Rosa Iannascoli'): void;
+    public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName): void;
 
     /**
      * Invia comando generico di riproduzione media.

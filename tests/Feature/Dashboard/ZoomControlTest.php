@@ -10,17 +10,39 @@ use App\Services\OnesiBoxCommandServiceInterface;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 
-it('sends zoom url command with full permission', function (): void {
+it('sends zoom url command with full permission using recipient name', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->forRecipient()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $validZoomUrl = 'https://us05web.zoom.us/j/85099838349?pwd=DATUPWNZhaXXUwkvuiA5OKWUfgbdTb.1';
+    $expectedName = $onesiBox->recipient->full_name;
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock) use ($validZoomUrl, $expectedName): void {
+        $mock->shouldReceive('sendZoomUrlCommand')
+            ->once()
+            ->withArgs(fn ($box, $url, $name): bool => $box instanceof OnesiBox && $url === $validZoomUrl && $name === $expectedName);
+    });
+
+    Livewire::actingAs($user)
+        ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
+        ->set('zoomUrl', $validZoomUrl)
+        ->call('startCall')
+        ->assertHasNoErrors();
+});
+
+it('sends zoom url command with onesibox name when no recipient', function (): void {
     $user = User::factory()->create();
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
     $validZoomUrl = 'https://us05web.zoom.us/j/85099838349?pwd=DATUPWNZhaXXUwkvuiA5OKWUfgbdTb.1';
+    $expectedName = $onesiBox->name;
 
-    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock) use ($validZoomUrl): void {
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock) use ($validZoomUrl, $expectedName): void {
         $mock->shouldReceive('sendZoomUrlCommand')
             ->once()
-            ->withArgs(fn ($box, $url, $name): bool => $box instanceof OnesiBox && $url === $validZoomUrl && $name === 'Rosa Iannascoli');
+            ->withArgs(fn ($box, $url, $name): bool => $box instanceof OnesiBox && $url === $validZoomUrl && $name === $expectedName);
     });
 
     Livewire::actingAs($user)
@@ -92,7 +114,7 @@ it('validates zoom url must contain meeting id', function (): void {
 
 it('accepts zoom urls with various subdomains', function (string $zoomUrl): void {
     $user = User::factory()->create();
-    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox = OnesiBox::factory()->online()->forRecipient()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
     $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {

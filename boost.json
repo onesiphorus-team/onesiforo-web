@@ -8,13 +8,16 @@
     "mcp": true,
     "packages": [
         "laravel/fortify",
-        "filament/filament"
+        "filament/filament",
+        "spatie/laravel-ray"
     ],
     "sail": false,
     "skills": [
         "fluxui-development",
         "livewire-development",
         "pest-testing",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "developing-with-fortify",
+        "debugging-output-and-previewing-html-using-ray"
     ]
 }

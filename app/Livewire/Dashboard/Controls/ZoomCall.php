@@ -42,7 +42,7 @@ class ZoomCall extends Component
             callback: fn () => $commandService->sendZoomUrlCommand(
                 $this->onesiBox,
                 $this->zoomUrl,
-                'Rosa Iannascoli'
+                $this->getParticipantName()
             ),
             successMessage: 'Connessione alla riunione Zoom in corso...'
         );
@@ -50,6 +50,13 @@ class ZoomCall extends Component
         if ($success) {
             $this->reset('zoomUrl');
         }
+    }
+
+    public function getParticipantName(): string
+    {
+        $recipient = $this->onesiBox->recipient;
+
+        return $recipient !== null ? $recipient->full_name : $this->onesiBox->name;
     }
 
     public function render(): View

@@ -61,7 +61,7 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         $this->sendCommand($onesiBox, CommandType::LeaveZoom);
     }
 
-    public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName = 'Rosa Iannascoli'): void
+    public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName): void
     {
         $this->sendCommand($onesiBox, CommandType::JoinZoom, [
             'meeting_url' => $zoomUrl,

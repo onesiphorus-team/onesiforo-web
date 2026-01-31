@@ -21,7 +21,7 @@
 
         <flux:callout variant="info" icon="information-circle" class="text-sm">
             <flux:callout.text>
-                La connessione avviene automaticamente con il nome <strong>Rosa Iannascoli</strong>.
+                La connessione avviene automaticamente con il nome <strong>{{ $this->getParticipantName() }}</strong>.
             </flux:callout.text>
         </flux:callout>
 

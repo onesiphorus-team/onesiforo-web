@@ -36,6 +36,8 @@ This project has domain-specific skills available. You MUST activate the relevan
 - `livewire-development` — Develops reactive Livewire 4 components. Activates when creating, updating, or modifying Livewire components; working with wire:model, wire:click, wire:loading, or any wire: directives; adding real-time updates, loading states, or reactivity; debugging component behavior; writing Livewire tests; or when the user mentions Livewire, component, counter, or reactive UI.
 - `pest-testing` — Tests applications using the Pest 4 PHP framework. Activates when writing tests, creating unit or feature tests, adding assertions, testing Livewire components, browser testing, debugging test failures, working with datasets or mocking; or when the user mentions test, spec, TDD, expects, assertion, coverage, or needs to verify functionality works.
 - `tailwindcss-development` — Styles applications using Tailwind CSS v4 utilities. Activates when adding styles, restyling components, working with gradients, spacing, layout, flex, grid, responsive design, dark mode, colors, typography, or borders; or when the user mentions CSS, styling, classes, Tailwind, restyle, hero section, cards, buttons, or any visual/UI changes.
+- `developing-with-fortify` — Laravel Fortify headless authentication backend development. Activate when implementing authentication features including login, registration, password reset, email verification, two-factor authentication (2FA/TOTP), profile updates, headless auth, authentication scaffolding, or auth guards in Laravel applications.
+- `debugging-output-and-previewing-html-using-ray` — Use when user says &quot;send to Ray,&quot; &quot;show in Ray,&quot; &quot;debug in Ray,&quot; &quot;log to Ray,&quot; &quot;display in Ray,&quot; or wants to visualize data, debug output, or show diagrams in the Ray desktop application.
 
 ## Conventions
 
@@ -307,6 +309,7 @@ Select::make('type')
 TextInput::make('company_name')
     ->required()
     ->visible(fn (Get $get): bool => $get('type') === 'business'),
+
 </code-snippet>
 
 Use `state()` with a `Closure` to compute derived column values:
@@ -316,6 +319,7 @@ use Filament\Tables\Columns\TextColumn;
 
 TextColumn::make('full_name')
     ->state(fn (User $record): string => "{$record->first_name} {$record->last_name}"),
+
 </code-snippet>
 
 Actions encapsulate a button with optional modal form and logic:
@@ -329,6 +333,7 @@ Action::make('updateEmail')
         TextInput::make('email')->email()->required(),
     ])
     ->action(fn (array $data, User $record): void => $record->update($data)),
+
 </code-snippet>
 
 ### Testing
@@ -341,6 +346,7 @@ Authenticate before testing panel functionality. Filament uses Livewire, so use 
         ->searchTable($users->first()->name)
         ->assertCanSeeTableRecords($users->take(1))
         ->assertCanNotSeeTableRecords($users->skip(1));
+
 </code-snippet>
 
 <code-snippet name="Filament Create Resource Test" lang="php">
@@ -357,6 +363,7 @@ Authenticate before testing panel functionality. Filament uses Livewire, so use 
         'name' => 'Test',
         'email' => 'test@example.com',
     ]);
+
 </code-snippet>
 
 <code-snippet name="Testing Validation" lang="php">
@@ -371,6 +378,7 @@ Authenticate before testing panel functionality. Filament uses Livewire, so use 
             'email' => 'email',
         ])
         ->assertNotNotified();
+
 </code-snippet>
 
 <code-snippet name="Calling Actions" lang="php">
@@ -387,6 +395,7 @@ Authenticate before testing panel functionality. Filament uses Livewire, so use 
             'role' => 'admin',
         ])
         ->assertNotified();
+
 </code-snippet>
 
 ### Common Mistakes
@@ -405,34 +414,11 @@ Authenticate before testing panel functionality. Filament uses Livewire, so use 
 
 === laravel/fortify rules ===
 
-## Laravel Fortify
+# Laravel Fortify
 
-Fortify is a headless authentication backend that provides authentication routes and controllers for Laravel applications.
-
-**Before implementing any authentication features, use the `search-docs` tool to get the latest docs for that specific feature.**
-
-### Configuration & Setup
-
-- Check `config/fortify.php` to see what's enabled. Use `search-docs` for detailed information on specific features.
-- Enable features by adding them to the `'features' => []` array: `Features::registration()`, `Features::resetPasswords()`, etc.
-- To see the all Fortify registered routes, use the `list-routes` tool with the `only_vendor: true` and `action: "Fortify"` parameters.
-- Fortify includes view routes by default (login, register). Set `'views' => false` in the configuration file to disable them if you're handling views yourself.
-
-### Customization
-
-- Views can be customized in `FortifyServiceProvider`'s `boot()` method using `Fortify::loginView()`, `Fortify::registerView()`, etc.
-- Customize authentication logic with `Fortify::authenticateUsing()` for custom user retrieval / validation.
-- Actions in `app/Actions/Fortify/` handle business logic (user creation, password reset, etc.). They're fully customizable, so you can modify them to change feature behavior.
-
-## Available Features
-
-- `Features::registration()` for user registration.
-- `Features::emailVerification()` to verify new user emails.
-- `Features::twoFactorAuthentication()` for 2FA with QR codes and recovery codes.
-  - Add options: `['confirmPassword' => true, 'confirm' => true]` to require password confirmation and OTP confirmation before enabling 2FA.
-- `Features::updateProfileInformation()` to let users update their profile.
-- `Features::updatePasswords()` to let users change their passwords.
-- `Features::resetPasswords()` for password reset via email.
+- Fortify is a headless authentication backend that provides authentication routes and controllers for Laravel applications.
+- IMPORTANT: Always use the `search-docs` tool for detailed Laravel Fortify patterns and documentation.
+- IMPORTANT: Activate `developing-with-fortify` skill when working with Fortify authentication features.
 </laravel-boost-guidelines>
 
 ## Active Technologies

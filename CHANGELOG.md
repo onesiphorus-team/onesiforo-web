@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.4 - 2026-01-31
+
+### What's Changed
+
+* Improve admin section visibility and system controls UI by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/45
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.3...v0.7.4
+
 ## v0.7.3 - 2026-01-31
 
 ### What's Changed

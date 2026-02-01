@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.6 - 2026-02-01
+
+### What's Changed
+
+* Fix heartbeat not saving all fields to database by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/48
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.5...v0.7.6
+
 ## v0.7.5 - 2026-01-31
 
 ### What's Changed

@@ -163,10 +163,12 @@ class OnesiBox extends Model implements AuthenticatableContract
 
     /**
      * Record a heartbeat from the appliance.
+     * Saves all pending attribute changes along with the heartbeat timestamp.
      */
     public function recordHeartbeat(): void
     {
-        $this->update(['last_seen_at' => now()]);
+        $this->last_seen_at = now();
+        $this->save();
     }
 
     /**

@@ -167,7 +167,7 @@ class OnesiBox extends Model implements AuthenticatableContract
      */
     public function recordHeartbeat(): void
     {
-        $this->last_seen_at = now();
+        $this->last_seen_at = Carbon::now();
         $this->save();
     }
 

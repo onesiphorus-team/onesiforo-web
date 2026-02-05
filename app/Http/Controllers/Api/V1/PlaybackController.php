@@ -38,7 +38,9 @@ class PlaybackController extends Controller
     ): PlaybackEventResource {
         $onesiBox = $request->onesiBox();
 
-        $playbackEvent = $storeAction->fromArray($onesiBox, $request->validated());
+        /** @var array{event: string, media_url: string, media_type: string, position?: int|null, duration?: int|null, error_message?: string|null} $data */
+        $data = $request->validated();
+        $playbackEvent = $storeAction->fromArray($onesiBox, $data);
 
         $eventType = $playbackEvent->event;
 

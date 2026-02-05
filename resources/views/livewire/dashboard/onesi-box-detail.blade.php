@@ -126,6 +126,9 @@
         </flux:callout>
     @endif
 
+    {{-- Session Status (visible to all caregivers, including read-only) --}}
+    <livewire:dashboard.controls.session-status :onesiBox="$onesiBox" wire:key="session-status-{{ $onesiBox->id }}" />
+
     {{-- Controls (only for Full permission and online devices) --}}
     @if($this->canControl)
         <div class="space-y-6">
@@ -137,6 +140,9 @@
 
                 {{-- Volume Control --}}
                 <livewire:dashboard.controls.volume-control :onesiBox="$onesiBox" wire:key="volume-{{ $onesiBox->id }}" />
+
+                {{-- Session Manager (Playlist Sessions) --}}
+                <livewire:dashboard.controls.session-manager :onesiBox="$onesiBox" wire:key="session-manager-{{ $onesiBox->id }}" />
 
                 {{-- Command Queue --}}
                 <livewire:dashboard.controls.command-queue :onesiBox="$onesiBox" wire:key="command-queue-{{ $onesiBox->id }}" />

@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
+use App\Enums\PlaybackSessionStatus;
 use App\Traits\LogsActivityAllDirty;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -68,6 +69,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $caregivers
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Command> $commands
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackEvent> $playbackEvents
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Playlist> $playlists
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackSession> $playbackSessions
  */
 class OnesiBox extends Model implements AuthenticatableContract
 {
@@ -228,6 +231,36 @@ class OnesiBox extends Model implements AuthenticatableContract
     public function playbackEvents(): HasMany
     {
         return $this->hasMany(PlaybackEvent::class);
+    }
+
+    /**
+     * Get the playlists for this OnesiBox.
+     *
+     * @return HasMany<Playlist, $this>
+     */
+    public function playlists(): HasMany
+    {
+        return $this->hasMany(Playlist::class);
+    }
+
+    /**
+     * Get the playback sessions for this OnesiBox.
+     *
+     * @return HasMany<PlaybackSession, $this>
+     */
+    public function playbackSessions(): HasMany
+    {
+        return $this->hasMany(PlaybackSession::class);
+    }
+
+    /**
+     * Get the currently active playback session, if any.
+     */
+    public function activeSession(): ?PlaybackSession
+    {
+        return $this->playbackSessions()
+            ->where('status', PlaybackSessionStatus::Active)
+            ->first();
     }
 
     // ========================================

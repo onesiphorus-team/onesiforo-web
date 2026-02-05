@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Sessions\AdvancePlaybackSessionAction;
 use App\Enums\PlaybackEventType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\PlaybackEventRequest;
@@ -30,19 +31,24 @@ class PlaybackController extends Controller
      * @response 403 array{message: string, error_code: string}
      * @response 422 array{message: string, errors: array}
      */
-    public function store(PlaybackEventRequest $request): PlaybackEventResource
+    public function store(PlaybackEventRequest $request, AdvancePlaybackSessionAction $advanceAction): PlaybackEventResource
     {
         $onesiBox = $request->onesiBox();
+        $eventType = PlaybackEventType::from($request->input('event'));
 
         $playbackEvent = PlaybackEvent::query()->create([
             'onesi_box_id' => $onesiBox->id,
-            'event' => PlaybackEventType::from($request->input('event')),
+            'event' => $eventType,
             'media_url' => $request->input('media_url'),
             'media_type' => $request->input('media_type'),
             'position' => $request->input('position'),
             'duration' => $request->input('duration'),
             'error_message' => $request->input('error_message'),
         ]);
+
+        if ($eventType === PlaybackEventType::Completed || $eventType === PlaybackEventType::Error) {
+            $advanceAction->execute($onesiBox, $eventType);
+        }
 
         return new PlaybackEventResource([
             'logged' => true,

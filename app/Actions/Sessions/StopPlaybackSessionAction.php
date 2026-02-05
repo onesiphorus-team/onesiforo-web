@@ -7,6 +7,7 @@ namespace App\Actions\Sessions;
 use App\Enums\CommandStatus;
 use App\Enums\CommandType;
 use App\Enums\PlaybackSessionStatus;
+use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\PlaybackSession;
 use App\Services\OnesiBoxCommandServiceInterface;
 
@@ -38,17 +39,15 @@ class StopPlaybackSessionAction
             ->where('type', CommandType::PlayMedia)
             ->where('status', CommandStatus::Pending)
             ->whereJsonContains('payload->session_id', $session->uuid)
-            ->each(function ($command): void {
-                $command->update([
-                    'status' => CommandStatus::Cancelled,
-                    'executed_at' => now(),
-                ]);
-            });
+            ->update([
+                'status' => CommandStatus::Cancelled,
+                'executed_at' => now(),
+            ]);
 
         // Send stop_media command
         try {
             $this->commandService->sendStopCommand($session->onesiBox);
-        } catch (\App\Exceptions\OnesiBoxOfflineException) {
+        } catch (OnesiBoxOfflineException) {
             // OnesiBox is offline — session is still marked as stopped
         }
 

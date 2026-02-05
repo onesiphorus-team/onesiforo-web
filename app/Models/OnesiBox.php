@@ -7,7 +7,6 @@ namespace App\Models;
 use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
-use App\Enums\PlaybackSessionStatus;
 use App\Traits\LogsActivityAllDirty;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -259,7 +258,7 @@ class OnesiBox extends Model implements AuthenticatableContract
     public function activeSession(): ?PlaybackSession
     {
         return $this->playbackSessions()
-            ->where('status', PlaybackSessionStatus::Active)
+            ->active()
             ->first();
     }
 

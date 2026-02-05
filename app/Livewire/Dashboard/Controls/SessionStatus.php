@@ -22,6 +22,7 @@ use Livewire\Component;
  * @property-read int $timeRemainingSeconds
  * @property-read PlaylistItem|null $currentVideo
  * @property-read int $totalItems
+ * @property-read int $progressPercent
  */
 class SessionStatus extends Component
 {
@@ -97,6 +98,7 @@ class SessionStatus extends Component
     /**
      * Calculate progress percentage.
      */
+    #[Computed]
     public function progressPercent(): int
     {
         $total = $this->totalItems;

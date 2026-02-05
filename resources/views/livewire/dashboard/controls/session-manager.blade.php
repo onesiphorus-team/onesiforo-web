@@ -6,6 +6,11 @@
 
     @if($this->activeSession)
         {{-- Active session display --}}
+        @php
+            $session = $this->activeSession;
+            $currentItem = $session->currentItem();
+            $totalItems = $session->playlist->items()->count();
+        @endphp
         <div class="space-y-4">
             <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                 <div class="flex items-center gap-2 text-green-700 dark:text-green-300 mb-2">
@@ -15,25 +20,25 @@
                 <div class="grid grid-cols-2 gap-2 text-sm">
                     <div>
                         <flux:text class="text-zinc-500">Durata</flux:text>
-                        <flux:text class="font-medium">{{ $this->formatDuration($this->activeSession->duration_minutes) }}</flux:text>
+                        <flux:text class="font-medium">{{ $this->formatDuration($session->duration_minutes) }}</flux:text>
                     </div>
                     <div>
                         <flux:text class="text-zinc-500">Tempo rimasto</flux:text>
-                        <flux:text class="font-medium">{{ $this->formatDuration((int) ceil($this->activeSession->timeRemainingSeconds() / 60)) }}</flux:text>
+                        <flux:text class="font-medium">{{ $this->formatDuration((int) ceil($session->timeRemainingSeconds() / 60)) }}</flux:text>
                     </div>
                     <div>
                         <flux:text class="text-zinc-500">Video riprodotti</flux:text>
-                        <flux:text class="font-medium">{{ $this->activeSession->items_played }}</flux:text>
+                        <flux:text class="font-medium">{{ $session->items_played }}</flux:text>
                     </div>
                     <div>
                         <flux:text class="text-zinc-500">Posizione</flux:text>
-                        <flux:text class="font-medium">{{ $this->activeSession->current_position + 1 }} / {{ $this->activeSession->playlist->items()->count() }}</flux:text>
+                        <flux:text class="font-medium">{{ $session->current_position + 1 }} / {{ $totalItems }}</flux:text>
                     </div>
                 </div>
-                @if($this->activeSession->currentItem())
+                @if($currentItem)
                     <div class="mt-2 pt-2 border-t border-green-200 dark:border-green-800">
                         <flux:text class="text-xs text-zinc-500">Video attuale</flux:text>
-                        <flux:text class="text-sm truncate">{{ $this->activeSession->currentItem()->title ?? $this->activeSession->currentItem()->media_url }}</flux:text>
+                        <flux:text class="text-sm truncate">{{ $currentItem->title ?? $currentItem->media_url }}</flux:text>
                     </div>
                 @endif
             </div>
@@ -59,7 +64,7 @@
             <livewire:dashboard.controls.saved-playlists :onesiBox="$onesiBox" wire:key="saved-playlists-{{ $onesiBox->id }}" />
 
             {{-- Playlist Builder --}}
-            <livewire:dashboard.controls.playlist-builder :onesiBox="$onesiBox" wire:model.live="videoUrls" wire:key="playlist-builder-{{ $onesiBox->id }}" />
+            <livewire:dashboard.controls.playlist-builder :onesiBox="$onesiBox" wire:key="playlist-builder-{{ $onesiBox->id }}" />
 
             {{-- Duration selector --}}
             <flux:field>

@@ -6,8 +6,10 @@ namespace App\Actions\Sessions;
 
 use App\Enums\PlaybackEventType;
 use App\Enums\PlaybackSessionStatus;
+use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
+use App\Models\PlaylistItem;
 use App\Services\OnesiBoxCommandServiceInterface;
 
 /**
@@ -46,7 +48,7 @@ class AdvancePlaybackSessionAction
 
         $nextItem = $session->currentItem();
 
-        if (! $nextItem instanceof \App\Models\PlaylistItem) {
+        if (! $nextItem instanceof PlaylistItem) {
             $this->endSession($session);
 
             return;
@@ -59,7 +61,7 @@ class AdvancePlaybackSessionAction
                 'video',
                 $session->uuid,
             );
-        } catch (\App\Exceptions\OnesiBoxOfflineException) {
+        } catch (OnesiBoxOfflineException) {
             $session->update([
                 'status' => PlaybackSessionStatus::Error,
                 'ended_at' => now(),

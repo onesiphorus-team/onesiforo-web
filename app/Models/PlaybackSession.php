@@ -87,11 +87,19 @@ class PlaybackSession extends Model
     }
 
     /**
+     * Get the expiration timestamp for this session.
+     */
+    public function expiresAt(): CarbonInterface
+    {
+        return $this->started_at->addMinutes($this->duration_minutes);
+    }
+
+    /**
      * Check if the session has expired based on started_at + duration_minutes.
      */
     public function isExpired(): bool
     {
-        return $this->started_at->addMinutes($this->duration_minutes)->isPast();
+        return $this->expiresAt()->isPast();
     }
 
     /**
@@ -99,8 +107,7 @@ class PlaybackSession extends Model
      */
     public function timeRemainingSeconds(): int
     {
-        $expiresAt = $this->started_at->addMinutes($this->duration_minutes);
-        $remaining = (int) Carbon::now()->diffInSeconds($expiresAt, false);
+        $remaining = (int) Carbon::now()->diffInSeconds($this->expiresAt(), false);
 
         return max(0, $remaining);
     }

@@ -77,11 +77,9 @@ class SessionManager extends Component
             'durationMinutes' => ['required', 'in:30,60,120,180'],
         ]);
 
-        $videos = array_map(fn (string $url): array => ['url' => $url], $this->videoUrls);
-
         $this->executeWithErrorHandling(
-            callback: function () use ($createPlaylistAction, $startAction, $videos): void {
-                $playlist = $createPlaylistAction->execute($this->onesiBox, $videos);
+            callback: function () use ($createPlaylistAction, $startAction): void {
+                $playlist = $createPlaylistAction->executeFromUrls($this->onesiBox, $this->videoUrls);
                 $startAction->execute($this->onesiBox, $playlist, $this->durationMinutes);
             },
             successMessage: 'Sessione avviata con successo',

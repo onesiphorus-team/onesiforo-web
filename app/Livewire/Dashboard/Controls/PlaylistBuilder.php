@@ -59,9 +59,7 @@ class PlaylistBuilder extends Component
     {
         $this->sourceType = 'manual';
         $this->videoUrls = $videoUrls;
-        $this->extractedVideos = [];
-        $this->extractedCategoryName = '';
-        $this->extractedTotalDuration = '';
+        $this->resetExtractedData();
         $this->dispatch('playlist-updated', videoUrls: $this->videoUrls);
     }
 
@@ -72,9 +70,7 @@ class PlaylistBuilder extends Component
     {
         $this->sourceType = $type;
         $this->clearAll();
-        $this->extractedVideos = [];
-        $this->extractedCategoryName = '';
-        $this->extractedTotalDuration = '';
+        $this->resetExtractedData();
     }
 
     /**
@@ -174,5 +170,12 @@ class PlaylistBuilder extends Component
     public function render(): View
     {
         return view('livewire.dashboard.controls.playlist-builder');
+    }
+
+    private function resetExtractedData(): void
+    {
+        $this->extractedVideos = [];
+        $this->extractedCategoryName = '';
+        $this->extractedTotalDuration = '';
     }
 }

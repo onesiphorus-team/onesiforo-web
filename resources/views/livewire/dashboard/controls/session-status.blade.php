@@ -30,13 +30,13 @@
                             Video {{ $session->current_position + 1 }} di {{ $this->totalItems }}
                         </flux:text>
                         <flux:text class="text-zinc-500">
-                            {{ $this->progressPercent() }}%
+                            {{ $this->progressPercent }}%
                         </flux:text>
                     </div>
                     <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
                         <div
                             class="bg-green-500 h-2 rounded-full transition-all duration-500"
-                            style="width: {{ $this->progressPercent() }}%"
+                            style="width: {{ $this->progressPercent }}%"
                         ></div>
                     </div>
                 </div>

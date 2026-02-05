@@ -30,10 +30,9 @@ class PlaylistItem extends Model
     use LogsActivityAllDirty;
 
     /**
-     * Indicates if the model should be timestamped.
-     * This model only has created_at, managed manually.
+     * Disable updated_at timestamp — this model only uses created_at.
      */
-    public $timestamps = false;
+    public const UPDATED_AT = null;
 
     /**
      * The attributes that are mass assignable.
@@ -46,7 +45,6 @@ class PlaylistItem extends Model
         'title',
         'duration_seconds',
         'position',
-        'created_at',
     ];
 
     /**
@@ -57,20 +55,6 @@ class PlaylistItem extends Model
     public function playlist(): BelongsTo
     {
         return $this->belongsTo(Playlist::class);
-    }
-
-    /**
-     * Bootstrap the model and register events.
-     */
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function (PlaylistItem $item): void {
-            if (empty($item->created_at)) {
-                $item->created_at = Carbon::now();
-            }
-        });
     }
 
     /**

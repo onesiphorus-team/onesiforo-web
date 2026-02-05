@@ -72,11 +72,9 @@ class SavedPlaylists extends Component
             'videoUrls.*' => ['required', 'url', 'max:2048'],
         ]);
 
-        $videos = array_map(fn (string $url): array => ['url' => $url], $this->videoUrls);
-
-        $createAction->execute(
+        $createAction->executeFromUrls(
             onesiBox: $this->onesiBox,
-            videos: $videos,
+            urls: $this->videoUrls,
             name: $this->playlistName,
             isSaved: true,
         );

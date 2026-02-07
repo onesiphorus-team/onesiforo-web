@@ -83,4 +83,14 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendRestartServiceCommand(OnesiBox $onesiBox): void;
+
+    /**
+     * Invia comando di riproduzione media con ID sessione.
+     *
+     * Used by the session advance mechanism to link commands to a playback session.
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendSessionMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType, string $sessionId): void;
 }

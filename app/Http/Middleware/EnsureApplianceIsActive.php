@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Enums\ApiErrorCode;
 use App\Models\OnesiBox;
 use Closure;
 use Illuminate\Http\Request;
@@ -30,8 +31,8 @@ class EnsureApplianceIsActive
         if ($appliance instanceof OnesiBox && ! $appliance->is_active) {
             return response()->json([
                 'message' => 'Appliance disabilitata.',
-                'error_code' => 'E003',
-            ], Response::HTTP_FORBIDDEN);
+                'error_code' => ApiErrorCode::Unauthorized->value,
+            ], ApiErrorCode::Unauthorized->httpStatus());
         }
 
         return $next($request);

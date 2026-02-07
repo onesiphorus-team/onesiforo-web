@@ -74,6 +74,15 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         $this->sendCommand($onesiBox, CommandType::RestartService);
     }
 
+    public function sendSessionMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType, string $sessionId): void
+    {
+        $this->sendCommand($onesiBox, CommandType::PlayMedia, [
+            'url' => $mediaUrl,
+            'media_type' => $mediaType,
+            'session_id' => $sessionId,
+        ], priority: 2);
+    }
+
     /**
      * Send a command to an OnesiBox appliance.
      *
@@ -87,11 +96,11 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
      *
      * @throws OnesiBoxOfflineException
      */
-    private function sendCommand(OnesiBox $onesiBox, CommandType $type, array $payload = []): void
+    private function sendCommand(OnesiBox $onesiBox, CommandType $type, array $payload = [], int $priority = self::DEFAULT_PRIORITY): void
     {
         $this->ensureOnline($onesiBox);
 
-        $command = $this->createCommand($onesiBox, $type, $payload);
+        $command = $this->createCommand($onesiBox, $type, $payload, $priority);
 
         dispatch(new SendOnesiBoxCommand($command));
 
@@ -103,13 +112,13 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
      *
      * @param  array<string, mixed>  $payload
      */
-    private function createCommand(OnesiBox $onesiBox, CommandType $type, array $payload): Command
+    private function createCommand(OnesiBox $onesiBox, CommandType $type, array $payload, int $priority = self::DEFAULT_PRIORITY): Command
     {
         return Command::query()->create([
             'onesi_box_id' => $onesiBox->id,
             'type' => $type,
             'payload' => $payload,
-            'priority' => self::DEFAULT_PRIORITY,
+            'priority' => $priority,
             'status' => CommandStatus::Pending,
         ]);
     }
@@ -123,10 +132,9 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
     private function dispatchCommandSentEvent(OnesiBox $onesiBox, Command $command): void
     {
-        /** @var User|null $user */
         $user = auth()->user();
 
-        if ($user !== null) {
+        if ($user instanceof User) {
             event(new OnesiBoxCommandSent($onesiBox, $user, $command));
         }
     }

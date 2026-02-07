@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
+use RectorLaravel\Rector\StaticCall\CarbonToDateFacadeRector;
 use RectorLaravel\Set\LaravelSetList;
 use RectorLaravel\Set\LaravelSetProvider;
 
@@ -19,6 +20,7 @@ return RectorConfig::configure()
     ->withComposerBased(laravel: true)
     ->withSkip([
         AddOverrideAttributeToOverriddenMethodsRector::class,
+        CarbonToDateFacadeRector::class,
     ])
     ->withSets([
         LaravelSetList::LARAVEL_ELOQUENT_MAGIC_METHOD_TO_QUERY_BUILDER,

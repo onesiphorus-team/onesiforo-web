@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Enums\ApiErrorCode;
 use App\Models\Command;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -32,8 +32,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($model === Command::class) {
                     return response()->json([
                         'message' => 'Comando non trovato.',
-                        'error_code' => 'E002',
-                    ], Response::HTTP_NOT_FOUND);
+                        'error_code' => ApiErrorCode::NotFound->value,
+                    ], ApiErrorCode::NotFound->httpStatus());
                 }
             }
 
@@ -48,8 +48,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($previous instanceof ModelNotFoundException && $previous->getModel() === Command::class) {
                     return response()->json([
                         'message' => 'Comando non trovato.',
-                        'error_code' => 'E002',
-                    ], Response::HTTP_NOT_FOUND);
+                        'error_code' => ApiErrorCode::NotFound->value,
+                    ], ApiErrorCode::NotFound->httpStatus());
                 }
             }
 

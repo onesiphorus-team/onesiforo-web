@@ -28,6 +28,7 @@ class AcknowledgeCommandAction
      * @param  CarbonInterface|string  $executedAt  When the command was executed
      * @param  string|null  $errorCode  Error code (for failed status)
      * @param  string|null  $errorMessage  Error message (for failed status)
+     * @param  array<string, mixed>|null  $result  Optional result data (for success status)
      * @return bool True if acknowledgment was processed (or already processed)
      */
     public function __invoke(
@@ -35,7 +36,8 @@ class AcknowledgeCommandAction
         string $status,
         CarbonInterface|string $executedAt,
         ?string $errorCode = null,
-        ?string $errorMessage = null
+        ?string $errorMessage = null,
+        ?array $result = null,
     ): bool {
         // Idempotent: if already processed, return success without modifying
         if ($command->status !== CommandStatus::Pending) {
@@ -47,7 +49,7 @@ class AcknowledgeCommandAction
             : Date::parse($executedAt);
 
         return match ($status) {
-            'success', 'skipped' => $this->handleSuccess($command, $executedAtCarbon),
+            'success', 'skipped' => $this->handleSuccess($command, $executedAtCarbon, $result),
             'failed' => $this->handleFailure($command, $executedAtCarbon, $errorCode, $errorMessage),
             default => false,
         };
@@ -71,10 +73,12 @@ class AcknowledgeCommandAction
 
     /**
      * Handle successful or skipped command acknowledgment.
+     *
+     * @param  array<string, mixed>|null  $result
      */
-    private function handleSuccess(Command $command, CarbonInterface $executedAt): bool
+    private function handleSuccess(Command $command, CarbonInterface $executedAt, ?array $result = null): bool
     {
-        $command->markAsCompleted($executedAt);
+        $command->markAsCompleted($executedAt, $result);
 
         return true;
     }

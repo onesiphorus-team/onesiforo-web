@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\AcknowledgeCommandAction;
+use App\Enums\ApiErrorCode;
 use App\Enums\CommandStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AckCommandRequest;
@@ -12,7 +14,6 @@ use App\Http\Resources\Api\V1\AckCommandResource;
 use App\Http\Resources\Api\V1\CommandCollection;
 use App\Models\Command;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Handles command operations for OnesiBox appliances.
@@ -77,7 +78,7 @@ class CommandController extends Controller
      * @response 404 array{message: string, error_code: string}
      * @response 422 array{message: string, errors: array}
      */
-    public function acknowledge(AckCommandRequest $request, Command $command): AckCommandResource|JsonResponse
+    public function acknowledge(AckCommandRequest $request, Command $command, AcknowledgeCommandAction $action): AckCommandResource|JsonResponse
     {
         $onesiBox = $request->onesiBox();
 
@@ -85,36 +86,27 @@ class CommandController extends Controller
         if ($command->onesi_box_id !== $onesiBox->id) {
             return response()->json([
                 'message' => 'Comando non autorizzato per questa appliance.',
-                'error_code' => 'E003',
-            ], Response::HTTP_FORBIDDEN);
+                'error_code' => ApiErrorCode::Unauthorized->value,
+            ], ApiErrorCode::Unauthorized->httpStatus());
         }
 
         // Idempotent: if already processed, return success without modifying
-        if ($command->status !== CommandStatus::Pending) {
+        if ($action->isAlreadyProcessed($command)) {
             return new AckCommandResource([
                 'acknowledged' => true,
                 'command_id' => $command->uuid,
-                'status' => $command->status->value,
+                'status' => $action->getCommandStatus($command)->value,
             ]);
         }
 
-        // Process the acknowledgment
-        $status = $request->input('status');
-        $executedAt = \Illuminate\Support\Facades\Date::parse($request->input('executed_at'));
-        $result = $request->input('result');
-
-        if ($status === 'success') {
-            $command->markAsCompleted($executedAt, $result);
-        } elseif ($status === 'failed') {
-            $command->markAsFailed(
-                $request->input('error_code'),
-                $request->input('error_message'),
-                $executedAt
-            );
-        } else {
-            // skipped - treat as completed but with no action
-            $command->markAsCompleted($executedAt);
-        }
+        $action(
+            command: $command,
+            status: $request->input('status'),
+            executedAt: $request->input('executed_at'),
+            errorCode: $request->input('error_code'),
+            errorMessage: $request->input('error_message'),
+            result: $request->input('result'),
+        );
 
         return new AckCommandResource([
             'acknowledged' => true,

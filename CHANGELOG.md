@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.7 - 2026-02-07
+
+### What's Changed
+
+* Bump laravel/fortify from 1.34.0 to 1.34.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/50
+* Bump laravel/reverb from 1.7.0 to 1.7.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/52
+* Bump dedoc/scramble from 0.13.11 to 0.13.12 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/53
+* Bump laravel/pail from 1.2.4 to 1.2.5 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/54
+* Bump laravel/boost from 2.0.4 to 2.1.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/55
+* Bump filament/filament from 5.1.3 to 5.2.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/56
+* Bump larastan/larastan from 3.9.1 to 3.9.2 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/57
+* Bump laravel/framework from 12.49.0 to 12.50.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/58
+* Bump barryvdh/laravel-debugbar from 4.0.5 to 4.0.7 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/60
+* feat: timed video playlist sessions for OnesiBox by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/49
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.6...v0.7.7
+
 ## v0.7.6 - 2026-02-01
 
 ### What's Changed

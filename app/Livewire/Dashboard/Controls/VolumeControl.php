@@ -79,6 +79,10 @@ class VolumeControl extends Component
             $action = new CreateVolumeCommandAction;
             $action->execute($this->onesiBox, $level);
 
+            // Optimistically update the local model so the UI reflects the change immediately
+            $this->onesiBox->volume = $level;
+            unset($this->currentVolume);
+
             $this->dispatch('notify', [
                 'message' => __('Comando volume inviato'),
                 'type' => 'success',

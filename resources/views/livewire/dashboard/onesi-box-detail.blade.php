@@ -1,4 +1,4 @@
-<div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+<div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8" wire:poll.15s="refreshFromDatabase">
     {{-- Header --}}
     <div class="mb-6">
         <flux:button variant="subtle" wire:click="goBack" class="mb-4" icon="arrow-left">

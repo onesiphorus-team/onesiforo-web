@@ -144,6 +144,14 @@ class OnesiBoxDetail extends Component
     }
 
     /**
+     * Refresh model data from the database (called by wire:poll).
+     */
+    public function refreshFromDatabase(): void
+    {
+        $this->onesiBox->refresh();
+    }
+
+    /**
      * Navigate back to the OnesiBox list.
      */
     public function goBack(): void

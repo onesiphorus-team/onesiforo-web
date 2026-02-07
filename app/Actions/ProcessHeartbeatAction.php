@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Events\OnesiBoxStatusUpdated;
 use App\Models\OnesiBox;
 use Illuminate\Support\Facades\Date;
 
@@ -39,6 +40,8 @@ class ProcessHeartbeatAction
         }
 
         $onesiBox->recordHeartbeat();
+
+        OnesiBoxStatusUpdated::dispatch($onesiBox);
     }
 
     /**

@@ -18,7 +18,7 @@ use Livewire\Component;
 /**
  * Livewire component for controlling OnesiBox volume.
  *
- * Provides 5 preset volume levels: 60%, 70%, 80%, 90%, 100%.
+ * Provides 6 preset volume levels: 0% (mute), 60%, 70%, 80%, 90%, 100%.
  */
 class VolumeControl extends Component
 {
@@ -34,7 +34,7 @@ class VolumeControl extends Component
      *
      * @var list<int>
      */
-    public array $volumeLevels = [60, 70, 80, 90, 100];
+    public array $volumeLevels = [0, 60, 70, 80, 90, 100];
 
     /**
      * Get the current volume level from the OnesiBox, rounded to the nearest preset.

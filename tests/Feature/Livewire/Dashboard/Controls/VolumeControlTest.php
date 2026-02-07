@@ -18,10 +18,10 @@ test('volume control shows 5 preset levels', function (): void {
 
     Livewire::actingAs($user)
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
-        ->assertSee('20%')
-        ->assertSee('40%')
         ->assertSee('60%')
+        ->assertSee('70%')
         ->assertSee('80%')
+        ->assertSee('90%')
         ->assertSee('100%')
         ->assertStatus(200);
 });
@@ -44,7 +44,7 @@ test('volume control creates command when level selected', function (): void {
 
     Livewire::actingAs($user)
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
-        ->call('setVolume', 40);
+        ->call('setVolume', 70);
 
     $command = Command::query()->where('onesi_box_id', $onesiBox->id)
         ->where('type', CommandType::SetVolume)
@@ -52,7 +52,7 @@ test('volume control creates command when level selected', function (): void {
         ->first();
 
     expect($command)->not->toBeNull();
-    expect($command->payload)->toBe(['level' => 40]);
+    expect($command->payload)->toBe(['level' => 70]);
 });
 
 test('volume control is disabled for readonly users', function (): void {
@@ -95,7 +95,7 @@ test('readonly user cannot send volume command', function (): void {
 
     Livewire::actingAs($user)
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
-        ->call('setVolume', 40);
+        ->call('setVolume', 70);
 
     $command = Command::query()->where('onesi_box_id', $onesiBox->id)
         ->where('type', CommandType::SetVolume)
@@ -124,12 +124,12 @@ test('volume control rounds to nearest preset when volume is between presets', f
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
         ->assertSet('currentVolume', $expectedPreset);
 })->with([
-    '45% rounds to 40%' => [45, 40],
-    '75% rounds to 80%' => [75, 80],
-    '95% rounds to 100%' => [95, 100],
-    '15% rounds to 20%' => [15, 20],
-    '30% rounds to 20% (equidistant favors lower)' => [30, 20],
-    '50% rounds to 40% (equidistant favors lower)' => [50, 40],
+    '55% rounds to 60%' => [55, 60],
+    '74% rounds to 70%' => [74, 70],
+    '96% rounds to 100%' => [96, 100],
+    '50% rounds to 60%' => [50, 60],
+    '65% rounds to 60% (equidistant favors lower)' => [65, 60],
+    '75% rounds to 70% (equidistant favors lower)' => [75, 70],
 ]);
 
 test('volume control shows exact preset when volume matches', function (int $preset): void {
@@ -140,4 +140,4 @@ test('volume control shows exact preset when volume matches', function (int $pre
     Livewire::actingAs($user)
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
         ->assertSet('currentVolume', $preset);
-})->with([20, 40, 60, 80, 100]);
+})->with([60, 70, 80, 90, 100]);

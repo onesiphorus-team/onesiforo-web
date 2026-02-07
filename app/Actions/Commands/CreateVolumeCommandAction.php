@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * Creates a volume command for an OnesiBox appliance.
  *
- * Volume levels are restricted to 5 preset values: 60%, 70%, 80%, 90%, 100%.
+ * Volume levels are restricted to 6 preset values: 0% (mute), 60%, 70%, 80%, 90%, 100%.
  */
 class CreateVolumeCommandAction
 {
@@ -22,7 +22,7 @@ class CreateVolumeCommandAction
      *
      * @var list<int>
      */
-    public const array VALID_LEVELS = [60, 70, 80, 90, 100];
+    public const array VALID_LEVELS = [0, 60, 70, 80, 90, 100];
 
     /**
      * Priority for volume commands (lower = higher priority).
@@ -33,7 +33,7 @@ class CreateVolumeCommandAction
      * Execute the action to create a volume command.
      *
      * @param  OnesiBox  $onesiBox  The target appliance
-     * @param  int  $level  The volume level (must be 60, 70, 80, 90, or 100)
+     * @param  int  $level  The volume level (must be 0, 60, 70, 80, 90, or 100)
      * @return Command The created command
      *
      * @throws ValidationException If the volume level is invalid

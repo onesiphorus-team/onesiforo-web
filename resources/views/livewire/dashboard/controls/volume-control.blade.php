@@ -30,7 +30,11 @@
                 :disabled="!$this->canControl || !$this->isOnline"
                 class="min-w-[60px]"
             >
-                {{ $level }}%
+                @if ($level === 0)
+                    <flux:icon name="speaker-x-mark" class="w-4 h-4" />
+                @else
+                    {{ $level }}%
+                @endif
             </flux:button>
         @endforeach
     </div>
@@ -40,6 +44,6 @@
     @enderror
 
     <flux:text class="text-center text-zinc-500 dark:text-zinc-400 text-sm mt-3">
-        Volume attuale: {{ $this->currentVolume }}%
+        Volume attuale: {{ $this->currentVolume === 0 ? __('Muto') : $this->currentVolume . '%' }}
     </flux:text>
 </div>

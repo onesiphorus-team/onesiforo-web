@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.8 - 2026-02-07
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.7...v0.7.8
+
 ## v0.7.7 - 2026-02-07
 
 ### What's Changed

@@ -61,7 +61,7 @@ class HeartbeatRequest extends FormRequest
             'temperature' => [
                 'nullable',
                 'numeric',
-                'min:0',
+                'min:-50',
                 'max:150',
             ],
             'uptime' => [
@@ -173,9 +173,9 @@ class HeartbeatRequest extends FormRequest
             ],
             'wifi.signal_dbm' => [
                 'nullable',
-                'integer',
+                'numeric',
                 'min:-150',
-                'max:0',
+                'max:100',
             ],
             'wifi.signal_percent' => [
                 'nullable',
@@ -191,7 +191,7 @@ class HeartbeatRequest extends FormRequest
             ],
             'wifi.frequency' => [
                 'nullable',
-                'integer',
+                'numeric',
                 'min:0',
             ],
             'wifi.security' => [
@@ -259,7 +259,7 @@ class HeartbeatRequest extends FormRequest
             'memory_usage.max' => 'L\'utilizzo memoria non può superare 100%.',
             'disk_usage.min' => 'L\'utilizzo disco deve essere almeno 0%.',
             'disk_usage.max' => 'L\'utilizzo disco non può superare 100%.',
-            'temperature.min' => 'La temperatura deve essere almeno 0°C.',
+            'temperature.min' => 'La temperatura deve essere almeno -50°C.',
             'temperature.max' => 'La temperatura non può superare 150°C.',
             'uptime.min' => 'L\'uptime non può essere negativo.',
             'current_media.url.required_with' => 'L\'URL del media è obbligatorio quando si fornisce current_media.',

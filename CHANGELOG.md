@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.11 - 2026-02-07
+
+### What's Changed
+
+* fix: relax heartbeat validation for sensor edge cases by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/63
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.10...v0.7.11
+
 ## v0.7.9 - 2026-02-07
 
 ### What's Changed

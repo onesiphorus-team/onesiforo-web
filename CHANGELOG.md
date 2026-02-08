@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.13 - 2026-02-08
+
+### What's Changed
+
+* Admin panel: user form redesign e traduzioni italiano by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/65
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.12...v0.7.13
+
 ## v0.7.12 - 2026-02-08
 
 ### What's Changed

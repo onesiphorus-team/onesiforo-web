@@ -24,9 +24,9 @@ class RecipientResource extends Resource
 {
     protected static ?string $model = Recipient::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHeart;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Appliances';
+    protected static UnitEnum|string|null $navigationGroup = 'Dispositivi';
 
     protected static ?int $navigationSort = 2;
 

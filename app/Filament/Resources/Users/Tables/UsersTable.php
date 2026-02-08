@@ -19,8 +19,12 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Password;
 
 class UsersTable
@@ -91,9 +95,64 @@ class UsersTable
                         'never' => __('Never connected'),
                         default => __('Unknown'),
                     }),
+
+                TextColumn::make('created_at')
+                    ->label(__('Created'))
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('roles')
+                    ->label(__('Role'))
+                    ->relationship('roles', 'name')
+                    ->options(
+                        collect(Roles::cases())
+                            ->mapWithKeys(fn (Roles $role): array => [$role->value => $role->getLabel()])
+                            ->all()
+                    )
+                    ->multiple()
+                    ->preload(),
+
+                TernaryFilter::make('email_verified_at')
+                    ->label(__('Email Verification'))
+                    ->placeholder(__('All users'))
+                    ->trueLabel(__('Verified'))
+                    ->falseLabel(__('Not verified'))
+                    ->nullable(),
+
+                SelectFilter::make('online_status')
+                    ->label(__('Connection Status'))
+                    ->options([
+                        'online' => __('Online'),
+                        'offline' => __('Offline'),
+                        'never' => __('Never connected'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+
+                        if ($value === null) {
+                            return $query;
+                        }
+
+                        return match ($value) {
+                            'online' => $query->where('last_login_at', '>=', now()->subMinutes(5)),
+                            'offline' => $query->whereNotNull('last_login_at')
+                                ->where('last_login_at', '<', now()->subMinutes(5)),
+                            'never' => $query->whereNull('last_login_at'),
+                            default => $query,
+                        };
+                    }),
+
                 TrashedFilter::make(),
+            ])
+            ->groups([
+                Group::make('roles.name')
+                    ->label(__('Role'))
+                    ->getTitleFromRecordUsing(fn (User $record): string => $record->roles->pluck('name')
+                        ->map(fn (string $name): string => Roles::tryFrom($name)?->getLabel() ?? $name)
+                        ->join(', ') ?: __('No role'))
+                    ->collapsible(),
             ])
             ->recordActions([
                 ActionGroup::make([

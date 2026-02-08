@@ -149,9 +149,20 @@ class UsersTable
             ->groups([
                 Group::make('roles.name')
                     ->label(__('Role'))
+                    ->getKeyFromRecordUsing(fn (User $record): string => $record->roles->pluck('name')->sort()->join(',') ?: 'no-role')
                     ->getTitleFromRecordUsing(fn (User $record): string => $record->roles->pluck('name')
                         ->map(fn (string $name): string => Roles::tryFrom($name)?->getLabel() ?? $name)
-                        ->join(', ') ?: __('No role'))
+                        ->join(', ') ?: __('Nessun ruolo'))
+                    ->orderQueryUsing(fn (Builder $query, string $direction) => $query->orderBy(
+                        User::query()
+                            ->select('roles.name')
+                            ->join('role_user', 'role_user.user_id', '=', 'users.id')
+                            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+                            ->whereColumn('role_user.user_id', 'users.id')
+                            ->orderBy('roles.name')
+                            ->limit(1),
+                        $direction,
+                    ))
                     ->collapsible(),
             ])
             ->recordActions([

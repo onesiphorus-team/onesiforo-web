@@ -18,7 +18,7 @@ use Livewire\Component;
 /**
  * Livewire component for controlling OnesiBox volume.
  *
- * Provides 7 preset volume levels: 0% (mute), 50%, 60%, 70%, 80%, 90%, 100%.
+ * Provides preset buttons and a granular slider (0-100, step 5) for volume control.
  */
 class VolumeControl extends Component
 {
@@ -30,21 +30,42 @@ class VolumeControl extends Component
     public OnesiBox $onesiBox;
 
     /**
-     * Available volume levels.
+     * Available volume preset levels for quick-access buttons.
      *
      * @var list<int>
      */
-    public array $volumeLevels = [0, 50, 60, 70, 80, 90, 100];
+    public array $volumeLevels = [50, 60, 70, 80, 90, 100];
 
     /**
-     * Get the current volume level from the OnesiBox, rounded to the nearest preset.
+     * Current slider volume value, synced with Alpine.js via entangle.
+     */
+    public int $sliderVolume = 80;
+
+    public function mount(): void
+    {
+        $this->sliderVolume = $this->roundToStep($this->onesiBox->volume ?? 80);
+    }
+
+    /**
+     * Get the current volume level from the OnesiBox, rounded to the nearest step of 5.
      */
     #[Computed]
     public function currentVolume(): int
     {
         $actualVolume = $this->onesiBox->volume ?? 80;
 
-        return $this->findNearestPreset($actualVolume);
+        return $this->roundToStep($actualVolume);
+    }
+
+    /**
+     * Get the nearest preset button value to the current volume.
+     */
+    #[Computed]
+    public function nearestPreset(): int
+    {
+        return collect($this->volumeLevels)
+            ->sortBy(fn (int $preset): int => abs($this->currentVolume() - $preset))
+            ->first();
     }
 
     /**
@@ -57,19 +78,40 @@ class VolumeControl extends Component
     }
 
     /**
-     * Set the volume level on the OnesiBox.
+     * Set the volume level on the OnesiBox (used by preset buttons).
      */
     public function setVolume(int $level): void
     {
-        // Check permission first
+        $this->applyVolume($level);
+    }
+
+    /**
+     * Set the volume level from the slider (used by Alpine.js with debounce).
+     */
+    public function setSliderVolume(int $level): void
+    {
+        $this->applyVolume($level);
+    }
+
+    public function render(): View
+    {
+        return view('livewire.dashboard.controls.volume-control');
+    }
+
+    /**
+     * Apply a volume level: validate, create command, and update local state.
+     */
+    private function applyVolume(int $level): void
+    {
         if (! $this->canControl()) {
             return;
         }
 
-        // Validate level
-        if (! in_array($level, $this->volumeLevels, true)) {
-            $this->addError('level', __('Il livello del volume deve essere uno di: :levels.', [
-                'levels' => implode(', ', $this->volumeLevels),
+        if (! $this->isValidLevel($level)) {
+            $this->addError('level', __('Il livello del volume deve essere tra :min e :max, con incrementi di :step.', [
+                'min' => CreateVolumeCommandAction::MIN_LEVEL,
+                'max' => CreateVolumeCommandAction::MAX_LEVEL,
+                'step' => CreateVolumeCommandAction::STEP,
             ]));
 
             return;
@@ -81,7 +123,8 @@ class VolumeControl extends Component
 
             // Optimistically update the local model so the UI reflects the change immediately
             $this->onesiBox->volume = $level;
-            unset($this->currentVolume);
+            $this->sliderVolume = $level;
+            unset($this->currentVolume, $this->nearestPreset);
 
             $this->dispatch('notify', [
                 'message' => __('Comando volume inviato'),
@@ -96,18 +139,23 @@ class VolumeControl extends Component
         }
     }
 
-    public function render(): View
+    /**
+     * Check if a volume level is valid (0-100, multiple of 5).
+     */
+    private function isValidLevel(int $level): bool
     {
-        return view('livewire.dashboard.controls.volume-control');
+        return $level >= CreateVolumeCommandAction::MIN_LEVEL
+            && $level <= CreateVolumeCommandAction::MAX_LEVEL
+            && $level % CreateVolumeCommandAction::STEP === 0;
     }
 
     /**
-     * Find the nearest preset value for a given volume.
+     * Round a volume value to the nearest multiple of 5.
      */
-    private function findNearestPreset(int $volume): int
+    private function roundToStep(int $volume): int
     {
-        return collect($this->volumeLevels)
-            ->sortBy(fn (int $preset): int => abs($volume - $preset))
-            ->first();
+        $step = CreateVolumeCommandAction::STEP;
+
+        return (int) (round($volume / $step) * $step);
     }
 }

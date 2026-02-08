@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.12 - 2026-02-08
+
+### What's Changed
+
+* feat: improve admin panel dashboard, navigation and users table by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/64
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.11...v0.7.12
+
 ## v0.7.11 - 2026-02-07
 
 ### What's Changed

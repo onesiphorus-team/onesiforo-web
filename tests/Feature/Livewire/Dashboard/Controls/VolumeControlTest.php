@@ -11,14 +11,13 @@ use App\Models\OnesiBox;
 use App\Models\User;
 use Livewire\Livewire;
 
-test('volume control shows 7 preset levels including mute', function (): void {
+test('volume control shows 6 preset levels (without mute)', function (): void {
     $user = User::factory()->create();
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full]);
 
     Livewire::actingAs($user)
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
-        ->assertSeeHtml('wire:click="setVolume(0)"')
         ->assertSee('50%')
         ->assertSee('60%')
         ->assertSee('70%')
@@ -122,6 +121,24 @@ test('volume control dispatches notification on successful command', function ()
         ->assertDispatched('notify');
 });
 
+test('mute sends volume 0 command', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create(['volume' => 75]);
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full]);
+
+    Livewire::actingAs($user)
+        ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
+        ->call('setSliderVolume', 0);
+
+    $command = Command::query()->where('onesi_box_id', $onesiBox->id)
+        ->where('type', CommandType::SetVolume)
+        ->where('status', CommandStatus::Pending)
+        ->first();
+
+    expect($command)->not->toBeNull();
+    expect($command->payload)->toBe(['level' => 0]);
+});
+
 test('volume control rounds to nearest multiple of 5 when volume is between steps', function (int $actualVolume, int $expectedVolume): void {
     $user = User::factory()->create();
     $onesiBox = OnesiBox::factory()->online()->create(['volume' => $actualVolume]);
@@ -166,9 +183,9 @@ test('nearest preset highlights closest preset button for non-preset volumes', f
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
         ->assertSet('nearestPreset', $expectedPreset);
 })->with([
-    '5 nearest to 0' => [5, 0],
-    '15 nearest to 0' => [15, 0],
-    '25 equidistant to 0 and 50, favors 0' => [25, 0],
+    '0 nearest to 50' => [0, 50],
+    '5 nearest to 50' => [5, 50],
+    '25 nearest to 50' => [25, 50],
     '30 nearest to 50' => [30, 50],
     '35 nearest to 50' => [35, 50],
     '45 nearest to 50' => [45, 50],
@@ -187,7 +204,7 @@ test('nearest preset matches exact preset when volume is a preset', function (in
     Livewire::actingAs($user)
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
         ->assertSet('nearestPreset', $preset);
-})->with([0, 50, 60, 70, 80, 90, 100]);
+})->with([50, 60, 70, 80, 90, 100]);
 
 test('slider volume creates command with valid level', function (): void {
     $user = User::factory()->create();
@@ -265,4 +282,14 @@ test('slider volume is initialized from onesibox volume on mount', function (): 
     Livewire::actingAs($user)
         ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
         ->assertSet('sliderVolume', 45);
+});
+
+test('volume presets do not include 0 (mute handled by toggle)', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full]);
+
+    Livewire::actingAs($user)
+        ->test(VolumeControl::class, ['onesiBox' => $onesiBox])
+        ->assertSet('volumeLevels', [50, 60, 70, 80, 90, 100]);
 });

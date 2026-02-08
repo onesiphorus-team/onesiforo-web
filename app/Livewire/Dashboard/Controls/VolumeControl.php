@@ -34,7 +34,7 @@ class VolumeControl extends Component
      *
      * @var list<int>
      */
-    public array $volumeLevels = [0, 50, 60, 70, 80, 90, 100];
+    public array $volumeLevels = [50, 60, 70, 80, 90, 100];
 
     /**
      * Current slider volume value, synced with Alpine.js via entangle.
@@ -64,7 +64,7 @@ class VolumeControl extends Component
     public function nearestPreset(): int
     {
         return collect($this->volumeLevels)
-            ->sortBy(fn (int $preset): int => abs($this->currentVolume - $preset))
+            ->sortBy(fn (int $preset): int => abs($this->currentVolume() - $preset))
             ->first();
     }
 

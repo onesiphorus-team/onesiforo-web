@@ -38,7 +38,7 @@ class ActivityResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('System');
+        return __('Sistema');
     }
 
     public static function infolist(Schema $schema): Schema

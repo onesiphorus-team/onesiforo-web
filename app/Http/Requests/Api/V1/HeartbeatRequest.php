@@ -175,7 +175,7 @@ class HeartbeatRequest extends FormRequest
                 'nullable',
                 'numeric',
                 'min:-150',
-                'max:100',
+                'max:0',
             ],
             'wifi.signal_percent' => [
                 'nullable',

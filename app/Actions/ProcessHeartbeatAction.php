@@ -41,7 +41,7 @@ class ProcessHeartbeatAction
 
         $onesiBox->recordHeartbeat();
 
-        OnesiBoxStatusUpdated::dispatch($onesiBox);
+        event(new OnesiBoxStatusUpdated($onesiBox));
     }
 
     /**

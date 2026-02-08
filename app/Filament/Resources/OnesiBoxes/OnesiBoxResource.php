@@ -27,7 +27,7 @@ class OnesiBoxResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTv;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Appliances';
+    protected static UnitEnum|string|null $navigationGroup = 'Dispositivi';
 
     protected static ?int $navigationSort = 1;
 

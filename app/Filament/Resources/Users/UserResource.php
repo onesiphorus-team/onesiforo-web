@@ -28,12 +28,12 @@ class UserResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('User');
+        return __('Utente');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Users');
+        return __('Utenti');
     }
 
     public static function form(Schema $schema): Schema

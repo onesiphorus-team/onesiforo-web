@@ -23,17 +23,17 @@ class ActivityResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('Activity Log');
+        return __('Registro Attività');
     }
 
     public static function getModelLabel(): string
     {
-        return __('Activity');
+        return __('Attività');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Activities');
+        return __('Attività');
     }
 
     public static function getNavigationGroup(): ?string

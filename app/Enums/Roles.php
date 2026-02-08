@@ -27,9 +27,9 @@ enum Roles: string implements HasColor, HasDescription, HasIcon, HasLabel
     public function getDescription(): string
     {
         return match ($this) {
-            self::SuperAdmin => __('Full system access with ability to manage all users and settings'),
-            self::Admin => __('Can manage caregivers and access administrative functions'),
-            self::Caregiver => __('Can manage assigned OnesiBox devices and patients'),
+            self::SuperAdmin => __('Accesso completo al sistema con possibilità di gestire tutti gli utenti e le impostazioni'),
+            self::Admin => __('Può gestire i caregiver e accedere alle funzioni amministrative'),
+            self::Caregiver => __('Può gestire i dispositivi OnesiBox assegnati e i pazienti'),
         };
     }
 

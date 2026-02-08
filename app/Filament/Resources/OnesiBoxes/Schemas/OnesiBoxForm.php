@@ -18,37 +18,37 @@ class OnesiBoxForm
     {
         return $schema
             ->components([
-                Section::make(__('Device Information'))
+                Section::make(__('Informazioni Dispositivo'))
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
-                            ->label(__('Name'))
+                            ->label(__('Nome'))
                             ->required()
                             ->maxLength(255)
-                            ->placeholder(__('e.g. OnesiBox-001')),
+                            ->placeholder(__('es. OnesiBox-001')),
 
                         TextInput::make('serial_number')
-                            ->label(__('Serial Number'))
+                            ->label(__('Numero Seriale'))
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
-                            ->placeholder(__('e.g. OB-12345678')),
+                            ->placeholder(__('es. OB-12345678')),
 
                         TextInput::make('firmware_version')
-                            ->label(__('Firmware Version'))
+                            ->label(__('Versione Firmware'))
                             ->maxLength(50)
-                            ->placeholder(__('e.g. 1.0.0')),
+                            ->placeholder(__('es. 1.0.0')),
 
                         Toggle::make('is_active')
-                            ->label(__('Active'))
+                            ->label(__('Attivo'))
                             ->default(true)
-                            ->helperText(__('If disabled, the appliance cannot communicate with the server.')),
+                            ->helperText(__('Se disabilitato, il dispositivo non potrà comunicare con il server.')),
                     ]),
 
-                Section::make(__('Recipient Assignment'))
+                Section::make(__('Assegnazione Beneficiario'))
                     ->schema([
                         Select::make('recipient_id')
-                            ->label(__('Recipient'))
+                            ->label(__('Beneficiario'))
                             ->relationship('recipient', 'first_name')
                             ->getOptionLabelFromRecordUsing(fn (Recipient $record): string => $record->full_name)
                             ->searchable(['first_name', 'last_name'])
@@ -56,14 +56,14 @@ class OnesiBoxForm
                             ->nullable()
                             ->createOptionForm(RecipientFieldset::getSchema())
                             ->createOptionUsing(fn (array $data): int => Recipient::query()->create($data)->id)
-                            ->helperText(__('Select an existing recipient or create a new one.')),
+                            ->helperText(__('Seleziona un beneficiario esistente o creane uno nuovo.')),
                     ]),
 
-                Section::make(__('Notes'))
+                Section::make(__('Note'))
                     ->schema([
                         Textarea::make('notes')
                             ->hiddenLabel()
-                            ->placeholder(__('Any additional notes...'))
+                            ->placeholder(__('Note aggiuntive...'))
                             ->rows(3),
                     ])
                     ->collapsed()

@@ -24,7 +24,7 @@ class CaregiversRelationManager extends RelationManager
 {
     protected static string $relationship = 'caregivers';
 
-    protected static ?string $title = 'Caregivers';
+    protected static ?string $title = 'Caregiver';
 
     public function form(Schema $schema): Schema
     {

@@ -33,7 +33,7 @@ test('action rejects invalid volume levels', function (int $level): void {
     'twenty' => 20,
     'thirty' => 30,
     'forty' => 40,
-    'fifty' => 50,
+    'forty-five' => 45,
     'over hundred' => 150,
     'negative' => -20,
 ]);
@@ -45,7 +45,7 @@ test('action accepts all valid volume levels', function (int $level): void {
     $command = $action->execute($onesiBox, $level);
 
     expect($command->payload['level'])->toBe($level);
-})->with([0, 60, 70, 80, 90, 100]);
+})->with([0, 50, 60, 70, 80, 90, 100]);
 
 test('action sets appropriate priority for volume command', function (): void {
     $onesiBox = OnesiBox::factory()->create();

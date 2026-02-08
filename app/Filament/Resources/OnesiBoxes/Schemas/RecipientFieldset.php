@@ -21,48 +21,48 @@ class RecipientFieldset
             Grid::make(2)
                 ->schema([
                     TextInput::make('first_name')
-                        ->label(__('First Name'))
+                        ->label(__('Nome'))
                         ->required()
                         ->maxLength(255),
 
                     TextInput::make('last_name')
-                        ->label(__('Last Name'))
+                        ->label(__('Cognome'))
                         ->required()
                         ->maxLength(255),
                 ]),
 
             TextInput::make('phone')
-                ->label(__('Phone'))
+                ->label(__('Telefono'))
                 ->tel()
                 ->maxLength(50)
                 ->regex('/^(\+39\s?)?(\d{2,4}\s?)?\d{6,10}$/')
                 ->validationMessages([
-                    'regex' => __('Please enter a valid Italian phone number.'),
+                    'regex' => __('Inserisci un numero di telefono italiano valido.'),
                 ])
-                ->placeholder(__('e.g. +39 02 1234567')),
+                ->placeholder(__('es. +39 02 1234567')),
 
-            Fieldset::make(__('Address'))
+            Fieldset::make(__('Indirizzo'))
                 ->schema([
                     TextInput::make('street')
-                        ->label(__('Street'))
+                        ->label(__('Via'))
                         ->maxLength(255)
                         ->columnSpanFull(),
 
                     Grid::make(3)
                         ->schema([
                             TextInput::make('city')
-                                ->label(__('City'))
+                                ->label(__('Città'))
                                 ->maxLength(100),
 
                             TextInput::make('postal_code')
-                                ->label(__('Postal Code'))
+                                ->label(__('CAP'))
                                 ->maxLength(10)
-                                ->placeholder(__('e.g. 20100')),
+                                ->placeholder(__('es. 20100')),
 
                             TextInput::make('province')
-                                ->label(__('Province'))
+                                ->label(__('Provincia'))
                                 ->maxLength(2)
-                                ->placeholder(__('e.g. MI')),
+                                ->placeholder(__('es. MI')),
                         ]),
                 ])
                 ->columns(1),

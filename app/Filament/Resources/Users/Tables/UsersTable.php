@@ -33,7 +33,7 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label(__('Name'))
+                    ->label(__('Nome'))
                     ->searchable()
                     ->sortable(),
 
@@ -43,7 +43,7 @@ class UsersTable
                     ->sortable(),
 
                 IconColumn::make('email_verified_at')
-                    ->label(__('Verified'))
+                    ->label(__('Verificato'))
                     ->boolean()
                     ->trueIcon('heroicon-o-check-badge')
                     ->falseIcon('heroicon-o-x-circle')
@@ -51,30 +51,30 @@ class UsersTable
                     ->falseColor('danger')
                     ->tooltip(function (User $record): string {
                         if (! $record->hasVerifiedEmail()) {
-                            return __('Email not verified');
+                            return __('Email non verificata');
                         }
 
                         /** @var \Illuminate\Support\Carbon $verifiedAt */
                         $verifiedAt = $record->email_verified_at;
 
-                        return __('Email verified on :date', ['date' => $verifiedAt->format('d/m/Y H:i')]);
+                        return __('Email verificata il :date', ['date' => $verifiedAt->format('d/m/Y H:i')]);
                     }),
 
                 TextColumn::make('roles.name')
-                    ->label(__('Roles'))
+                    ->label(__('Ruoli'))
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => Roles::tryFrom($state)?->getLabel() ?? $state)
                     ->color(fn (string $state): string => Roles::tryFrom($state)?->getColor() ?? 'gray')
                     ->icon(fn (string $state): ?string => Roles::tryFrom($state)?->getIcon()),
 
                 TextColumn::make('last_login_at')
-                    ->label(__('Last Login'))
+                    ->label(__('Ultimo Accesso'))
                     ->dateTime('d/m/Y H:i')
-                    ->placeholder(__('Never'))
+                    ->placeholder(__('Mai'))
                     ->sortable(),
 
                 IconColumn::make('online_status')
-                    ->label(__('Status'))
+                    ->label(__('Stato'))
                     ->state(fn (User $record): string => self::getOnlineStatus($record))
                     ->icon(fn (string $state): string => match ($state) {
                         'online' => 'heroicon-o-check-circle',
@@ -89,21 +89,21 @@ class UsersTable
                         default => 'gray',
                     })
                     ->tooltip(fn (string $state): string => match ($state) {
-                        'online' => __('Online (active in last 5 minutes)'),
+                        'online' => __('Online (attivo negli ultimi 5 minuti)'),
                         'offline' => __('Offline'),
-                        'never' => __('Never connected'),
-                        default => __('Unknown'),
+                        'never' => __('Mai connesso'),
+                        default => __('Sconosciuto'),
                     }),
 
                 TextColumn::make('created_at')
-                    ->label(__('Created'))
+                    ->label(__('Creato il'))
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('roles')
-                    ->label(__('Role'))
+                    ->label(__('Ruolo'))
                     ->relationship('roles', 'name')
                     ->options(
                         collect(Roles::cases())
@@ -114,18 +114,18 @@ class UsersTable
                     ->preload(),
 
                 TernaryFilter::make('email_verified_at')
-                    ->label(__('Email Verification'))
-                    ->placeholder(__('All users'))
-                    ->trueLabel(__('Verified'))
-                    ->falseLabel(__('Not verified'))
+                    ->label(__('Verifica Email'))
+                    ->placeholder(__('Tutti gli utenti'))
+                    ->trueLabel(__('Verificati'))
+                    ->falseLabel(__('Non verificati'))
                     ->nullable(),
 
                 SelectFilter::make('online_status')
-                    ->label(__('Connection Status'))
+                    ->label(__('Stato Connessione'))
                     ->options([
                         'online' => __('Online'),
                         'offline' => __('Offline'),
-                        'never' => __('Never connected'),
+                        'never' => __('Mai connesso'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         $value = $data['value'] ?? null;
@@ -181,13 +181,13 @@ class UsersTable
     private static function resendVerificationAction(): Action
     {
         return Action::make('resend_verification')
-            ->label(__('Send Email Verification'))
+            ->label(__('Invia Verifica Email'))
             ->icon('heroicon-o-envelope')
             ->color('warning')
             ->visible(fn (User $record): bool => ! $record->hasVerifiedEmail())
             ->requiresConfirmation()
-            ->modalHeading(__('Send Verification Email'))
-            ->modalDescription(__('Are you sure you want to send the verification email to this user?'))
+            ->modalHeading(__('Invia Email di Verifica'))
+            ->modalDescription(__('Sei sicuro di voler inviare l\'email di verifica a questo utente?'))
             ->action(function (User $record): void {
                 $record->sendEmailVerificationNotification();
 
@@ -197,8 +197,8 @@ class UsersTable
                     ->log('Verification email sent');
 
                 Notification::make()
-                    ->title(__('Verification email sent'))
-                    ->body(__('The verification email has been sent to :email', ['email' => $record->email]))
+                    ->title(__('Email di verifica inviata'))
+                    ->body(__('L\'email di verifica è stata inviata a :email', ['email' => $record->email]))
                     ->success()
                     ->send();
             });
@@ -207,12 +207,12 @@ class UsersTable
     private static function sendPasswordResetAction(): Action
     {
         return Action::make('send_password_reset')
-            ->label(__('Send Password Reset'))
+            ->label(__('Invia Reset Password'))
             ->icon('heroicon-o-key')
             ->color('gray')
             ->requiresConfirmation()
-            ->modalHeading(__('Send Password Reset'))
-            ->modalDescription(__('Are you sure you want to send the password reset link to this user?'))
+            ->modalHeading(__('Invia Reset Password'))
+            ->modalDescription(__('Sei sicuro di voler inviare il link di reset password a questo utente?'))
             ->action(function (User $record): void {
                 Password::sendResetLink(['email' => $record->email]);
 
@@ -222,8 +222,8 @@ class UsersTable
                     ->log('Password reset sent');
 
                 Notification::make()
-                    ->title(__('Password reset email sent'))
-                    ->body(__('The password reset link has been sent to :email', ['email' => $record->email]))
+                    ->title(__('Email di reset password inviata'))
+                    ->body(__('Il link di reset password è stato inviato a :email', ['email' => $record->email]))
                     ->success()
                     ->send();
             });

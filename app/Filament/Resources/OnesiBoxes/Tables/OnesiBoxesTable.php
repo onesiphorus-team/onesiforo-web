@@ -28,24 +28,24 @@ class OnesiBoxesTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label(__('Name'))
+                    ->label(__('Nome'))
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('serial_number')
-                    ->label(__('Serial'))
+                    ->label(__('Numero Seriale'))
                     ->searchable()
                     ->copyable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('recipient.full_name')
-                    ->label(__('Recipient'))
+                    ->label(__('Beneficiario'))
                     ->state(fn (OnesiBox $record): ?string => $record->recipient?->full_name)
                     ->searchable(['recipient.first_name', 'recipient.last_name'])
-                    ->placeholder(__('Not assigned')),
+                    ->placeholder(__('Non assegnato')),
 
                 IconColumn::make('is_online')
-                    ->label(__('Status'))
+                    ->label(__('Stato'))
                     ->state(fn (OnesiBox $record): string => self::getOnlineStatus($record))
                     ->icon(fn (string $state): string => match ($state) {
                         'online' => 'heroicon-o-signal',
@@ -64,15 +64,15 @@ class OnesiBoxesTable
                     ->tooltip(fn (string $state): string => match ($state) {
                         'online' => __('Online'),
                         'offline' => __('Offline'),
-                        'never' => __('Never connected'),
-                        'disabled' => __('Disabled'),
-                        default => __('Unknown'),
+                        'never' => __('Mai connesso'),
+                        'disabled' => __('Disabilitato'),
+                        default => __('Sconosciuto'),
                     }),
 
                 TextColumn::make('last_seen_at')
-                    ->label(__('Last Contact'))
+                    ->label(__('Ultimo Contatto'))
                     ->dateTime('Y-m-d H:i')
-                    ->placeholder(__('Never'))
+                    ->placeholder(__('Mai'))
                     ->sortable(),
 
                 TextColumn::make('firmware_version')
@@ -82,13 +82,13 @@ class OnesiBoxesTable
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('caregivers_count')
-                    ->label(__('Caregivers'))
+                    ->label(__('Caregiver'))
                     ->counts('caregivers')
                     ->badge()
                     ->color(fn (int $state): string => $state > 0 ? 'info' : 'gray'),
 
                 IconColumn::make('is_active')
-                    ->label(__('Active'))
+                    ->label(__('Attivo'))
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
@@ -97,14 +97,14 @@ class OnesiBoxesTable
             ])
             ->filters([
                 TernaryFilter::make('is_active')
-                    ->label(__('Activation Status')),
+                    ->label(__('Stato Attivazione')),
 
                 SelectFilter::make('online_status')
-                    ->label(__('Connection Status'))
+                    ->label(__('Stato Connessione'))
                     ->options([
                         'online' => __('Online'),
                         'offline' => __('Offline'),
-                        'never' => __('Never connected'),
+                        'never' => __('Mai connesso'),
                     ])
                     ->query(fn ($query, array $data) => match ($data['value']) {
                         'online' => $query->where('last_seen_at', '>=', now()->subMinutes(5)),

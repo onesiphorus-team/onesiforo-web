@@ -10,7 +10,6 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
@@ -21,13 +20,14 @@ class UserForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(2)
             ->components([
-                Section::make(__('Personal Information'))
+                Section::make(__('Informazioni Personali'))
                     ->icon('heroicon-o-user')
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
-                            ->label(__('Name'))
+                            ->label(__('Nome'))
                             ->required()
                             ->maxLength(255),
 
@@ -43,40 +43,39 @@ class UserForm
                             ),
                     ]),
 
-                Grid::make(2)
+                Section::make(__('Stato Account'))
+                    ->icon('heroicon-o-information-circle')
+                    ->visible(fn (string $operation): bool => $operation === 'edit')
                     ->schema([
-                        Section::make(__('Roles'))
-                            ->icon('heroicon-o-shield-check')
-                            ->schema([
-                                CheckboxList::make('roles')
-                                    ->hiddenLabel()
-                                    ->options(fn (): array => self::getAvailableRoleOptions())
-                                    ->descriptions(fn (): array => self::getAvailableRoleDescriptions())
-                                    ->disabled(fn (?User $record): bool => self::shouldDisableRoles($record))
-                                    ->in(fn (): array => array_keys(self::getAvailableRoleOptions())),
-                            ]),
+                        IconEntry::make('email_verified_at')
+                            ->label(__('Email Verificata'))
+                            ->boolean()
+                            ->trueIcon('heroicon-o-check-badge')
+                            ->falseIcon('heroicon-o-x-circle')
+                            ->trueColor('success')
+                            ->falseColor('danger'),
 
-                        Section::make(__('Account Status'))
-                            ->icon('heroicon-o-information-circle')
-                            ->visible(fn (string $operation): bool => $operation === 'edit')
-                            ->schema([
-                                IconEntry::make('email_verified_at')
-                                    ->label(__('Email Verified'))
-                                    ->boolean()
-                                    ->trueIcon('heroicon-o-check-badge')
-                                    ->falseIcon('heroicon-o-x-circle')
-                                    ->trueColor('success')
-                                    ->falseColor('danger'),
+                        TextEntry::make('last_login_at')
+                            ->label(__('Ultimo Accesso'))
+                            ->dateTime('d/m/Y H:i')
+                            ->placeholder(__('Mai')),
 
-                                TextEntry::make('last_login_at')
-                                    ->label(__('Last Login'))
-                                    ->dateTime('d/m/Y H:i')
-                                    ->placeholder(__('Never')),
+                        TextEntry::make('created_at')
+                            ->label(__('Registrato il'))
+                            ->dateTime('d/m/Y H:i'),
+                    ]),
 
-                                TextEntry::make('created_at')
-                                    ->label(__('Registered'))
-                                    ->dateTime('d/m/Y H:i'),
-                            ]),
+                Section::make(__('Ruoli'))
+                    ->icon('heroicon-o-shield-check')
+                    ->columnSpanFull()
+                    ->schema([
+                        CheckboxList::make('roles')
+                            ->hiddenLabel()
+                            ->options(fn (): array => self::getAvailableRoleOptions())
+                            ->descriptions(fn (): array => self::getAvailableRoleDescriptions())
+                            ->disabled(fn (?User $record): bool => self::shouldDisableRoles($record))
+                            ->in(fn (): array => array_keys(self::getAvailableRoleOptions()))
+                            ->columns(3),
                     ]),
             ]);
     }

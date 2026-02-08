@@ -22,7 +22,7 @@ class TokensRelationManager extends RelationManager
 
     protected static string $relationship = 'tokens';
 
-    protected static ?string $title = 'Authentication Tokens';
+    protected static ?string $title = 'Token di Autenticazione';
 
     public function form(Schema $schema): Schema
     {
@@ -37,19 +37,19 @@ class TokensRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label(__('Token Name'))
+                    ->label(__('Nome Token'))
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->label(__('Created'))
+                    ->label(__('Creato il'))
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('last_used_at')
-                    ->label(__('Last Used'))
+                    ->label(__('Ultimo Utilizzo'))
                     ->dateTime()
                     ->sortable()
-                    ->placeholder(__('Never')),
+                    ->placeholder(__('Mai')),
                 TextColumn::make('expires_at')
-                    ->label(__('Expires'))
+                    ->label(__('Scadenza'))
                     ->dateTime()
                     ->sortable(),
             ])
@@ -68,13 +68,13 @@ class TokensRelationManager extends RelationManager
     protected function getGenerateTokenAction(): Action
     {
         return Action::make('generate_token')
-            ->label(__('Generate Token'))
+            ->label(__('Genera Token'))
             ->icon('heroicon-o-key')
             ->color('success')
             ->requiresConfirmation()
-            ->modalHeading(__('Generate New API Token'))
-            ->modalDescription(__('A new API token will be generated for this OnesiBox. Make sure to copy the token after generation - it will not be shown again.'))
-            ->modalSubmitActionLabel(__('Generate'))
+            ->modalHeading(__('Genera Nuovo Token API'))
+            ->modalDescription(__('Verrà generato un nuovo token API per questa OnesiBox. Assicurati di copiare il token dopo la generazione — non sarà più visualizzato.'))
+            ->modalSubmitActionLabel(__('Genera'))
             ->action(function (): void {
                 /** @var OnesiBox $onesiBox */
                 $onesiBox = $this->getOwnerRecord();
@@ -85,8 +85,8 @@ class TokensRelationManager extends RelationManager
                 $this->generatedToken = $newToken->plainTextToken;
 
                 Notification::make()
-                    ->title(__('Token Generated Successfully'))
-                    ->body(__('Copy this token now. It will not be shown again: ')."\n\n".$this->generatedToken)
+                    ->title(__('Token Generato con Successo'))
+                    ->body(__('Copia questo token adesso. Non sarà più visualizzato: ')."\n\n".$this->generatedToken)
                     ->success()
                     ->persistent()
                     ->send();
@@ -96,13 +96,13 @@ class TokensRelationManager extends RelationManager
     protected function getRevokeTokenAction(): DeleteAction
     {
         return DeleteAction::make()
-            ->label(__('Revoke'))
+            ->label(__('Revoca'))
             ->icon('heroicon-o-trash')
             ->color('danger')
             ->requiresConfirmation()
-            ->modalHeading(__('Revoke Token'))
-            ->modalDescription(__('Are you sure you want to revoke this token? This action cannot be undone and any devices using this token will lose access.'))
-            ->modalSubmitActionLabel(__('Revoke Token'))
+            ->modalHeading(__('Revoca Token'))
+            ->modalDescription(__('Sei sicuro di voler revocare questo token? Questa azione non può essere annullata e qualsiasi dispositivo che utilizza questo token perderà l\'accesso.'))
+            ->modalSubmitActionLabel(__('Revoca Token'))
             ->before(function (PersonalAccessToken $record): void {
                 /** @var OnesiBox $onesiBox */
                 $onesiBox = $this->getOwnerRecord();
@@ -116,6 +116,6 @@ class TokensRelationManager extends RelationManager
                     ])
                     ->log('API token revoked');
             })
-            ->successNotificationTitle(__('Token Revoked'));
+            ->successNotificationTitle(__('Token Revocato'));
     }
 }

@@ -16,33 +16,33 @@ class ActivityInfolist
     {
         return $schema
             ->components([
-                Section::make(__('Activity Information'))
+                Section::make(__('Informazioni Attività'))
                     ->schema([
                         TextEntry::make('created_at')
-                            ->label(__('Date'))
+                            ->label(__('Data'))
                             ->dateTime('d/m/Y H:i:s'),
 
                         TextEntry::make('description')
-                            ->label(__('Action')),
+                            ->label(__('Azione')),
 
                         TextEntry::make('causer.name')
-                            ->label(__('Executed by'))
-                            ->placeholder(__('System')),
+                            ->label(__('Eseguito da'))
+                            ->placeholder(__('Sistema')),
 
                         TextEntry::make('subject_type')
-                            ->label(__('Subject Type'))
+                            ->label(__('Tipo Oggetto'))
                             ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '-'),
 
                         TextEntry::make('subject_id')
-                            ->label(__('Subject ID'))
+                            ->label(__('ID Oggetto'))
                             ->placeholder('-'),
                     ])
                     ->columns(2),
 
-                Section::make(__('Details'))
+                Section::make(__('Dettagli'))
                     ->schema([
                         TextEntry::make('properties')
-                            ->label(__('Properties'))
+                            ->label(__('Proprietà'))
                             ->formatStateUsing(function (mixed $state): string {
                                 if (is_string($state)) {
                                     return $state;

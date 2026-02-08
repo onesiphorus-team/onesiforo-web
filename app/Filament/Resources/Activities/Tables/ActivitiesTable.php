@@ -20,32 +20,32 @@ class ActivitiesTable
         return $table
             ->columns([
                 TextColumn::make('created_at')
-                    ->label(__('Date'))
+                    ->label(__('Data'))
                     ->dateTime('d/m/Y H:i:s')
                     ->sortable(),
 
                 TextColumn::make('causer.name')
-                    ->label(__('User'))
-                    ->placeholder(__('System'))
+                    ->label(__('Utente'))
+                    ->placeholder(__('Sistema'))
                     ->searchable(),
 
                 TextColumn::make('description')
-                    ->label(__('Action'))
+                    ->label(__('Azione'))
                     ->searchable()
                     ->wrap(),
 
                 TextColumn::make('subject_type')
-                    ->label(__('Subject Type'))
+                    ->label(__('Tipo Oggetto'))
                     ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '-')
                     ->sortable(),
 
                 TextColumn::make('subject_id')
-                    ->label(__('Subject ID'))
+                    ->label(__('ID Oggetto'))
                     ->placeholder('-'),
             ])
             ->filters([
                 SelectFilter::make('causer')
-                    ->label(__('User'))
+                    ->label(__('Utente'))
                     ->options(fn (): array => User::query()->pluck('name', 'id')->toArray())
                     ->query(fn (Builder $query, array $data): Builder => $query->when(
                         $data['value'],
@@ -53,7 +53,7 @@ class ActivitiesTable
                     )),
 
                 SelectFilter::make('description')
-                    ->label(__('Action Type'))
+                    ->label(__('Tipo Azione'))
                     ->options(fn (): array => Activity::query()
                         ->select('description')
                         ->distinct()
@@ -62,7 +62,7 @@ class ActivitiesTable
                     ),
 
                 SelectFilter::make('subject_type')
-                    ->label(__('Subject Type'))
+                    ->label(__('Tipo Oggetto'))
                     ->options(fn (): array => Activity::query()
                         ->select('subject_type')
                         ->whereNotNull('subject_type')
@@ -77,9 +77,9 @@ class ActivitiesTable
                 Filter::make('created_at')
                     ->schema([
                         \Filament\Forms\Components\DatePicker::make('from')
-                            ->label(__('From')),
+                            ->label(__('Da')),
                         \Filament\Forms\Components\DatePicker::make('until')
-                            ->label(__('To')),
+                            ->label(__('A')),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => $query
                         ->when(

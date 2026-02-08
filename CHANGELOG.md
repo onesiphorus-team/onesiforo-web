@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.15 - 2026-02-08
+
+### What's Changed
+
+* feat: granular volume slider with redesigned UI by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/66
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.14...v0.7.15
+
 ## v0.7.14 - 2026-02-08
 
 **Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.13...v0.7.14

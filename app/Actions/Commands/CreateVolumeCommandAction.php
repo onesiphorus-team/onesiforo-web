@@ -13,16 +13,15 @@ use Illuminate\Validation\ValidationException;
 /**
  * Creates a volume command for an OnesiBox appliance.
  *
- * Volume levels are restricted to 7 preset values: 0% (mute), 50%, 60%, 70%, 80%, 90%, 100%.
+ * Volume levels must be integers between 0 and 100, in steps of 5 (0, 5, 10, ... 100).
  */
 class CreateVolumeCommandAction
 {
-    /**
-     * Valid volume levels (preset values).
-     *
-     * @var list<int>
-     */
-    public const array VALID_LEVELS = [0, 50, 60, 70, 80, 90, 100];
+    public const int MIN_LEVEL = 0;
+
+    public const int MAX_LEVEL = 100;
+
+    public const int STEP = 5;
 
     /**
      * Priority for volume commands (lower = higher priority).
@@ -33,7 +32,7 @@ class CreateVolumeCommandAction
      * Execute the action to create a volume command.
      *
      * @param  OnesiBox  $onesiBox  The target appliance
-     * @param  int  $level  The volume level (must be 0, 50, 60, 70, 80, 90, or 100)
+     * @param  int  $level  The volume level (must be 0-100, multiple of 5)
      * @return Command The created command
      *
      * @throws ValidationException If the volume level is invalid
@@ -52,16 +51,18 @@ class CreateVolumeCommandAction
     }
 
     /**
-     * Validate that the volume level is one of the preset values.
+     * Validate that the volume level is between 0 and 100, in steps of 5.
      *
      * @throws ValidationException If the level is not valid
      */
     private function validateLevel(int $level): void
     {
-        if (! in_array($level, self::VALID_LEVELS, true)) {
+        if ($level < self::MIN_LEVEL || $level > self::MAX_LEVEL || $level % self::STEP !== 0) {
             throw ValidationException::withMessages([
-                'level' => [__('Il livello del volume deve essere uno di: :levels.', [
-                    'levels' => implode(', ', self::VALID_LEVELS),
+                'level' => [__('Il livello del volume deve essere tra :min e :max, con incrementi di :step.', [
+                    'min' => self::MIN_LEVEL,
+                    'max' => self::MAX_LEVEL,
+                    'step' => self::STEP,
                 ])],
             ]);
         }

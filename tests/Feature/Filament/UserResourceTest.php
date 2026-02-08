@@ -98,6 +98,60 @@ it('can filter trashed users', function (): void {
         ->assertCanSeeTableRecords([$trashedUser]);
 });
 
+// Filter & Grouping Tests
+describe('table filters and grouping', function (): void {
+    it('can filter users by role', function (): void {
+        $adminRole = Role::query()->where('name', 'admin')->first();
+
+        $adminUser = User::factory()->create();
+        $adminUser->assignRole('admin');
+
+        $caregiverUser = User::factory()->create();
+        $caregiverUser->assignRole('caregiver');
+
+        livewire(ListUsers::class)
+            ->assertCanSeeTableRecords([$adminUser, $caregiverUser])
+            ->filterTable('roles', [$adminRole->id])
+            ->assertCanSeeTableRecords([$adminUser])
+            ->assertCanNotSeeTableRecords([$caregiverUser]);
+    });
+
+    it('can filter users by email verification status', function (): void {
+        $verifiedUser = User::factory()->create(['email_verified_at' => now()]);
+        $unverifiedUser = User::factory()->create(['email_verified_at' => null]);
+
+        livewire(ListUsers::class)
+            ->assertCanSeeTableRecords([$verifiedUser, $unverifiedUser])
+            ->filterTable('email_verified_at', true)
+            ->assertCanSeeTableRecords([$verifiedUser])
+            ->assertCanNotSeeTableRecords([$unverifiedUser]);
+    });
+
+    it('can filter users by online status', function (): void {
+        $onlineUser = User::factory()->create(['last_login_at' => now()]);
+        $offlineUser = User::factory()->create(['last_login_at' => now()->subHour()]);
+        $neverUser = User::factory()->create(['last_login_at' => null]);
+
+        livewire(ListUsers::class)
+            ->filterTable('online_status', 'online')
+            ->assertCanSeeTableRecords([$onlineUser])
+            ->assertCanNotSeeTableRecords([$offlineUser, $neverUser]);
+    });
+
+    it('can group users by role without errors', function (): void {
+        $adminUser = User::factory()->create();
+        $adminUser->assignRole('admin');
+
+        $caregiverUser = User::factory()->create();
+        $caregiverUser->assignRole('caregiver');
+
+        livewire(ListUsers::class)
+            ->set('tableGrouping', 'roles.name:asc')
+            ->assertSuccessful()
+            ->assertCanSeeTableRecords([$adminUser, $caregiverUser]);
+    });
+});
+
 // Edit User Tests (US5)
 describe('edit user form', function (): void {
     it('can render the edit page', function (): void {

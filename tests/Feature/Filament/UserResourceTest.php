@@ -98,8 +98,8 @@ it('can filter trashed users', function (): void {
         ->assertCanSeeTableRecords([$trashedUser]);
 });
 
-// Filter & Grouping Tests
-describe('table filters and grouping', function (): void {
+// Filter Tests
+describe('table filters', function (): void {
     it('can filter users by role', function (): void {
         $adminRole = Role::query()->where('name', 'admin')->first();
 
@@ -136,19 +136,6 @@ describe('table filters and grouping', function (): void {
             ->filterTable('online_status', 'online')
             ->assertCanSeeTableRecords([$onlineUser])
             ->assertCanNotSeeTableRecords([$offlineUser, $neverUser]);
-    });
-
-    it('can group users by role without errors', function (): void {
-        $adminUser = User::factory()->create();
-        $adminUser->assignRole('admin');
-
-        $caregiverUser = User::factory()->create();
-        $caregiverUser->assignRole('caregiver');
-
-        livewire(ListUsers::class)
-            ->set('tableGrouping', 'roles.name:asc')
-            ->assertSuccessful()
-            ->assertCanSeeTableRecords([$adminUser, $caregiverUser]);
     });
 });
 

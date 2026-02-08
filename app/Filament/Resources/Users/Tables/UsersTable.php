@@ -19,10 +19,10 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Password;
@@ -145,26 +145,7 @@ class UsersTable
                     }),
 
                 TrashedFilter::make(),
-            ])
-            ->groups([
-                Group::make('roles.name')
-                    ->label(__('Role'))
-                    ->getKeyFromRecordUsing(fn (User $record): string => $record->roles->pluck('name')->sort()->join(',') ?: 'no-role')
-                    ->getTitleFromRecordUsing(fn (User $record): string => $record->roles->pluck('name')
-                        ->map(fn (string $name): string => Roles::tryFrom($name)?->getLabel() ?? $name)
-                        ->join(', ') ?: __('Nessun ruolo'))
-                    ->orderQueryUsing(fn (Builder $query, string $direction) => $query->orderBy(
-                        User::query()
-                            ->select('roles.name')
-                            ->join('role_user', 'role_user.user_id', '=', 'users.id')
-                            ->join('roles', 'roles.id', '=', 'role_user.role_id')
-                            ->whereColumn('role_user.user_id', 'users.id')
-                            ->orderBy('roles.name')
-                            ->limit(1),
-                        $direction,
-                    ))
-                    ->collapsible(),
-            ])
+            ], layout: FiltersLayout::AboveContent)
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),

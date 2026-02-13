@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.7.16 - 2026-02-13
+
+### What's Changed
+
+* sentry ready by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/67
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.15...v0.7.16
+
 ## v0.7.15 - 2026-02-08
 
 ### What's Changed

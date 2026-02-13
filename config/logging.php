@@ -75,6 +75,11 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'sentry_logs' => [
+            'driver' => 'sentry_logs',
+            'level' => 'warning',
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

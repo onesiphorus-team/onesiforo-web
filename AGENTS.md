@@ -420,16 +420,3 @@ Authenticate before testing panel functionality. Filament uses Livewire, so use 
 - IMPORTANT: Always use the `search-docs` tool for detailed Laravel Fortify patterns and documentation.
 - IMPORTANT: Activate `developing-with-fortify` skill when working with Fortify authentication features.
 </laravel-boost-guidelines>
-
-## Active Technologies
-- PHP 8.4.17 (001-user-management)
-- SQLite (development), tabelle esistenti: users, roles, role_user, activity_log, password_reset_tokens (001-user-management)
-- PHP 8.4.17 + Laravel 12.47.0, Sanctum 4.2.4, Filament 5.0.0, dedoc/scramble (003-onesibox-api-ws)
-- SQLite (development), con supporto per MySQL/PostgreSQL in produzione (003-onesibox-api-ws)
-- PHP 8.4.17 (Onesiforo), Node.js 20+ (OnesiBox) + Laravel 12, Livewire 4, Flux UI 2, Winston (logging OnesiBox) (009-onesibox-caregiver-controls)
-- SQLite (dev), MySQL/PostgreSQL (prod) - tabelle esistenti: `onesi_boxes`, `commands`, `playback_events` (009-onesibox-caregiver-controls)
-- PHP 8.4 (backend), Node.js 20+ (OnesiBox client) + Laravel 12, Livewire 4, Flux UI 2, Sanctum 4, Playwright (OnesiBox) (010-timed-playlist-sessions)
-- SQLite (dev), MySQL/PostgreSQL (prod) — 3 nuove tabelle (010-timed-playlist-sessions)
-
-## Recent Changes
-- 001-user-management: Added PHP 8.4.17

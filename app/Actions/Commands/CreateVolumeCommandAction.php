@@ -6,6 +6,7 @@ namespace App\Actions\Commands;
 
 use App\Enums\CommandStatus;
 use App\Enums\CommandType;
+use App\Jobs\SendOnesiBoxCommand;
 use App\Models\Command;
 use App\Models\OnesiBox;
 use Illuminate\Validation\ValidationException;
@@ -41,13 +42,17 @@ class CreateVolumeCommandAction
     {
         $this->validateLevel($level);
 
-        return Command::query()->create([
+        $command = Command::query()->create([
             'onesi_box_id' => $onesiBox->id,
             'type' => CommandType::SetVolume,
             'status' => CommandStatus::Pending,
             'payload' => ['level' => $level],
             'priority' => self::PRIORITY,
         ]);
+
+        dispatch(new SendOnesiBoxCommand($command));
+
+        return $command;
     }
 
     /**

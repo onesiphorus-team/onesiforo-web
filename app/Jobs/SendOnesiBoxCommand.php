@@ -30,12 +30,20 @@ class SendOnesiBoxCommand implements ShouldQueue
 
     public function handle(): void
     {
-        // Broadcast to appliance via WebSocket (Reverb)
-        // The appliance can listen on this channel for real-time notifications
-        // and/or poll the API endpoint for pending commands
-        broadcast(new NewCommandAvailable($this->command));
+        // Broadcast to appliance via WebSocket (Reverb).
+        // Uses ShouldBroadcastNow to avoid double-queuing (we're already in a job).
+        // Wrapped in try/catch so Reverb failures don't mark the command as failed —
+        // the appliance will pick it up via polling fallback.
+        try {
+            broadcast(new NewCommandAvailable($this->command));
+        } catch (Throwable $e) {
+            logger()->warning('WebSocket broadcast failed, appliance will use polling fallback', [
+                'command_uuid' => $this->command->uuid,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
-        logger()->info('OnesiBox command queued', [
+        logger()->info('OnesiBox command dispatched', [
             'command_uuid' => $this->command->uuid,
             'onesibox_id' => $this->command->onesi_box_id,
             'type' => $this->command->type->value,

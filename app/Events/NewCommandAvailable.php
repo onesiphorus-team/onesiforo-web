@@ -7,11 +7,11 @@ namespace App\Events;
 use App\Models\Command;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NewCommandAvailable implements ShouldBroadcast
+class NewCommandAvailable implements ShouldBroadcastNow
 {
     use Dispatchable;
     use InteractsWithSockets;

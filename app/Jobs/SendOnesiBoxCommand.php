@@ -33,7 +33,7 @@ class SendOnesiBoxCommand implements ShouldQueue
         // Broadcast to appliance via WebSocket (Reverb)
         // The appliance can listen on this channel for real-time notifications
         // and/or poll the API endpoint for pending commands
-        broadcast(new NewCommandAvailable($this->command))->toOthers();
+        broadcast(new NewCommandAvailable($this->command));
 
         logger()->info('OnesiBox command queued', [
             'command_uuid' => $this->command->uuid,

@@ -77,7 +77,12 @@ class ProcessHeartbeatAction
         $currentMedia = $data['current_media'] ?? null;
         $onesiBox->current_media_url = $currentMedia['url'] ?? null;
         $onesiBox->current_media_type = $currentMedia['type'] ?? null;
-        $onesiBox->current_media_title = $currentMedia['title'] ?? null;
+
+        if (isset($currentMedia['title'])) {
+            $onesiBox->current_media_title = $currentMedia['title'];
+        } elseif ($currentMedia === null) {
+            $onesiBox->current_media_title = null;
+        }
     }
 
     /**
@@ -214,10 +219,13 @@ class ProcessHeartbeatAction
     }
 
     /**
-     * End any active playback session when the box reports idle status.
+     * End any active playback session when the box reports idle status
+     * and the session has exceeded its duration.
      *
-     * This is a safety net: if the box is idle but we still have an active
-     * session, the completion event was likely missed.
+     * This is a safety net: if the box is idle and the session's time
+     * is up, the completion event was likely missed. We only expire
+     * sessions past their duration to avoid killing playlist sessions
+     * during the brief idle window between videos.
      *
      * @param  array<string, mixed>  $data
      */
@@ -230,6 +238,10 @@ class ProcessHeartbeatAction
         $activeSession = $onesiBox->activeSession();
 
         if ($activeSession === null) {
+            return;
+        }
+
+        if (! $activeSession->isExpired()) {
             return;
         }
 

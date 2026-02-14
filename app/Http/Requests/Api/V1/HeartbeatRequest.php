@@ -103,9 +103,20 @@ class HeartbeatRequest extends FormRequest
                 'array',
             ],
             'current_meeting.meeting_id' => [
-                'required_with:current_meeting',
+                'nullable',
                 'string',
                 'max:50',
+            ],
+            'current_meeting.meeting_url' => [
+                'nullable',
+                'string',
+                'url',
+                'max:500',
+            ],
+            'current_meeting.joined_at' => [
+                'nullable',
+                'string',
+                'date',
             ],
             'volume' => [
                 'nullable',
@@ -267,8 +278,10 @@ class HeartbeatRequest extends FormRequest
             'current_media.type.required_with' => 'Il tipo di media è obbligatorio quando si fornisce current_media.',
             'current_media.type.in' => 'Il tipo di media deve essere audio o video.',
             'current_media.title.max' => 'Il titolo del media non può superare 255 caratteri.',
-            'current_meeting.meeting_id.required_with' => 'L\'ID meeting è obbligatorio quando si fornisce current_meeting.',
             'current_meeting.meeting_id.max' => 'L\'ID meeting non può superare 50 caratteri.',
+            'current_meeting.meeting_url.url' => 'L\'URL del meeting deve essere un URL valido.',
+            'current_meeting.meeting_url.max' => 'L\'URL del meeting non può superare 500 caratteri.',
+            'current_meeting.joined_at.date' => 'La data di ingresso deve essere una data valida.',
             'volume.min' => 'Il volume deve essere almeno 0.',
             'volume.max' => 'Il volume non può superare 100.',
         ];
@@ -296,6 +309,8 @@ class HeartbeatRequest extends FormRequest
             'current_media.title' => 'titolo media',
             'current_meeting' => 'meeting corrente',
             'current_meeting.meeting_id' => 'ID meeting',
+            'current_meeting.meeting_url' => 'URL meeting',
+            'current_meeting.joined_at' => 'data ingresso meeting',
             'volume' => 'volume',
             'app_version' => 'versione app',
             'network' => 'rete',

@@ -6,6 +6,7 @@ namespace App\Livewire\Dashboard;
 
 use App\Concerns\ChecksOnesiBoxPermission;
 use App\Enums\OnesiBoxPermission;
+use App\Enums\OnesiBoxStatus;
 use App\Enums\Roles;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
@@ -90,11 +91,15 @@ class OnesiBoxDetail extends Component
     /**
      * Get current media information if playing.
      *
-     * @return array{url: string|null, type: string|null, title: string|null}|null
+     * @return array{url: string|null, type: string|null, title: string|null, position: int|null, duration: int|null}|null
      */
     #[Computed]
     public function currentMediaInfo(): ?array
     {
+        if ($this->onesiBox->status === OnesiBoxStatus::Idle) {
+            return null;
+        }
+
         if ($this->onesiBox->current_media_url === null) {
             return null;
         }
@@ -103,23 +108,31 @@ class OnesiBoxDetail extends Component
             'url' => $this->onesiBox->current_media_url,
             'type' => $this->onesiBox->current_media_type,
             'title' => $this->onesiBox->current_media_title,
+            'position' => $this->onesiBox->current_media_position,
+            'duration' => $this->onesiBox->current_media_duration,
         ];
     }
 
     /**
      * Get current meeting information if in a call.
      *
-     * @return array{meeting_id: string}|null
+     * @return array{meeting_id: string, meeting_url: string|null, joined_at: string|null}|null
      */
     #[Computed]
     public function currentMeetingInfo(): ?array
     {
+        if ($this->onesiBox->status !== OnesiBoxStatus::Calling) {
+            return null;
+        }
+
         if ($this->onesiBox->current_meeting_id === null) {
             return null;
         }
 
         return [
             'meeting_id' => $this->onesiBox->current_meeting_id,
+            'meeting_url' => $this->onesiBox->current_meeting_url,
+            'joined_at' => $this->onesiBox->current_meeting_joined_at?->toISOString(),
         ];
     }
 

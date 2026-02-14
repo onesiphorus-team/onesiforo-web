@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\OnesiBoxStatus;
+use App\Enums\PlaybackSessionStatus;
 use App\Events\OnesiBoxStatusUpdated;
 use App\Models\OnesiBox;
 use Illuminate\Support\Facades\Date;
@@ -39,6 +41,8 @@ class ProcessHeartbeatAction
             $onesiBox->last_system_info_at = Date::now();
         }
 
+        $this->expireActiveSessionOnIdle($onesiBox, $data);
+
         $onesiBox->recordHeartbeat();
 
         event(new OnesiBoxStatusUpdated($onesiBox));
@@ -53,6 +57,17 @@ class ProcessHeartbeatAction
     {
         if (isset($data['status'])) {
             $onesiBox->status = $data['status'];
+
+            if ($data['status'] === OnesiBoxStatus::Idle->value) {
+                $onesiBox->current_media_url = null;
+                $onesiBox->current_media_type = null;
+                $onesiBox->current_media_title = null;
+                $onesiBox->current_meeting_id = null;
+                $onesiBox->current_meeting_url = null;
+                $onesiBox->current_meeting_joined_at = null;
+                $onesiBox->current_media_position = null;
+                $onesiBox->current_media_duration = null;
+            }
         }
     }
 
@@ -66,7 +81,15 @@ class ProcessHeartbeatAction
         $currentMedia = $data['current_media'] ?? null;
         $onesiBox->current_media_url = $currentMedia['url'] ?? null;
         $onesiBox->current_media_type = $currentMedia['type'] ?? null;
-        $onesiBox->current_media_title = $currentMedia['title'] ?? null;
+
+        $onesiBox->current_media_position = $currentMedia['position'] ?? null;
+        $onesiBox->current_media_duration = $currentMedia['duration'] ?? null;
+
+        if (isset($currentMedia['title'])) {
+            $onesiBox->current_media_title = $currentMedia['title'];
+        } elseif ($currentMedia === null) {
+            $onesiBox->current_media_title = null;
+        }
     }
 
     /**
@@ -78,6 +101,8 @@ class ProcessHeartbeatAction
     {
         $currentMeeting = $data['current_meeting'] ?? null;
         $onesiBox->current_meeting_id = $currentMeeting['meeting_id'] ?? null;
+        $onesiBox->current_meeting_url = $currentMeeting['meeting_url'] ?? null;
+        $onesiBox->current_meeting_joined_at = $currentMeeting['joined_at'] ?? null;
     }
 
     /**
@@ -200,5 +225,38 @@ class ProcessHeartbeatAction
         $onesiBox->memory_cached = $memory['cached'] ?? null;
 
         return true;
+    }
+
+    /**
+     * End any active playback session when the box reports idle status
+     * and the session has exceeded its duration.
+     *
+     * This is a safety net: if the box is idle and the session's time
+     * is up, the completion event was likely missed. We only expire
+     * sessions past their duration to avoid killing playlist sessions
+     * during the brief idle window between videos.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function expireActiveSessionOnIdle(OnesiBox $onesiBox, array $data): void
+    {
+        if (($data['status'] ?? null) !== OnesiBoxStatus::Idle->value) {
+            return;
+        }
+
+        $activeSession = $onesiBox->activeSession();
+
+        if ($activeSession === null) {
+            return;
+        }
+
+        if (! $activeSession->isExpired()) {
+            return;
+        }
+
+        $activeSession->update([
+            'status' => PlaybackSessionStatus::Completed,
+            'ended_at' => Date::now(),
+        ]);
     }
 }

@@ -34,7 +34,11 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $current_media_url
  * @property string|null $current_media_type
  * @property string|null $current_media_title
+ * @property int|null $current_media_position
+ * @property int|null $current_media_duration
  * @property string|null $current_meeting_id
+ * @property string|null $current_meeting_url
+ * @property CarbonInterface|null $current_meeting_joined_at
  * @property int $volume
  * @property CarbonInterface|null $last_system_info_at
  * @property int|null $cpu_usage
@@ -98,7 +102,11 @@ class OnesiBox extends Model implements AuthenticatableContract
         'current_media_url',
         'current_media_type',
         'current_media_title',
+        'current_media_position',
+        'current_media_duration',
         'current_meeting_id',
+        'current_meeting_url',
+        'current_meeting_joined_at',
         'volume',
         'last_system_info_at',
         'cpu_usage',
@@ -318,6 +326,9 @@ class OnesiBox extends Model implements AuthenticatableContract
             'last_seen_at' => 'datetime',
             'is_active' => 'boolean',
             'status' => OnesiBoxStatus::class,
+            'current_media_position' => 'integer',
+            'current_media_duration' => 'integer',
+            'current_meeting_joined_at' => 'datetime',
             'volume' => 'integer',
             'last_system_info_at' => 'datetime',
             'cpu_usage' => 'integer',

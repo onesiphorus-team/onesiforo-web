@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
+use App\Enums\OnesiBoxStatus;
+use App\Enums\PlaybackSessionStatus;
 use App\Events\OnesiBoxStatusUpdated;
 use App\Models\OnesiBox;
 use Illuminate\Support\Facades\Date;
@@ -39,6 +41,8 @@ class ProcessHeartbeatAction
             $onesiBox->last_system_info_at = Date::now();
         }
 
+        $this->expireActiveSessionOnIdle($onesiBox, $data);
+
         $onesiBox->recordHeartbeat();
 
         event(new OnesiBoxStatusUpdated($onesiBox));
@@ -53,6 +57,13 @@ class ProcessHeartbeatAction
     {
         if (isset($data['status'])) {
             $onesiBox->status = $data['status'];
+
+            if ($data['status'] === OnesiBoxStatus::Idle->value) {
+                $onesiBox->current_media_url = null;
+                $onesiBox->current_media_type = null;
+                $onesiBox->current_media_title = null;
+                $onesiBox->current_meeting_id = null;
+            }
         }
     }
 
@@ -200,5 +211,31 @@ class ProcessHeartbeatAction
         $onesiBox->memory_cached = $memory['cached'] ?? null;
 
         return true;
+    }
+
+    /**
+     * End any active playback session when the box reports idle status.
+     *
+     * This is a safety net: if the box is idle but we still have an active
+     * session, the completion event was likely missed.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function expireActiveSessionOnIdle(OnesiBox $onesiBox, array $data): void
+    {
+        if (($data['status'] ?? null) !== OnesiBoxStatus::Idle->value) {
+            return;
+        }
+
+        $activeSession = $onesiBox->activeSession();
+
+        if ($activeSession === null) {
+            return;
+        }
+
+        $activeSession->update([
+            'status' => PlaybackSessionStatus::Completed,
+            'ended_at' => Date::now(),
+        ]);
     }
 }

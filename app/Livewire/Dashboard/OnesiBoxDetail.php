@@ -6,6 +6,7 @@ namespace App\Livewire\Dashboard;
 
 use App\Concerns\ChecksOnesiBoxPermission;
 use App\Enums\OnesiBoxPermission;
+use App\Enums\OnesiBoxStatus;
 use App\Enums\Roles;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
@@ -95,6 +96,10 @@ class OnesiBoxDetail extends Component
     #[Computed]
     public function currentMediaInfo(): ?array
     {
+        if ($this->onesiBox->status === OnesiBoxStatus::Idle) {
+            return null;
+        }
+
         if ($this->onesiBox->current_media_url === null) {
             return null;
         }
@@ -114,6 +119,10 @@ class OnesiBoxDetail extends Component
     #[Computed]
     public function currentMeetingInfo(): ?array
     {
+        if ($this->onesiBox->status !== OnesiBoxStatus::Calling) {
+            return null;
+        }
+
         if ($this->onesiBox->current_meeting_id === null) {
             return null;
         }

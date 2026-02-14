@@ -25,6 +25,6 @@ Broadcast::channel('onesibox.{id}', function (User $user, int $id) {
 
 // Channel for appliances to receive real-time command notifications
 // The appliance authenticates via Sanctum token and can only listen to its own channel
-Broadcast::channel('appliance.{id}', function (OnesiBox $onesiBox, int $id) {
-    return $onesiBox->id === $id;
+Broadcast::channel('appliance.{id}', function (OnesiBox $onesiBox, string $id) {
+    return (string) $onesiBox->id === $id;
 });

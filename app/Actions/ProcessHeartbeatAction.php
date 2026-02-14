@@ -63,6 +63,10 @@ class ProcessHeartbeatAction
                 $onesiBox->current_media_type = null;
                 $onesiBox->current_media_title = null;
                 $onesiBox->current_meeting_id = null;
+                $onesiBox->current_meeting_url = null;
+                $onesiBox->current_meeting_joined_at = null;
+                $onesiBox->current_media_position = null;
+                $onesiBox->current_media_duration = null;
             }
         }
     }
@@ -77,6 +81,9 @@ class ProcessHeartbeatAction
         $currentMedia = $data['current_media'] ?? null;
         $onesiBox->current_media_url = $currentMedia['url'] ?? null;
         $onesiBox->current_media_type = $currentMedia['type'] ?? null;
+
+        $onesiBox->current_media_position = $currentMedia['position'] ?? null;
+        $onesiBox->current_media_duration = $currentMedia['duration'] ?? null;
 
         if (isset($currentMedia['title'])) {
             $onesiBox->current_media_title = $currentMedia['title'];
@@ -94,6 +101,8 @@ class ProcessHeartbeatAction
     {
         $currentMeeting = $data['current_meeting'] ?? null;
         $onesiBox->current_meeting_id = $currentMeeting['meeting_id'] ?? null;
+        $onesiBox->current_meeting_url = $currentMeeting['meeting_url'] ?? null;
+        $onesiBox->current_meeting_joined_at = $currentMeeting['joined_at'] ?? null;
     }
 
     /**

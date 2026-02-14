@@ -134,7 +134,7 @@ test('heartbeat validates volume must be between 0 and 100', function (): void {
         ->assertJsonValidationErrors(['volume']);
 });
 
-test('heartbeat validates current_meeting requires meeting_id when meeting data provided', function (): void {
+test('heartbeat accepts current_meeting without meeting_id', function (): void {
     $onesiBox = OnesiBox::factory()->create();
     $token = $onesiBox->createToken('onesibox-api-token');
 
@@ -143,15 +143,13 @@ test('heartbeat validates current_meeting requires meeting_id when meeting data 
         [
             'status' => OnesiBoxStatus::Calling->value,
             'current_meeting' => [
-                'some_other_field' => 'value',
+                'meeting_url' => 'https://zoom.us/j/123456',
             ],
         ],
         ['Authorization' => "Bearer {$token->plainTextToken}"]
     );
 
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors(['current_meeting.meeting_id']);
+    $response->assertOk();
 });
 
 test('heartbeat accepts audio type for current_media', function (): void {

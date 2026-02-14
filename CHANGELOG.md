@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.8.0 - 2026-02-14
+
+### What's Changed
+
+* build(deps): bump dev-to-geek/laravel-init from 0.1.6 to 0.2.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/68
+* feat: enable Reverb WebSocket broadcasting for appliances by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/70
+* fix: session expiration, stale status cleanup, status-aware UI by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/71
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.17...v0.8.0
+
 ## v0.7.17 - 2026-02-13
 
 **Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.16...v0.7.17

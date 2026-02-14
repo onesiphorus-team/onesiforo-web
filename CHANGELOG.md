@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.8.1 - 2026-02-14
+
+### What's Changed
+
+* fix: correct type handling in appliance broadcast channel auth by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/72
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.0...v0.8.1
+
 ## v0.8.0 - 2026-02-14
 
 ### What's Changed

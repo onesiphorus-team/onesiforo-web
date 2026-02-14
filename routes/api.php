@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V1\CommandController;
 use App\Http\Controllers\Api\V1\HeartbeatController;
 use App\Http\Controllers\Api\V1\PlaybackController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,6 +18,10 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group.
 |
 */
+
+// Broadcasting auth endpoint for appliances using Sanctum token auth.
+// Appliances POST to /api/broadcasting/auth to authorize private channel subscriptions.
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
     /*

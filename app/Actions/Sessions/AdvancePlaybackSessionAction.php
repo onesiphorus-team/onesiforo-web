@@ -11,6 +11,7 @@ use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
 use App\Models\PlaylistItem;
 use App\Services\OnesiBoxCommandServiceInterface;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Advances a playback session to the next video after a completed/error event.
@@ -29,44 +30,46 @@ class AdvancePlaybackSessionAction
      */
     public function execute(OnesiBox $onesiBox, PlaybackEventType $eventType): void
     {
-        $session = $onesiBox->activeSession();
+        DB::transaction(function () use ($onesiBox, $eventType): void {
+            $session = $onesiBox->playbackSessions()->active()->lockForUpdate()->first();
 
-        if (! $session instanceof PlaybackSession) {
-            return;
-        }
+            if (! $session instanceof PlaybackSession) {
+                return;
+            }
 
-        $this->updateCounters($session, $eventType);
+            $this->updateCounters($session, $eventType);
 
-        $session->increment('current_position');
-        $session->refresh();
+            $session->increment('current_position');
+            $session->refresh();
 
-        if ($session->isExpired()) {
-            $this->endSession($session);
+            if ($session->isExpired()) {
+                $this->endSession($session);
 
-            return;
-        }
+                return;
+            }
 
-        $nextItem = $session->currentItem();
+            $nextItem = $session->currentItem();
 
-        if (! $nextItem instanceof PlaylistItem) {
-            $this->endSession($session);
+            if (! $nextItem instanceof PlaylistItem) {
+                $this->endSession($session);
 
-            return;
-        }
+                return;
+            }
 
-        try {
-            $this->commandService->sendSessionMediaCommand(
-                $onesiBox,
-                $nextItem->media_url,
-                'video',
-                $session->uuid,
-            );
-        } catch (OnesiBoxOfflineException) {
-            $session->update([
-                'status' => PlaybackSessionStatus::Error,
-                'ended_at' => now(),
-            ]);
-        }
+            try {
+                $this->commandService->sendSessionMediaCommand(
+                    $onesiBox,
+                    $nextItem->media_url,
+                    'video',
+                    $session->uuid,
+                );
+            } catch (OnesiBoxOfflineException) {
+                $session->update([
+                    'status' => PlaybackSessionStatus::Error,
+                    'ended_at' => now(),
+                ]);
+            }
+        });
     }
 
     private function updateCounters(PlaybackSession $session, PlaybackEventType $eventType): void

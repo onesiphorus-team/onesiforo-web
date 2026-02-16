@@ -46,9 +46,16 @@ class CommandController extends Controller
                 'executed_at' => now(),
             ]);
 
-        // Get total and pending counts
-        $totalCommands = $onesiBox->commands()->count();
-        $pendingCommands = $onesiBox->pendingCommands()->count();
+        // Get total and pending counts in a single query
+        $now = now()->toDateTimeString();
+        /** @var object{total: int, pending_count: int} $counts */
+        $counts = $onesiBox->commands()
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw("SUM(CASE WHEN status = 'pending' AND expires_at > ? THEN 1 ELSE 0 END) as pending_count", [$now])
+            ->first();
+
+        $totalCommands = (int) $counts->total;
+        $pendingCommands = (int) $counts->pending_count;
 
         // Build query based on filters
         $query = $request->getStatusFilter() === 'all'

@@ -10,6 +10,7 @@ use App\Enums\PlaybackSessionStatus;
 use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\PlaybackSession;
 use App\Services\OnesiBoxCommandServiceInterface;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Stops an active playback session and sends stop command to OnesiBox.
@@ -29,22 +30,24 @@ class StopPlaybackSessionAction
             return $session;
         }
 
-        $session->update([
-            'status' => PlaybackSessionStatus::Stopped,
-            'ended_at' => now(),
-        ]);
-
-        // Cancel pending play_media commands for this session
-        $session->onesiBox->commands()
-            ->where('type', CommandType::PlayMedia)
-            ->where('status', CommandStatus::Pending)
-            ->whereJsonContains('payload->session_id', $session->uuid)
-            ->update([
-                'status' => CommandStatus::Cancelled,
-                'executed_at' => now(),
+        DB::transaction(function () use ($session): void {
+            $session->update([
+                'status' => PlaybackSessionStatus::Stopped,
+                'ended_at' => now(),
             ]);
 
-        // Send stop_media command
+            // Cancel pending play_media commands for this session
+            $session->onesiBox->commands()
+                ->where('type', CommandType::PlayMedia)
+                ->where('status', CommandStatus::Pending)
+                ->whereJsonContains('payload->session_id', $session->uuid)
+                ->update([
+                    'status' => CommandStatus::Cancelled,
+                    'executed_at' => now(),
+                ]);
+        });
+
+        // Send stop_media command (fire-and-forget, outside transaction)
         try {
             $this->commandService->sendStopCommand($session->onesiBox);
         } catch (OnesiBoxOfflineException) {

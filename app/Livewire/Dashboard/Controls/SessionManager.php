@@ -77,7 +77,7 @@ class SessionManager extends Component
             'durationMinutes' => ['required', 'in:30,60,120,180'],
         ]);
 
-        $this->executeWithErrorHandling(
+        $success = $this->executeWithErrorHandling(
             callback: function () use ($createPlaylistAction, $startAction): void {
                 $playlist = $createPlaylistAction->executeFromUrls($this->onesiBox, $this->videoUrls);
                 $startAction->execute($this->onesiBox, $playlist, $this->durationMinutes);
@@ -85,7 +85,9 @@ class SessionManager extends Component
             successMessage: 'Sessione avviata con successo',
         );
 
-        $this->videoUrls = [];
+        if ($success) {
+            $this->videoUrls = [];
+        }
     }
 
     /**

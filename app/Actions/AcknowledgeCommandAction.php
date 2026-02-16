@@ -8,6 +8,7 @@ use App\Enums\CommandStatus;
 use App\Models\Command;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Handles the acknowledgment of a command execution.
@@ -39,20 +40,25 @@ class AcknowledgeCommandAction
         ?string $errorMessage = null,
         ?array $result = null,
     ): bool {
-        // Idempotent: if already processed, return success without modifying
-        if ($command->status !== CommandStatus::Pending) {
-            return true;
-        }
+        return DB::transaction(function () use ($command, $status, $executedAt, $errorCode, $errorMessage, $result): bool {
+            // Re-fetch with pessimistic lock to prevent race conditions
+            $command = Command::query()->lockForUpdate()->find($command->id);
 
-        $executedAtCarbon = $executedAt instanceof CarbonInterface
-            ? $executedAt
-            : Date::parse($executedAt);
+            // Idempotent: if already processed, return success without modifying
+            if ($command->status !== CommandStatus::Pending) {
+                return true;
+            }
 
-        return match ($status) {
-            'success', 'skipped' => $this->handleSuccess($command, $executedAtCarbon, $result),
-            'failed' => $this->handleFailure($command, $executedAtCarbon, $errorCode, $errorMessage),
-            default => false,
-        };
+            $executedAtCarbon = $executedAt instanceof CarbonInterface
+                ? $executedAt
+                : Date::parse($executedAt);
+
+            return match ($status) {
+                'success', 'skipped' => $this->handleSuccess($command, $executedAtCarbon, $result),
+                'failed' => $this->handleFailure($command, $executedAtCarbon, $errorCode, $errorMessage),
+                default => false,
+            };
+        });
     }
 
     /**

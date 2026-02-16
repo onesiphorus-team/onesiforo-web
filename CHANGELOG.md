@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.8.3 - 2026-02-16
+
+### What's Changed
+
+* fix: use serial_number for appliance WebSocket channel by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/74
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.2...v0.8.3
+
 ## v0.8.2 - 2026-02-14
 
 ### What's Changed

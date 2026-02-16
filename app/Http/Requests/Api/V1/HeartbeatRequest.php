@@ -6,15 +6,12 @@ namespace App\Http\Requests\Api\V1;
 
 use App\Concerns\AuthorizesAsOnesiBox;
 use App\Enums\OnesiBoxStatus;
-use App\Models\OnesiBox;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
  * Validates heartbeat data sent by OnesiBox appliances.
  *
- * @property-read int $onesibox_id
  * @property-read string $status
  * @property-read int|null $cpu_usage
  * @property-read int|null $memory_usage
@@ -335,20 +332,5 @@ class HeartbeatRequest extends FormRequest
             'memory.buffers' => 'buffers',
             'memory.cached' => 'cached',
         ];
-    }
-
-    /**
-     * Prepare the data for validation by injecting the OnesiBox ID from the token.
-     */
-    protected function prepareForValidation(): void
-    {
-        /** @var AuthenticatableContract|null $tokenable */
-        $tokenable = $this->user();
-
-        if ($tokenable instanceof OnesiBox) {
-            $this->merge([
-                'onesibox_id' => $tokenable->id,
-            ]);
-        }
     }
 }

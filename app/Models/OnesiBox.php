@@ -86,54 +86,11 @@ class OnesiBox extends Model implements AuthenticatableContract
     use SoftDeletes;
 
     /**
-     * The attributes that are mass assignable.
+     * The attributes that aren't mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'serial_number',
-        'recipient_id',
-        'firmware_version',
-        'last_seen_at',
-        'is_active',
-        'status',
-        'notes',
-        'current_media_url',
-        'current_media_type',
-        'current_media_title',
-        'current_media_position',
-        'current_media_duration',
-        'current_meeting_id',
-        'current_meeting_url',
-        'current_meeting_joined_at',
-        'volume',
-        'last_system_info_at',
-        'cpu_usage',
-        'memory_usage',
-        'disk_usage',
-        'temperature',
-        'uptime',
-        'network_type',
-        'network_interface',
-        'ip_address',
-        'netmask',
-        'gateway',
-        'mac_address',
-        'dns_servers',
-        'wifi_ssid',
-        'wifi_signal_dbm',
-        'wifi_signal_percent',
-        'wifi_channel',
-        'wifi_frequency',
-        'memory_total',
-        'memory_used',
-        'memory_free',
-        'memory_available',
-        'memory_buffers',
-        'memory_cached',
-        'app_version',
-    ];
+    protected $guarded = ['id'];
 
     /**
      * Get the recipient associated with this OnesiBox.

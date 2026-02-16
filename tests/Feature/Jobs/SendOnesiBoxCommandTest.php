@@ -101,7 +101,7 @@ it('logs command information when handling', function (): void {
 
     Illuminate\Support\Facades\Log::shouldHaveReceived('info')
         ->once()
-        ->withArgs(fn ($message, array $context): bool => $message === 'OnesiBox command dispatched'
+        ->withArgs(fn ($message, array $context): bool => $message === 'OnesiBox command broadcasted via WebSocket'
             && $context['command_uuid'] === $command->uuid
             && $context['onesibox_id'] === $onesiBox->id
             && $context['type'] === 'stop_media');

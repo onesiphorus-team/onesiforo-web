@@ -246,7 +246,7 @@ class ProcessHeartbeatAction
 
         $activeSession = $onesiBox->activeSession();
 
-        if ($activeSession === null) {
+        if (! $activeSession instanceof \App\Models\PlaybackSession) {
             return;
         }
 

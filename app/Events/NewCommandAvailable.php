@@ -27,7 +27,7 @@ class NewCommandAvailable implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel("appliance.{$this->command->onesi_box_id}"),
+            new PrivateChannel("appliance.{$this->command->onesiBox->serial_number}"),
         ];
     }
 

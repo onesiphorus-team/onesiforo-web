@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.8.4 - 2026-02-16
+
+### What's Changed
+
+* fix: address code review findings by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/75
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.3...v0.8.4
+
 ## v0.8.3 - 2026-02-16
 
 ### What's Changed

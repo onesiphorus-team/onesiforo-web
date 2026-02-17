@@ -40,6 +40,7 @@ class NewCommandAvailable implements ShouldBroadcastNow
             'uuid' => $this->command->uuid,
             'type' => $this->command->type->value,
             'priority' => $this->command->priority,
+            'payload' => $this->command->payload,
             'expires_at' => $this->command->expires_at->toISOString(),
         ];
     }

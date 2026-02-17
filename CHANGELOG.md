@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.8.5 - 2026-02-17
+
+### What's Changed
+
+* feat: include payload in NewCommand WebSocket broadcast by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/76
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.4...v0.8.5
+
 ## v0.8.4 - 2026-02-16
 
 ### What's Changed

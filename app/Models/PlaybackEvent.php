@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $position
  * @property int|null $duration
  * @property string|null $error_message
+ * @property string|null $session_id
  * @property CarbonInterface $created_at
  * @property-read OnesiBox $onesiBox
  */
@@ -51,6 +52,7 @@ class PlaybackEvent extends Model
         'position',
         'duration',
         'error_message',
+        'session_id',
         'created_at',
     ];
 

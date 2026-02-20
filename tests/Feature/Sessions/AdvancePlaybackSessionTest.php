@@ -131,6 +131,85 @@ test('completed event for non-session playback does nothing', function (): void 
     expect($this->onesiBox->commands()->count())->toBe($commandCountBefore);
 });
 
+test('completed event with mismatched media_url is ignored', function (): void {
+    $playlist = Playlist::factory()->forOnesiBox($this->onesiBox)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(0)->create(['media_url' => 'https://www.jw.org/video/1.mp4']);
+    PlaylistItem::factory()->for($playlist)->atPosition(1)->create(['media_url' => 'https://www.jw.org/video/2.mp4']);
+
+    $session = PlaybackSession::factory()
+        ->forOnesiBox($this->onesiBox)
+        ->forPlaylist($playlist)
+        ->active()
+        ->withDuration(60)
+        ->create(['current_position' => 0, 'items_played' => 0]);
+
+    $this->advanceAction->execute(
+        $this->onesiBox,
+        PlaybackEventType::Completed,
+        'https://www.jw.org/video/WRONG.mp4'
+    );
+
+    $session->refresh();
+
+    expect($session->current_position)->toBe(0);
+    expect($session->items_played)->toBe(0);
+    expect($session->status)->toBe(PlaybackSessionStatus::Active);
+});
+
+test('two consecutive completed events with same media_url only advance once', function (): void {
+    $playlist = Playlist::factory()->forOnesiBox($this->onesiBox)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(0)->create(['media_url' => 'https://www.jw.org/video/1.mp4']);
+    PlaylistItem::factory()->for($playlist)->atPosition(1)->create(['media_url' => 'https://www.jw.org/video/2.mp4']);
+    PlaylistItem::factory()->for($playlist)->atPosition(2)->create(['media_url' => 'https://www.jw.org/video/3.mp4']);
+
+    $session = PlaybackSession::factory()
+        ->forOnesiBox($this->onesiBox)
+        ->forPlaylist($playlist)
+        ->active()
+        ->withDuration(60)
+        ->create(['current_position' => 0, 'items_played' => 0]);
+
+    // First completed event for video 1 — should advance to position 1
+    $this->advanceAction->execute(
+        $this->onesiBox,
+        PlaybackEventType::Completed,
+        'https://www.jw.org/video/1.mp4'
+    );
+
+    // Duplicate completed event for video 1 — should be ignored (current item is now video 2)
+    $this->advanceAction->execute(
+        $this->onesiBox,
+        PlaybackEventType::Completed,
+        'https://www.jw.org/video/1.mp4'
+    );
+
+    $session->refresh();
+
+    expect($session->current_position)->toBe(1);
+    expect($session->items_played)->toBe(1);
+    expect($session->status)->toBe(PlaybackSessionStatus::Active);
+});
+
+test('completed event without media_url still advances (backward compatibility)', function (): void {
+    $playlist = Playlist::factory()->forOnesiBox($this->onesiBox)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(0)->create(['media_url' => 'https://www.jw.org/video/1.mp4']);
+    PlaylistItem::factory()->for($playlist)->atPosition(1)->create(['media_url' => 'https://www.jw.org/video/2.mp4']);
+
+    $session = PlaybackSession::factory()
+        ->forOnesiBox($this->onesiBox)
+        ->forPlaylist($playlist)
+        ->active()
+        ->withDuration(60)
+        ->create(['current_position' => 0, 'items_played' => 0]);
+
+    $this->advanceAction->execute($this->onesiBox, PlaybackEventType::Completed);
+
+    $session->refresh();
+
+    expect($session->current_position)->toBe(1);
+    expect($session->items_played)->toBe(1);
+});
+
 test('advance preserves existing playback api behavior', function (): void {
     $onesiBox = OnesiBox::factory()->create();
     $token = $onesiBox->createToken('onesibox-api-token');

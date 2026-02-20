@@ -183,6 +183,69 @@ test('session expires after time limit during playback', function (): void {
     expect($session->ended_at)->not->toBeNull();
 });
 
+test('duplicate completed events only advance session once', function (): void {
+    $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4', 'title' => 'Video 1'],
+        ['url' => 'https://www.jw.org/video/2.mp4', 'title' => 'Video 2'],
+        ['url' => 'https://www.jw.org/video/3.mp4', 'title' => 'Video 3'],
+    ]);
+
+    $session = $this->startAction->execute($this->onesiBox, $playlist, 60);
+
+    // Send two identical completed events for video 1
+    $this->postJson(
+        route('api.v1.appliances.playback'),
+        [
+            'event' => 'completed',
+            'media_url' => 'https://www.jw.org/video/1.mp4',
+            'media_type' => 'video',
+        ],
+        ['Authorization' => "Bearer {$this->token->plainTextToken}"]
+    )->assertOk();
+
+    $this->postJson(
+        route('api.v1.appliances.playback'),
+        [
+            'event' => 'completed',
+            'media_url' => 'https://www.jw.org/video/1.mp4',
+            'media_type' => 'video',
+        ],
+        ['Authorization' => "Bearer {$this->token->plainTextToken}"]
+    )->assertOk();
+
+    $session->refresh();
+
+    // Session should have advanced only once (to position 1, not 2)
+    expect($session->current_position)->toBe(1);
+    expect($session->items_played)->toBe(1);
+    expect($session->status)->toBe(PlaybackSessionStatus::Active);
+});
+
+test('completed event with session_id is stored in playback event', function (): void {
+    $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4', 'title' => 'Video 1'],
+    ]);
+
+    $session = $this->startAction->execute($this->onesiBox, $playlist, 60);
+
+    $this->postJson(
+        route('api.v1.appliances.playback'),
+        [
+            'event' => 'started',
+            'media_url' => 'https://www.jw.org/video/1.mp4',
+            'media_type' => 'video',
+            'session_id' => $session->uuid,
+        ],
+        ['Authorization' => "Bearer {$this->token->plainTextToken}"]
+    )->assertOk();
+
+    $this->assertDatabaseHas('playback_events', [
+        'onesi_box_id' => $this->onesiBox->id,
+        'media_url' => 'https://www.jw.org/video/1.mp4',
+        'session_id' => $session->uuid,
+    ]);
+});
+
 test('non-session playback events still work correctly', function (): void {
     // No active session — regular playback events should work as before
     $response = $this->postJson(

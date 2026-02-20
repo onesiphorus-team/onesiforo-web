@@ -12,6 +12,7 @@ use App\Models\PlaybackSession;
 use App\Models\PlaylistItem;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Advances a playback session to the next video after a completed/error event.
@@ -27,14 +28,34 @@ class AdvancePlaybackSessionAction
 
     /**
      * Execute the action to advance the session.
+     *
+     * @param  string|null  $mediaUrl  The media_url from the event, used to validate against the current item
      */
-    public function execute(OnesiBox $onesiBox, PlaybackEventType $eventType): void
+    public function execute(OnesiBox $onesiBox, PlaybackEventType $eventType, ?string $mediaUrl = null): void
     {
-        DB::transaction(function () use ($onesiBox, $eventType): void {
+        /**
+         * @var array{nextItem: PlaylistItem, sessionUuid: string}|null $result
+         */
+        $result = DB::transaction(function () use ($onesiBox, $eventType, $mediaUrl): ?array {
             $session = $onesiBox->playbackSessions()->active()->lockForUpdate()->first();
 
             if (! $session instanceof PlaybackSession) {
-                return;
+                return null;
+            }
+
+            if ($mediaUrl !== null) {
+                $currentItem = $session->currentItem();
+
+                if ($currentItem instanceof PlaylistItem && $currentItem->media_url !== $mediaUrl) {
+                    Log::warning('Duplicate/stale playback event ignored: media_url mismatch', [
+                        'session_id' => $session->uuid,
+                        'expected_media_url' => $currentItem->media_url,
+                        'received_media_url' => $mediaUrl,
+                        'current_position' => $session->current_position,
+                    ]);
+
+                    return null;
+                }
             }
 
             $this->updateCounters($session, $eventType);
@@ -45,7 +66,7 @@ class AdvancePlaybackSessionAction
             if ($session->isExpired()) {
                 $this->endSession($session);
 
-                return;
+                return null;
             }
 
             $nextItem = $session->currentItem();
@@ -53,23 +74,34 @@ class AdvancePlaybackSessionAction
             if (! $nextItem instanceof PlaylistItem) {
                 $this->endSession($session);
 
-                return;
+                return null;
             }
 
+            return [
+                'nextItem' => $nextItem,
+                'sessionUuid' => $session->uuid,
+            ];
+        });
+
+        if ($result !== null) {
             try {
                 $this->commandService->sendSessionMediaCommand(
                     $onesiBox,
-                    $nextItem->media_url,
+                    $result['nextItem']->media_url,
                     'video',
-                    $session->uuid,
+                    $result['sessionUuid'],
                 );
             } catch (OnesiBoxOfflineException) {
-                $session->update([
-                    'status' => PlaybackSessionStatus::Error,
-                    'ended_at' => now(),
-                ]);
+                $session = $onesiBox->playbackSessions()->active()->first();
+
+                if ($session instanceof PlaybackSession) {
+                    $session->update([
+                        'status' => PlaybackSessionStatus::Error,
+                        'ended_at' => now(),
+                    ]);
+                }
             }
-        });
+        }
     }
 
     private function updateCounters(PlaybackSession $session, PlaybackEventType $eventType): void

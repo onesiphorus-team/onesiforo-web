@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Enums\Roles;
 use App\Models\OnesiBox;
 use App\Models\User;
 
@@ -41,7 +42,7 @@ class OnesiBoxPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRoles('super-admin', 'admin');
+        return $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
     }
 
     /**
@@ -50,7 +51,7 @@ class OnesiBoxPolicy
      */
     public function update(User $user, OnesiBox $onesiBox): bool
     {
-        return $user->hasAnyRoles('super-admin', 'admin');
+        return $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
     }
 
     /**
@@ -59,7 +60,7 @@ class OnesiBoxPolicy
      */
     public function delete(User $user, OnesiBox $onesiBox): bool
     {
-        return $user->hasRole('super-admin');
+        return $user->hasRole(Roles::SuperAdmin);
     }
 
     /**
@@ -68,7 +69,7 @@ class OnesiBoxPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->hasRole('super-admin');
+        return $user->hasRole(Roles::SuperAdmin);
     }
 
     /**
@@ -77,6 +78,6 @@ class OnesiBoxPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->hasRole('super-admin');
+        return $user->hasRole(Roles::SuperAdmin);
     }
 }

@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\LogOptions;
 
 /**
  * Represents an OnesiBox appliance hardware device.
@@ -82,8 +83,47 @@ class OnesiBox extends Model implements AuthenticatableContract
     /** @use HasFactory<\Database\Factories\OnesiBoxFactory> */
     use HasFactory;
 
-    use LogsActivityAllDirty;
+    use LogsActivityAllDirty {
+        LogsActivityAllDirty::getActivitylogOptions as getBaseActivitylogOptions;
+    }
     use SoftDeletes;
+
+    /**
+     * Telemetry fields excluded from activity logging.
+     *
+     * These are updated every heartbeat (~30s) and would generate excessive
+     * activity_log entries. They are transient metrics, not meaningful state
+     * changes worth auditing.
+     *
+     * @var list<string>
+     */
+    private const array TELEMETRY_FIELDS = [
+        'last_seen_at',
+        'cpu_usage',
+        'memory_usage',
+        'disk_usage',
+        'temperature',
+        'uptime',
+        'network_type',
+        'network_interface',
+        'ip_address',
+        'netmask',
+        'gateway',
+        'mac_address',
+        'dns_servers',
+        'wifi_ssid',
+        'wifi_signal_dbm',
+        'wifi_signal_percent',
+        'wifi_channel',
+        'wifi_frequency',
+        'memory_total',
+        'memory_used',
+        'memory_free',
+        'memory_available',
+        'memory_buffers',
+        'memory_cached',
+        'last_system_info_at',
+    ];
 
     /**
      * The attributes that aren't mass assignable.
@@ -91,6 +131,20 @@ class OnesiBox extends Model implements AuthenticatableContract
      * @var list<string>
      */
     protected $guarded = ['id'];
+
+    /**
+     * Override activity log options to exclude telemetry fields.
+     *
+     * Heartbeat updates are frequent (~30s per device). Without this exclusion,
+     * each heartbeat generates an activity_log record with all dirty telemetry
+     * fields. With N devices: N * 2 * 60 * 24 = 2880*N records/day.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return $this->getBaseActivitylogOptions()
+            ->logExcept(self::TELEMETRY_FIELDS)
+            ->dontLogIfAttributesChangedOnly(self::TELEMETRY_FIELDS);
+    }
 
     /**
      * Get the recipient associated with this OnesiBox.

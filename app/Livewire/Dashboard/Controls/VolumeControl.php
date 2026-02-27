@@ -118,7 +118,7 @@ class VolumeControl extends Component
         }
 
         try {
-            $action = new CreateVolumeCommandAction;
+            $action = resolve(CreateVolumeCommandAction::class);
             $action->execute($this->onesiBox, $level);
 
             // Optimistically update the local model so the UI reflects the change immediately

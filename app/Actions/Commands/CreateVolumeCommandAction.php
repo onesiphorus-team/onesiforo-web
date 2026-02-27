@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Commands;
 
-use App\Enums\CommandStatus;
-use App\Enums\CommandType;
-use App\Jobs\SendOnesiBoxCommand;
-use App\Models\Command;
 use App\Models\OnesiBox;
+use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -24,35 +21,24 @@ class CreateVolumeCommandAction
 
     public const int STEP = 5;
 
-    /**
-     * Priority for volume commands (lower = higher priority).
-     */
-    private const int PRIORITY = 3;
+    public function __construct(
+        private readonly OnesiBoxCommandServiceInterface $commandService,
+    ) {}
 
     /**
      * Execute the action to create a volume command.
      *
      * @param  OnesiBox  $onesiBox  The target appliance
      * @param  int  $level  The volume level (must be 0-100, multiple of 5)
-     * @return Command The created command
      *
      * @throws ValidationException If the volume level is invalid
+     * @throws \App\Exceptions\OnesiBoxOfflineException If the appliance is offline
      */
-    public function execute(OnesiBox $onesiBox, int $level): Command
+    public function execute(OnesiBox $onesiBox, int $level): void
     {
         $this->validateLevel($level);
 
-        $command = Command::query()->create([
-            'onesi_box_id' => $onesiBox->id,
-            'type' => CommandType::SetVolume,
-            'status' => CommandStatus::Pending,
-            'payload' => ['level' => $level],
-            'priority' => self::PRIORITY,
-        ]);
-
-        dispatch(new SendOnesiBoxCommand($command));
-
-        return $command;
+        $this->commandService->sendVolumeCommand($onesiBox, $level);
     }
 
     /**

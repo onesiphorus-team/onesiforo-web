@@ -122,7 +122,7 @@ class LogViewer extends Component
         if ($command->status === CommandStatus::Completed) {
             // Extract logs from the result
             $result = $command->result;
-            $this->logs = isset($result['lines']) ? implode("\n", $result['lines']) : 'Nessun log disponibile';
+            $this->logs = $result['logs'] ?? 'Nessun log disponibile';
         } else {
             $this->logs = 'Errore nel recupero dei log: '.($command->error_message ?? 'Errore sconosciuto');
             Flux::toast('Errore nel recupero dei log', variant: 'danger');
@@ -163,7 +163,7 @@ class LogViewer extends Component
 
             if ($command->status === CommandStatus::Completed) {
                 $result = $command->result;
-                $this->logs = isset($result['lines']) ? implode("\n", $result['lines']) : 'Nessun log disponibile';
+                $this->logs = $result['logs'] ?? 'Nessun log disponibile';
             } else {
                 $this->logs = 'Errore nel recupero dei log: '.($command->error_message ?? 'Errore sconosciuto');
             }

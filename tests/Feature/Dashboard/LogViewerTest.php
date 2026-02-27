@@ -115,7 +115,7 @@ it('updates logs when command completes successfully', function (): void {
         'type' => CommandType::GetLogs,
         'payload' => ['lines' => 100],
         'status' => CommandStatus::Completed,
-        'result' => ['logs' => 'Log line 1\nLog line 2'],
+        'result' => ['lines' => ['Log line 1', 'Log line 2'], 'total_lines' => 2, 'returned_lines' => 2],
     ]);
 
     Livewire::actingAs($user)
@@ -124,7 +124,7 @@ it('updates logs when command completes successfully', function (): void {
         ->set('isLoading', true)
         ->call('checkCommandStatus')
         ->assertSet('isLoading', false)
-        ->assertSet('logs', 'Log line 1\nLog line 2')
+        ->assertSet('logs', "Log line 1\nLog line 2")
         ->assertSet('pendingCommandId', null);
 });
 

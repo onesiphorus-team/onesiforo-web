@@ -35,8 +35,8 @@ class ExpirePlaybackSessionsCommand extends Command
 
         $expiredSessions = PlaybackSession::query()
             ->active()
-            ->get()
-            ->filter(fn (PlaybackSession $session): bool => $session->expiresAt()->lte($now));
+            ->whereRaw("datetime(started_at, '+' || duration_minutes || ' minutes') <= ?", [$now])
+            ->get();
 
         $count = $expiredSessions->count();
 

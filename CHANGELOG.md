@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.8.7 - 2026-02-27
+
+### What's Changed
+
+* build(deps): bump laravel/framework from 12.51.0 to 12.52.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/78
+* build(deps): bump livewire/flux from 2.12.0 to 2.12.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/79
+* build(deps): bump dedoc/scramble from 0.13.13 to 0.13.14 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/80
+* build(deps): bump spatie/laravel-ray from 1.43.5 to 1.43.6 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/81
+* build(deps-dev): bump pestphp/pest-plugin-laravel from 4.0.0 to 4.1.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/82
+* build(deps-dev): bump nunomaduro/collision from 8.8.3 to 8.9.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/84
+* build(deps-dev): bump pestphp/pest from 4.3.2 to 4.4.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/85
+* build(deps): bump filament/filament from 5.2.1 to 5.2.2 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/86
+* build(deps-dev): bump rector/rector from 2.3.6 to 2.3.7 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/83
+* build(deps-dev): bump laravel/boost from 2.1.1 to 2.2.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/88
+* build(deps-dev): bump pestphp/pest-plugin-browser from 4.2.1 to 4.3.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/89
+* Code quality fixes, Pulse Reverb widgets, and workshop docs by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/90
+
+**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.6...v0.8.7
+
 ## v0.8.6 - 2026-02-20
 
 ### What's Changed

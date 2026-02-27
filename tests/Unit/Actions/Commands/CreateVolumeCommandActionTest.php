@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 test('action creates volume command with valid level via service', function (): void {
     $onesiBox = OnesiBox::factory()->online()->create();
-    $action = app(CreateVolumeCommandAction::class);
+    $action = resolve(CreateVolumeCommandAction::class);
 
     $action->execute($onesiBox, 60);
 
@@ -26,7 +26,7 @@ test('action creates volume command with valid level via service', function (): 
 
 test('action rejects invalid volume levels', function (int $level): void {
     $onesiBox = OnesiBox::factory()->online()->create();
-    $action = app(CreateVolumeCommandAction::class);
+    $action = resolve(CreateVolumeCommandAction::class);
 
     expect(fn () => $action->execute($onesiBox, $level))
         ->toThrow(ValidationException::class);
@@ -44,7 +44,7 @@ test('action rejects invalid volume levels', function (int $level): void {
 
 test('action accepts all valid volume levels (multiples of 5 from 0 to 100)', function (int $level): void {
     $onesiBox = OnesiBox::factory()->online()->create();
-    $action = app(CreateVolumeCommandAction::class);
+    $action = resolve(CreateVolumeCommandAction::class);
 
     $action->execute($onesiBox, $level);
 
@@ -55,7 +55,7 @@ test('action accepts all valid volume levels (multiples of 5 from 0 to 100)', fu
 
 test('action throws when onesi box is offline', function (): void {
     $onesiBox = OnesiBox::factory()->create(['last_seen_at' => null]);
-    $action = app(CreateVolumeCommandAction::class);
+    $action = resolve(CreateVolumeCommandAction::class);
 
     expect(fn () => $action->execute($onesiBox, 80))
         ->toThrow(OnesiBoxOfflineException::class);
@@ -63,7 +63,7 @@ test('action throws when onesi box is offline', function (): void {
 
 test('action sets expiration time for volume command', function (): void {
     $onesiBox = OnesiBox::factory()->online()->create();
-    $action = app(CreateVolumeCommandAction::class);
+    $action = resolve(CreateVolumeCommandAction::class);
 
     $action->execute($onesiBox, 60);
 

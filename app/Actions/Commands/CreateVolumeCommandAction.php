@@ -22,7 +22,7 @@ class CreateVolumeCommandAction
     public const int STEP = 5;
 
     public function __construct(
-        private OnesiBoxCommandServiceInterface $commandService,
+        private readonly OnesiBoxCommandServiceInterface $commandService,
     ) {}
 
     /**

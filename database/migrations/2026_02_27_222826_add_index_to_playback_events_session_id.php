@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('playback_events', function (Blueprint $table) {
+        Schema::table('playback_events', function (Blueprint $table): void {
             $table->index('session_id');
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('playback_events', function (Blueprint $table) {
+        Schema::table('playback_events', function (Blueprint $table): void {
             $table->dropIndex(['session_id']);
         });
     }

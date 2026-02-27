@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:expire-sessions')->everyMinute()->withoutOverlapping();
+Schedule::command('app:prune-playback-events')->daily()->at('03:00');

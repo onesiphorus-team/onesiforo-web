@@ -93,4 +93,14 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendSessionMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType, string $sessionId): void;
+
+    /**
+     * Invia comando di impostazione volume.
+     *
+     * @param  int  $level  Volume level (0-100, step 5)
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendVolumeCommand(OnesiBox $onesiBox, int $level): void;
 }

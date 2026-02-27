@@ -83,6 +83,13 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         ], priority: 2);
     }
 
+    public function sendVolumeCommand(OnesiBox $onesiBox, int $level): void
+    {
+        $this->sendCommand($onesiBox, CommandType::SetVolume, [
+            'level' => $level,
+        ]);
+    }
+
     /**
      * Send a command to an OnesiBox appliance.
      *

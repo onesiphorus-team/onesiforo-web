@@ -5,28 +5,30 @@ declare(strict_types=1);
 use App\Actions\Commands\CreateVolumeCommandAction;
 use App\Enums\CommandStatus;
 use App\Enums\CommandType;
+use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\Command;
 use App\Models\OnesiBox;
 use Illuminate\Validation\ValidationException;
 
-test('action creates volume command with valid level', function (): void {
-    $onesiBox = OnesiBox::factory()->create();
-    $action = new CreateVolumeCommandAction;
+test('action creates volume command with valid level via service', function (): void {
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $action = app(CreateVolumeCommandAction::class);
 
-    $command = $action->execute($onesiBox, 60);
+    $action->execute($onesiBox, 60);
 
-    expect($command)->toBeInstanceOf(Command::class);
-    expect($command->onesi_box_id)->toBe($onesiBox->id);
+    $command = Command::query()->where('onesi_box_id', $onesiBox->id)->latest('id')->first();
+
+    expect($command)->not->toBeNull();
     expect($command->type)->toBe(CommandType::SetVolume);
     expect($command->status)->toBe(CommandStatus::Pending);
     expect($command->payload)->toBe(['level' => 60]);
 });
 
 test('action rejects invalid volume levels', function (int $level): void {
-    $onesiBox = OnesiBox::factory()->create();
-    $action = new CreateVolumeCommandAction;
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $action = app(CreateVolumeCommandAction::class);
 
-    expect(fn (): Command => $action->execute($onesiBox, $level))
+    expect(fn () => $action->execute($onesiBox, $level))
         ->toThrow(ValidationException::class);
 })->with([
     'not multiple of 5: 13' => 13,
@@ -41,28 +43,31 @@ test('action rejects invalid volume levels', function (int $level): void {
 ]);
 
 test('action accepts all valid volume levels (multiples of 5 from 0 to 100)', function (int $level): void {
-    $onesiBox = OnesiBox::factory()->create();
-    $action = new CreateVolumeCommandAction;
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $action = app(CreateVolumeCommandAction::class);
 
-    $command = $action->execute($onesiBox, $level);
+    $action->execute($onesiBox, $level);
+
+    $command = Command::query()->where('onesi_box_id', $onesiBox->id)->latest('id')->first();
 
     expect($command->payload['level'])->toBe($level);
 })->with([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]);
 
-test('action sets appropriate priority for volume command', function (): void {
-    $onesiBox = OnesiBox::factory()->create();
-    $action = new CreateVolumeCommandAction;
+test('action throws when onesi box is offline', function (): void {
+    $onesiBox = OnesiBox::factory()->create(['last_seen_at' => null]);
+    $action = app(CreateVolumeCommandAction::class);
 
-    $command = $action->execute($onesiBox, 80);
-
-    expect($command->priority)->toBe(3);
+    expect(fn () => $action->execute($onesiBox, 80))
+        ->toThrow(OnesiBoxOfflineException::class);
 });
 
 test('action sets expiration time for volume command', function (): void {
-    $onesiBox = OnesiBox::factory()->create();
-    $action = new CreateVolumeCommandAction;
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $action = app(CreateVolumeCommandAction::class);
 
-    $command = $action->execute($onesiBox, 60);
+    $action->execute($onesiBox, 60);
+
+    $command = Command::query()->where('onesi_box_id', $onesiBox->id)->latest('id')->first();
 
     expect($command->expires_at)->not->toBeNull();
     expect($command->expires_at->isAfter(now()))->toBeTrue();

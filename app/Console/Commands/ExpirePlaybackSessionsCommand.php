@@ -8,6 +8,7 @@ use App\Enums\PlaybackSessionStatus;
 use App\Models\PlaybackSession;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ExpirePlaybackSessionsCommand extends Command
@@ -33,9 +34,15 @@ class ExpirePlaybackSessionsCommand extends Command
     {
         $now = Date::now();
 
+        $driver = DB::getDriverName();
+
         $expiredSessions = PlaybackSession::query()
             ->active()
-            ->whereRaw("datetime(started_at, '+' || duration_minutes || ' minutes') <= ?", [$now])
+            ->when(
+                $driver === 'sqlite',
+                fn ($q) => $q->whereRaw("datetime(started_at, '+' || duration_minutes || ' minutes') <= ?", [$now]),
+                fn ($q) => $q->whereRaw('DATE_ADD(started_at, INTERVAL duration_minutes MINUTE) <= ?', [$now]),
+            )
             ->get();
 
         $count = $expiredSessions->count();

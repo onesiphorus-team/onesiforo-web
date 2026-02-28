@@ -1,0 +1,35 @@
+{
+    "name": "Onesiforo",
+    "dockerComposeFile": [
+        "../docker-compose.yml",
+        "docker-compose.devcontainer.yml"
+    ],
+    "service": "app",
+    "workspaceFolder": "/app",
+    "forwardPorts": [80, 5173, 8080, 8025, 3306, 6379],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "bmewburn.vscode-intelephense-client",
+                "laravel.pint-vscode",
+                "onecentlin.laravel-blade",
+                "bradlc.vscode-tailwindcss",
+                "ms-azuretools.vscode-docker",
+                "mikestead.dotenv",
+                "shufo.vscode-blade-formatter",
+                "m1guelpf.better-pest",
+                "getflux.flux-vscode"
+            ],
+            "settings": {
+                "php.validate.executablePath": "/usr/local/bin/php",
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+                "[blade]": {
+                    "editor.defaultFormatter": "shufo.vscode-blade-formatter"
+                }
+            }
+        }
+    },
+    "postCreateCommand": "composer install --no-interaction && npm install && php artisan key:generate --no-interaction && php artisan migrate --no-interaction",
+    "remoteUser": "www-data"
+}

@@ -93,28 +93,40 @@ Il sistema è composto da due componenti principali:
 
 ## Installazione
 
+### Con Docker (consigliato)
+
+L'ambiente Docker e il modo piu semplice per iniziare: non serve installare PHP, Composer, database o Redis.
+
 ```bash
-# Clona il repository
+git clone https://github.com/onesiphorus-team/onesiforo-web.git
+cd onesiforo-web
+make setup
+```
+
+Tutto qui. Apri http://localhost:8000 e sei pronto.
+
+Consulta la **[Guida completa all'ambiente Docker](docs/setup-ambiente-docker.md)** per:
+- Prerequisiti per macOS, Windows e Linux
+- Lista di tutti i comandi disponibili
+- Configurazione VS Code Dev Containers
+- Risoluzione problemi
+
+### Senza Docker (Laravel Herd / Valet)
+
+Se preferisci un'installazione locale con [Laravel Herd](https://herd.laravel.com) o simili:
+
+```bash
 git clone https://github.com/onesiphorus-team/onesiforo-web.git
 cd onesiforo-web
 
-# Installa le dipendenze PHP
 composer install
-
-# Installa le dipendenze frontend
 npm install
 
-# Configura l'ambiente
 cp .env.example .env
 php artisan key:generate
-
-# Esegui le migrazioni
 php artisan migrate
 
-# Compila gli asset
 npm run build
-
-# Avvia il server di sviluppo
 composer run dev
 ```
 
@@ -256,6 +268,7 @@ sudo systemctl reload nginx
 
 La documentazione tecnica completa e disponibile nella cartella `/docs`:
 
+- [Ambiente di Sviluppo con Docker](docs/setup-ambiente-docker.md)
 - [Architettura del Sistema](docs/architettura.md)
 - [Requisiti Funzionali e Non Funzionali](docs/requisiti.md)
 - [Specifiche OnesiBox](docs/OnesiBox_Specifiche.pdf)

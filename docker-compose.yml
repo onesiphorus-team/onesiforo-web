@@ -1,0 +1,208 @@
+# =============================================================================
+# Onesiforo - Docker Compose Development Environment
+# =============================================================================
+# Usage:
+#   make setup    — First-time setup (build, up, install, migrate)
+#   make up       — Start all services
+#   make down     — Stop all services
+#   make logs     — Tail logs from all services
+#
+# Default ports are offset to avoid conflicts with Laravel Herd.
+# Override any port via env vars (APP_PORT, VITE_PORT, etc.).
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # App — FrankenPHP web server (PHP 8.4 + Caddy)
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: onesiforo-app
+    entrypoint: /app/docker/scripts/entrypoint.sh
+    ports:
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - .:/app
+      - vendor:/app/vendor
+      - node_modules:/app/node_modules
+    environment:
+      - DOCKER=1
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "artisan", "about", "--no-interaction"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - onesiforo
+
+  # ---------------------------------------------------------------------------
+  # Vite — Node.js HMR dev server
+  # ---------------------------------------------------------------------------
+  vite:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    container_name: onesiforo-vite
+    command: sh -c "npm ci && npm run dev"
+    ports:
+      - "${VITE_PORT:-5174}:5173"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - DOCKER=1
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - onesiforo
+
+  # ---------------------------------------------------------------------------
+  # MariaDB 11
+  # ---------------------------------------------------------------------------
+  mariadb:
+    image: mariadb:11
+    container_name: onesiforo-mariadb
+    ports:
+      - "${DB_PORT:-33060}:3306"
+    environment:
+      MARIADB_DATABASE: "${DB_DATABASE:-onesiforo}"
+      MARIADB_USER: "${DB_USERNAME:-onesiforo}"
+      MARIADB_PASSWORD: "${DB_PASSWORD:-secret}"
+      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-root}"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - onesiforo
+
+  # ---------------------------------------------------------------------------
+  # Redis 7
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: onesiforo-redis
+    ports:
+      - "${REDIS_PORT:-63790}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - onesiforo
+
+  # ---------------------------------------------------------------------------
+  # Reverb — WebSocket server
+  # ---------------------------------------------------------------------------
+  reverb:
+    build:
+      context: .
+      dockerfile: docker/worker/Dockerfile
+    container_name: onesiforo-reverb
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "${REVERB_PORT:-8085}:8080"
+    volumes:
+      - .:/app
+      - vendor:/app/vendor
+    env_file: .env
+    environment:
+      - DOCKER=1
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - onesiforo
+
+  # ---------------------------------------------------------------------------
+  # Queue Worker
+  # ---------------------------------------------------------------------------
+  queue:
+    build:
+      context: .
+      dockerfile: docker/worker/Dockerfile
+    container_name: onesiforo-queue
+    command: php artisan queue:listen --tries=3 --timeout=90
+    volumes:
+      - .:/app
+      - vendor:/app/vendor
+    env_file: .env
+    environment:
+      - DOCKER=1
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - onesiforo
+
+  # ---------------------------------------------------------------------------
+  # Scheduler
+  # ---------------------------------------------------------------------------
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/worker/Dockerfile
+    container_name: onesiforo-scheduler
+    command: php artisan schedule:work
+    volumes:
+      - .:/app
+      - vendor:/app/vendor
+    env_file: .env
+    environment:
+      - DOCKER=1
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - onesiforo
+
+  # ---------------------------------------------------------------------------
+  # Mailpit — Email testing
+  # ---------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: onesiforo-mailpit
+    ports:
+      - "${MAILPIT_UI_PORT:-8026}:8025"
+      - "${MAILPIT_SMTP_PORT:-11025}:1025"
+    networks:
+      - onesiforo
+
+# =============================================================================
+# Named Volumes (performance optimization for macOS bind mounts)
+# =============================================================================
+volumes:
+  vendor:
+    driver: local
+  node_modules:
+    driver: local
+  mariadb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  onesiforo:
+    driver: bridge

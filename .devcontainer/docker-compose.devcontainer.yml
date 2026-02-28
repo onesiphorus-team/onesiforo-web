@@ -1,0 +1,16 @@
+# =============================================================================
+# Dev Container Overrides
+# =============================================================================
+# VS Code Dev Containers manage the app container lifecycle,
+# so we override the entrypoint with sleep infinity.
+# =============================================================================
+
+services:
+  app:
+    entrypoint: sleep infinity
+    volumes:
+      - vscode-extensions:/home/www-data/.vscode-server/extensions
+
+volumes:
+  vscode-extensions:
+    driver: local

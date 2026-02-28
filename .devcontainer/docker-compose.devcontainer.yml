@@ -1,0 +1,10 @@
+# =============================================================================
+# Dev Container Overrides
+# =============================================================================
+# VS Code Dev Containers manage the app container lifecycle,
+# so we override the entrypoint with sleep infinity.
+# =============================================================================
+
+services:
+  app:
+    entrypoint: sleep infinity

@@ -1,0 +1,23 @@
+{
+	# Disable HTTPS in development
+	auto_https off
+
+	# Enable FrankenPHP
+	frankenphp
+
+	# Configure worker mode for better performance with Livewire/Filament
+	# Uncomment below to enable worker mode (requires testing):
+	# workers {
+	#     /app/public/index.php 4
+	# }
+}
+
+:80 {
+	root * /app/public
+
+	# Encode responses with gzip
+	encode gzip
+
+	# Serve PHP via FrankenPHP
+	php_server
+}

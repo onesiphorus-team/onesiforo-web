@@ -24,3 +24,4 @@ yarn-error.log
 /tests/Browser/Screenshots
 /VERSION
 .DS_Store
+.env.docker.local

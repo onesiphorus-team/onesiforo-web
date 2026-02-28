@@ -30,5 +30,5 @@
             }
         }
     },
-    "postCreateCommand": "composer install --no-interaction && npm install && php artisan key:generate --no-interaction && php artisan migrate --no-interaction"
+    "postCreateCommand": "composer install --no-interaction && php artisan key:generate --no-interaction && php artisan migrate --no-interaction"
 }

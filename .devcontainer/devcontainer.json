@@ -30,6 +30,5 @@
             }
         }
     },
-    "postCreateCommand": "composer install --no-interaction && npm install && php artisan key:generate --no-interaction && php artisan migrate --no-interaction",
-    "remoteUser": "www-data"
+    "postCreateCommand": "composer install --no-interaction && npm install && php artisan key:generate --no-interaction && php artisan migrate --no-interaction"
 }

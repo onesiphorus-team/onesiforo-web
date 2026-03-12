@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingInstanceStatus;
+use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use Illuminate\Console\Command;
 
@@ -22,6 +25,7 @@ class CleanupMeetings extends Command
             ->get();
 
         foreach ($staleInstances as $instance) {
+            /** @var MeetingAttendance $attendance */
             foreach ($instance->attendances as $attendance) {
                 if (in_array($attendance->status, [MeetingAttendanceStatus::Pending, MeetingAttendanceStatus::Confirmed])) {
                     $attendance->update(['status' => MeetingAttendanceStatus::Skipped]);

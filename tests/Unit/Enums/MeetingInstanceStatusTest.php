@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MeetingInstanceStatus;
 
-it('has the correct cases', function () {
+it('has the correct cases', function (): void {
     expect(MeetingInstanceStatus::cases())->toHaveCount(5);
     expect(MeetingInstanceStatus::Scheduled->value)->toBe('scheduled');
     expect(MeetingInstanceStatus::Notified->value)->toBe('notified');
@@ -11,7 +13,7 @@ it('has the correct cases', function () {
     expect(MeetingInstanceStatus::Cancelled->value)->toBe('cancelled');
 });
 
-it('identifies terminal statuses', function () {
+it('identifies terminal statuses', function (): void {
     expect(MeetingInstanceStatus::Completed->isTerminal())->toBeTrue();
     expect(MeetingInstanceStatus::Cancelled->isTerminal())->toBeTrue();
     expect(MeetingInstanceStatus::Scheduled->isTerminal())->toBeFalse();

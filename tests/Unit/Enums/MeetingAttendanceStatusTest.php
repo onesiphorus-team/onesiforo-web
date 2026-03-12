@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MeetingAttendanceStatus;
 
-it('has the correct cases', function () {
+it('has the correct cases', function (): void {
     expect(MeetingAttendanceStatus::cases())->toHaveCount(5);
     expect(MeetingAttendanceStatus::Pending->value)->toBe('pending');
     expect(MeetingAttendanceStatus::Confirmed->value)->toBe('confirmed');
@@ -11,7 +13,7 @@ it('has the correct cases', function () {
     expect(MeetingAttendanceStatus::Skipped->value)->toBe('skipped');
 });
 
-it('identifies active statuses', function () {
+it('identifies active statuses', function (): void {
     expect(MeetingAttendanceStatus::Joined->isActive())->toBeTrue();
     expect(MeetingAttendanceStatus::Confirmed->isActive())->toBeFalse();
     expect(MeetingAttendanceStatus::Completed->isActive())->toBeFalse();

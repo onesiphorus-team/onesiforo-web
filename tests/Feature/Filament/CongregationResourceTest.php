@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Filament\Resources\Congregations\CongregationResource;
 use App\Filament\Resources\Congregations\Pages\CreateCongregation;
 use App\Filament\Resources\Congregations\Pages\EditCongregation;
 use App\Filament\Resources\Congregations\Pages\ListCongregations;
@@ -44,8 +43,8 @@ it('can create a congregation', function (): void {
         ->call('create')
         ->assertHasNoFormErrors();
 
-    expect(Congregation::count())->toBe(1);
-    expect(Congregation::first()->name)->toBe('Congregazione Test');
+    expect(Congregation::query()->count())->toBe(1);
+    expect(Congregation::query()->first()->name)->toBe('Congregazione Test');
 });
 
 it('validates zoom url format', function (): void {

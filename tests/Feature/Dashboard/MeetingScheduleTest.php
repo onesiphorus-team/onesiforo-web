@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingJoinMode;
-use App\Enums\MeetingInstanceStatus;
 use App\Livewire\Dashboard\Controls\MeetingSchedule;
 use App\Models\Congregation;
 use App\Models\MeetingAttendance;
@@ -13,7 +14,7 @@ use App\Models\User;
 use App\Services\OnesiBoxCommandService;
 use Livewire\Livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
 
@@ -26,13 +27,13 @@ beforeEach(function () {
     $this->box->caregivers()->attach($this->user);
 });
 
-it('shows next meeting info', function () {
+it('shows next meeting info', function (): void {
     Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box])
         ->assertSee($this->congregation->name)
         ->assertSee('Manuale');
 });
 
-it('can toggle join mode', function () {
+it('can toggle join mode', function (): void {
     Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box])
         ->call('toggleJoinMode')
         ->assertDispatched('meeting-join-mode-updated');
@@ -40,7 +41,7 @@ it('can toggle join mode', function () {
     expect($this->box->fresh()->meeting_join_mode)->toBe(MeetingJoinMode::Auto);
 });
 
-it('can confirm manual join', function () {
+it('can confirm manual join', function (): void {
     $mock = Mockery::mock(OnesiBoxCommandService::class);
     $mock->shouldReceive('sendZoomUrlCommand')->once();
     app()->instance(OnesiBoxCommandService::class, $mock);
@@ -60,7 +61,7 @@ it('can confirm manual join', function () {
     expect($attendance->fresh()->status)->toBe(MeetingAttendanceStatus::Joined);
 });
 
-it('can skip next meeting', function () {
+it('can skip next meeting', function (): void {
     $instance = MeetingInstance::factory()->notified()->create([
         'congregation_id' => $this->congregation->id,
     ]);
@@ -76,7 +77,7 @@ it('can skip next meeting', function () {
     expect($attendance->fresh()->status)->toBe(MeetingAttendanceStatus::Skipped);
 });
 
-it('shows meeting history', function () {
+it('shows meeting history', function (): void {
     $instance = MeetingInstance::factory()->completed()->create([
         'congregation_id' => $this->congregation->id,
     ]);
@@ -90,7 +91,7 @@ it('shows meeting history', function () {
         ->assertSee($attendance->status->getLabel());
 });
 
-it('can trigger adhoc join', function () {
+it('can trigger adhoc join', function (): void {
     $mock = Mockery::mock(OnesiBoxCommandService::class);
     $mock->shouldReceive('sendZoomUrlCommand')->once();
     app()->instance(OnesiBoxCommandService::class, $mock);
@@ -98,6 +99,6 @@ it('can trigger adhoc join', function () {
     Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box])
         ->call('joinNow');
 
-    expect(MeetingInstance::where('type', 'adhoc')->count())->toBe(1);
-    expect(MeetingAttendance::count())->toBe(1);
+    expect(MeetingInstance::query()->where('type', 'adhoc')->count())->toBe(1);
+    expect(MeetingAttendance::query()->count())->toBe(1);
 });

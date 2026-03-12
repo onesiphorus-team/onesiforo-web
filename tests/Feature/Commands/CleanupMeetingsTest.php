@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingInstanceStatus;
 use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use Carbon\Carbon;
 
-it('closes stale meeting instances older than 4 hours', function () {
+it('closes stale meeting instances older than 4 hours', function (): void {
     Carbon::setTestNow(Carbon::parse('2026-03-11 23:00', 'UTC'));
 
     $stale = MeetingInstance::factory()->inProgress()->create([
@@ -22,7 +24,7 @@ it('closes stale meeting instances older than 4 hours', function () {
     expect($recent->fresh()->status)->toBe(MeetingInstanceStatus::InProgress);
 });
 
-it('marks pending attendances as skipped for stale instances', function () {
+it('marks pending attendances as skipped for stale instances', function (): void {
     Carbon::setTestNow(Carbon::parse('2026-03-11 23:00', 'UTC'));
 
     $instance = MeetingInstance::factory()->notified()->create([

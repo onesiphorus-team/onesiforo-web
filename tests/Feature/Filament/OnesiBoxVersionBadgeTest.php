@@ -12,14 +12,14 @@ use function Pest\Livewire\livewire;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Role::query()->firstOrCreate(['name' => 'super-admin']);
     $this->admin = User::factory()->create();
     $this->admin->assignRole('super-admin');
     $this->actingAs($this->admin);
 });
 
-it('displays app_version column in table', function () {
+it('displays app_version column in table', function (): void {
     $box = OnesiBox::factory()->create(['app_version' => '1.2.0']);
 
     livewire(ListOnesiBoxes::class)

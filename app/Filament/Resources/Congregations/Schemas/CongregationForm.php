@@ -83,7 +83,7 @@ class CongregationForm
                     ->schema([
                         Select::make('timezone')
                             ->label(__('Fuso Orario'))
-                            ->options(fn () => collect(timezone_identifiers_list())->mapWithKeys(fn ($tz) => [$tz => $tz])->toArray())
+                            ->options(fn () => collect(timezone_identifiers_list())->mapWithKeys(fn ($tz): array => [$tz => $tz])->all())
                             ->searchable()
                             ->required()
                             ->default('Europe/Rome'),

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MeetingAttendanceStatus;
 use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use App\Models\OnesiBox;
 
-it('completes active attendance when meeting_url goes null in heartbeat', function () {
+it('completes active attendance when meeting_url goes null in heartbeat', function (): void {
     $box = OnesiBox::factory()->create([
         'current_meeting_url' => 'https://us05web.zoom.us/j/123',
     ]);
@@ -17,7 +19,7 @@ it('completes active attendance when meeting_url goes null in heartbeat', functi
     ]);
 
     // Simulate heartbeat with no meeting
-    app(\App\Actions\ProcessHeartbeatAction::class)($box, [
+    resolve(App\Actions\ProcessHeartbeatAction::class)($box, [
         'status' => 'idle',
         'current_meeting' => null,
     ]);
@@ -27,7 +29,7 @@ it('completes active attendance when meeting_url goes null in heartbeat', functi
     expect($attendance->left_at)->not->toBeNull();
 });
 
-it('does not complete attendance when meeting is still active', function () {
+it('does not complete attendance when meeting is still active', function (): void {
     $box = OnesiBox::factory()->create([
         'current_meeting_url' => 'https://us05web.zoom.us/j/123',
     ]);
@@ -36,7 +38,7 @@ it('does not complete attendance when meeting is still active', function () {
         'onesi_box_id' => $box->id,
     ]);
 
-    app(\App\Actions\ProcessHeartbeatAction::class)($box, [
+    resolve(App\Actions\ProcessHeartbeatAction::class)($box, [
         'status' => 'calling',
         'current_meeting' => [
             'meeting_url' => 'https://us05web.zoom.us/j/123',

@@ -42,9 +42,9 @@ class MeetingSchedule extends Component
         $instance = $attendance->meetingInstance;
         $participantName = $this->onesiBox->recipient?->full_name ?? $this->onesiBox->name;
 
-        app(OnesiBoxCommandService::class)->sendZoomUrlCommand(
+        resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
             $this->onesiBox,
-            $instance->zoom_url,
+            (string) $instance->zoom_url,
             $participantName,
         );
 
@@ -69,7 +69,7 @@ class MeetingSchedule extends Component
             return;
         }
 
-        $instance = MeetingInstance::create([
+        $instance = MeetingInstance::query()->create([
             'congregation_id' => $congregation->id,
             'type' => MeetingType::Adhoc,
             'scheduled_at' => now(),
@@ -77,7 +77,7 @@ class MeetingSchedule extends Component
             'status' => MeetingInstanceStatus::InProgress,
         ]);
 
-        MeetingAttendance::create([
+        MeetingAttendance::query()->create([
             'meeting_instance_id' => $instance->id,
             'onesi_box_id' => $this->onesiBox->id,
             'join_mode' => $this->onesiBox->meeting_join_mode,
@@ -87,13 +87,14 @@ class MeetingSchedule extends Component
 
         $participantName = $this->onesiBox->recipient?->full_name ?? $this->onesiBox->name;
 
-        app(OnesiBoxCommandService::class)->sendZoomUrlCommand(
+        resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
             $this->onesiBox,
             $congregation->zoom_url,
             $participantName,
         );
     }
 
+    /** @return array{type: MeetingType, scheduled_at: \Carbon\Carbon}|null */
     public function getNextMeetingProperty(): ?array
     {
         $congregation = $this->onesiBox->recipient?->congregation;
@@ -109,12 +110,16 @@ class MeetingSchedule extends Component
         return MeetingAttendance::query()
             ->where('onesi_box_id', $this->onesiBox->id)
             ->whereIn('status', [MeetingAttendanceStatus::Pending, MeetingAttendanceStatus::Confirmed])
-            ->whereHas('meetingInstance', fn ($q) => $q->nonTerminal())
+            ->whereHas('meetingInstance', fn ($q) => $q->whereNotIn('status', [
+                MeetingInstanceStatus::Completed->value,
+                MeetingInstanceStatus::Cancelled->value,
+            ]))
             ->with('meetingInstance')
             ->first();
     }
 
-    public function getRecentAttendancesProperty()
+    /** @return \Illuminate\Database\Eloquent\Collection<int, MeetingAttendance> */
+    public function getRecentAttendancesProperty(): \Illuminate\Database\Eloquent\Collection
     {
         return MeetingAttendance::query()
             ->where('onesi_box_id', $this->onesiBox->id)
@@ -124,7 +129,7 @@ class MeetingSchedule extends Component
             ->get();
     }
 
-    public function render()
+    public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         return view('livewire.dashboard.controls.meeting-schedule');
     }

@@ -29,16 +29,16 @@ class MeetingInstanceFactory extends Factory
 
     public function completed(): static
     {
-        return $this->state(fn () => ['status' => MeetingInstanceStatus::Completed]);
+        return $this->state(fn (): array => ['status' => MeetingInstanceStatus::Completed]);
     }
 
     public function notified(): static
     {
-        return $this->state(fn () => ['status' => MeetingInstanceStatus::Notified]);
+        return $this->state(fn (): array => ['status' => MeetingInstanceStatus::Notified]);
     }
 
     public function inProgress(): static
     {
-        return $this->state(fn () => ['status' => MeetingInstanceStatus::InProgress]);
+        return $this->state(fn (): array => ['status' => MeetingInstanceStatus::InProgress]);
     }
 }

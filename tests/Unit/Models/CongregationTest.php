@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Congregation;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
 use Carbon\Carbon;
 
-it('can calculate next midweek meeting', function () {
+it('can calculate next midweek meeting', function (): void {
     $congregation = Congregation::factory()->create([
         'midweek_day' => Carbon::WEDNESDAY, // 3
         'midweek_time' => '19:00',
@@ -21,7 +23,7 @@ it('can calculate next midweek meeting', function () {
     expect($next->timezone->getName())->toBe('Europe/Rome');
 });
 
-it('can calculate next weekend meeting', function () {
+it('can calculate next weekend meeting', function (): void {
     $congregation = Congregation::factory()->create([
         'weekend_day' => Carbon::SUNDAY, // 0
         'weekend_time' => '10:00',
@@ -36,7 +38,7 @@ it('can calculate next weekend meeting', function () {
     expect($next->format('H:i'))->toBe('10:00');
 });
 
-it('returns next meeting when today is meeting day but time has passed', function () {
+it('returns next meeting when today is meeting day but time has passed', function (): void {
     $congregation = Congregation::factory()->create([
         'midweek_day' => Carbon::MONDAY,
         'midweek_time' => '09:00',
@@ -50,7 +52,7 @@ it('returns next meeting when today is meeting day but time has passed', functio
     expect($next->isAfter(now('Europe/Rome')))->toBeTrue();
 });
 
-it('has many recipients', function () {
+it('has many recipients', function (): void {
     $congregation = Congregation::factory()->create();
     $recipient = Recipient::factory()->create(['congregation_id' => $congregation->id]);
 
@@ -58,7 +60,7 @@ it('has many recipients', function () {
     expect($congregation->recipients->first()->id)->toBe($recipient->id);
 });
 
-it('can get onesi boxes through recipients', function () {
+it('can get onesi boxes through recipients', function (): void {
     $congregation = Congregation::factory()->create();
     $recipient = Recipient::factory()->create(['congregation_id' => $congregation->id]);
     $box = OnesiBox::factory()->create(['recipient_id' => $recipient->id]);
@@ -67,7 +69,7 @@ it('can get onesi boxes through recipients', function () {
     expect($congregation->onesiBoxes->first()->id)->toBe($box->id);
 });
 
-it('can get the next upcoming meeting of any type', function () {
+it('can get the next upcoming meeting of any type', function (): void {
     $congregation = Congregation::factory()->create([
         'midweek_day' => Carbon::WEDNESDAY,
         'midweek_time' => '19:00',

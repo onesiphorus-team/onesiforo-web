@@ -1,20 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingJoinMode;
 use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use App\Models\OnesiBox;
-use App\Models\Recipient;
 use App\Services\OnesiBoxCommandService;
 use Carbon\Carbon;
 
-beforeEach(function () {
+beforeEach(function (): void {
     // 5 minutes before meeting
     Carbon::setTestNow(Carbon::parse('2026-03-11 18:55', 'UTC'));
 });
 
-it('dispatches join command for auto-mode boxes 5 min before meeting', function () {
+it('dispatches join command for auto-mode boxes 5 min before meeting', function (): void {
     $mock = Mockery::mock(OnesiBoxCommandService::class);
     $mock->shouldReceive('sendZoomUrlCommand')->once();
     app()->instance(OnesiBoxCommandService::class, $mock);
@@ -34,12 +35,12 @@ it('dispatches join command for auto-mode boxes 5 min before meeting', function 
 
     $this->artisan('meetings:auto-join')->assertExitCode(0);
 
-    $attendance = MeetingAttendance::first();
+    $attendance = MeetingAttendance::query()->first();
     expect($attendance->status)->toBe(MeetingAttendanceStatus::Joined);
     expect($attendance->joined_at)->not->toBeNull();
 });
 
-it('skips manual-mode boxes', function () {
+it('skips manual-mode boxes', function (): void {
     $mock = Mockery::mock(OnesiBoxCommandService::class);
     $mock->shouldNotReceive('sendZoomUrlCommand');
     app()->instance(OnesiBoxCommandService::class, $mock);
@@ -59,7 +60,7 @@ it('skips manual-mode boxes', function () {
     $this->artisan('meetings:auto-join')->assertExitCode(0);
 });
 
-it('skips already joined attendances', function () {
+it('skips already joined attendances', function (): void {
     $mock = Mockery::mock(OnesiBoxCommandService::class);
     $mock->shouldNotReceive('sendZoomUrlCommand');
     app()->instance(OnesiBoxCommandService::class, $mock);

@@ -26,17 +26,21 @@ class MeetingInstance extends Model
         'cancelled_reason',
     ];
 
+    /** @return BelongsTo<Congregation, $this> */
     public function congregation(): BelongsTo
     {
         return $this->belongsTo(Congregation::class);
     }
 
+    /** @return HasMany<MeetingAttendance, $this> */
     public function attendances(): HasMany
     {
         return $this->hasMany(MeetingAttendance::class);
     }
 
-    public function scopeNonTerminal(Builder $query): void
+    /** @param Builder<self> $query */
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function nonTerminal(Builder $query): void
     {
         $query->whereNotIn('status', [
             MeetingInstanceStatus::Completed->value,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Enums\MeetingAttendanceStatus;
@@ -63,7 +65,7 @@ class CheckUpcomingMeetings extends Command
             return;
         }
 
-        $instance = MeetingInstance::create([
+        $instance = MeetingInstance::query()->create([
             'congregation_id' => $congregation->id,
             'type' => $type,
             'scheduled_at' => $meetingTime->utc(),
@@ -71,8 +73,9 @@ class CheckUpcomingMeetings extends Command
             'status' => MeetingInstanceStatus::Scheduled,
         ]);
 
+        /** @var \App\Models\OnesiBox $box */
         foreach ($congregation->onesiBoxes as $box) {
-            MeetingAttendance::create([
+            MeetingAttendance::query()->create([
                 'meeting_instance_id' => $instance->id,
                 'onesi_box_id' => $box->id,
                 'join_mode' => $box->meeting_join_mode,

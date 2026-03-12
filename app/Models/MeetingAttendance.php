@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\MeetingAttendanceStatus;
@@ -9,6 +11,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property MeetingAttendanceStatus $status
+ * @property MeetingJoinMode $join_mode
+ */
 class MeetingAttendance extends Model
 {
     /** @use HasFactory<\Database\Factories\MeetingAttendanceFactory> */
@@ -23,6 +29,18 @@ class MeetingAttendance extends Model
         'status',
     ];
 
+    /** @return BelongsTo<MeetingInstance, $this> */
+    public function meetingInstance(): BelongsTo
+    {
+        return $this->belongsTo(MeetingInstance::class);
+    }
+
+    /** @return BelongsTo<OnesiBox, $this> */
+    public function onesiBox(): BelongsTo
+    {
+        return $this->belongsTo(OnesiBox::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -33,17 +51,9 @@ class MeetingAttendance extends Model
         ];
     }
 
-    public function meetingInstance(): BelongsTo
-    {
-        return $this->belongsTo(MeetingInstance::class);
-    }
-
-    public function onesiBox(): BelongsTo
-    {
-        return $this->belongsTo(OnesiBox::class);
-    }
-
-    public function scopeActive(Builder $query): void
+    /** @param Builder<self> $query */
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function active(Builder $query): void
     {
         $query->where('status', MeetingAttendanceStatus::Joined);
     }

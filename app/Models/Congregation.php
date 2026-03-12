@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\MeetingType;
 use Carbon\Carbon;
-use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,25 +27,19 @@ class Congregation extends Model
         'is_active',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'midweek_day' => 'integer',
-            'weekend_day' => 'integer',
-            'is_active' => 'boolean',
-        ];
-    }
-
+    /** @return HasMany<Recipient, $this> */
     public function recipients(): HasMany
     {
         return $this->hasMany(Recipient::class);
     }
 
+    /** @return HasMany<MeetingInstance, $this> */
     public function meetingInstances(): HasMany
     {
         return $this->hasMany(MeetingInstance::class);
     }
 
+    /** @return HasManyThrough<OnesiBox, Recipient, $this> */
     public function onesiBoxes(): HasManyThrough
     {
         return $this->hasManyThrough(OnesiBox::class, Recipient::class);
@@ -75,6 +70,15 @@ class Congregation extends Model
         return ['type' => MeetingType::Weekend, 'scheduled_at' => $weekend];
     }
 
+    protected function casts(): array
+    {
+        return [
+            'midweek_day' => 'integer',
+            'weekend_day' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
+
     private function nextMeetingOnDay(int $dayOfWeek, string $time): Carbon
     {
         $tz = $this->timezone;
@@ -87,7 +91,7 @@ class Congregation extends Model
         // If today is meeting day and time hasn't passed, use today
         $today = $now->copy()->setTime((int) $hour, (int) $minute, 0);
         if ($now->dayOfWeek === $dayOfWeek && $now->lt($today)) {
-            $next = $today;
+            return $today;
         }
 
         return $next;

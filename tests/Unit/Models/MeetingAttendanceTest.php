@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingJoinMode;
 use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use App\Models\OnesiBox;
 
-it('belongs to a meeting instance and onesi box', function () {
+it('belongs to a meeting instance and onesi box', function (): void {
     $instance = MeetingInstance::factory()->create();
     $box = OnesiBox::factory()->create();
     $attendance = MeetingAttendance::factory()->create([
@@ -18,7 +20,7 @@ it('belongs to a meeting instance and onesi box', function () {
     expect($attendance->onesiBox->id)->toBe($box->id);
 });
 
-it('casts join_mode and status correctly', function () {
+it('casts join_mode and status correctly', function (): void {
     $attendance = MeetingAttendance::factory()->create([
         'join_mode' => 'auto',
         'status' => 'pending',
@@ -28,9 +30,9 @@ it('casts join_mode and status correctly', function () {
     expect($attendance->status)->toBe(MeetingAttendanceStatus::Pending);
 });
 
-it('scopes to active attendances', function () {
+it('scopes to active attendances', function (): void {
     MeetingAttendance::factory()->create(['status' => 'joined']);
     MeetingAttendance::factory()->create(['status' => 'completed']);
 
-    expect(MeetingAttendance::active()->count())->toBe(1);
+    expect(MeetingAttendance::query()->active()->count())->toBe(1);
 });

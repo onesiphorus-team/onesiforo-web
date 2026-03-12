@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingInstanceStatus;
 use App\Enums\MeetingJoinMode;
@@ -12,13 +14,13 @@ use App\Notifications\MeetingUpcomingNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Notification;
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Wednesday 18:35 — 25 minutes before a 19:00 midweek meeting
     Carbon::setTestNow(Carbon::parse('2026-03-11 18:35', 'Europe/Rome'));
     Notification::fake();
 });
 
-it('creates meeting instance and attendances for upcoming meeting', function () {
+it('creates meeting instance and attendances for upcoming meeting', function (): void {
     $congregation = Congregation::factory()->create([
         'midweek_day' => Carbon::WEDNESDAY,
         'midweek_time' => '19:00',
@@ -32,9 +34,9 @@ it('creates meeting instance and attendances for upcoming meeting', function () 
 
     $this->artisan('meetings:check-upcoming')->assertExitCode(0);
 
-    expect(MeetingInstance::count())->toBe(1);
+    expect(MeetingInstance::query()->count())->toBe(1);
 
-    $instance = MeetingInstance::first();
+    $instance = MeetingInstance::query()->first();
     expect($instance->congregation_id)->toBe($congregation->id);
     expect($instance->type->value)->toBe('midweek');
     expect($instance->status)->toBe(MeetingInstanceStatus::Notified);
@@ -45,7 +47,7 @@ it('creates meeting instance and attendances for upcoming meeting', function () 
     expect($instance->attendances->first()->status)->toBe(MeetingAttendanceStatus::Pending);
 });
 
-it('is idempotent — does not create duplicates on second run', function () {
+it('is idempotent — does not create duplicates on second run', function (): void {
     $congregation = Congregation::factory()->create([
         'midweek_day' => Carbon::WEDNESDAY,
         'midweek_time' => '19:00',
@@ -57,10 +59,10 @@ it('is idempotent — does not create duplicates on second run', function () {
     $this->artisan('meetings:check-upcoming')->assertExitCode(0);
     $this->artisan('meetings:check-upcoming')->assertExitCode(0);
 
-    expect(MeetingInstance::count())->toBe(1);
+    expect(MeetingInstance::query()->count())->toBe(1);
 });
 
-it('skips inactive congregations', function () {
+it('skips inactive congregations', function (): void {
     Congregation::factory()->inactive()->create([
         'midweek_day' => Carbon::WEDNESDAY,
         'midweek_time' => '19:00',
@@ -68,10 +70,10 @@ it('skips inactive congregations', function () {
 
     $this->artisan('meetings:check-upcoming')->assertExitCode(0);
 
-    expect(MeetingInstance::count())->toBe(0);
+    expect(MeetingInstance::query()->count())->toBe(0);
 });
 
-it('dispatches notifications to caregivers', function () {
+it('dispatches notifications to caregivers', function (): void {
     Notification::fake();
 
     $congregation = Congregation::factory()->create([
@@ -92,7 +94,7 @@ it('dispatches notifications to caregivers', function () {
     Notification::assertSentTo($caregiver, MeetingUpcomingNotification::class);
 });
 
-it('skips congregations with no upcoming meeting in window', function () {
+it('skips congregations with no upcoming meeting in window', function (): void {
     Congregation::factory()->create([
         'midweek_day' => Carbon::THURSDAY, // tomorrow, not within 30 min
         'midweek_time' => '19:00',
@@ -101,5 +103,5 @@ it('skips congregations with no upcoming meeting in window', function () {
 
     $this->artisan('meetings:check-upcoming')->assertExitCode(0);
 
-    expect(MeetingInstance::count())->toBe(0);
+    expect(MeetingInstance::query()->count())->toBe(0);
 });

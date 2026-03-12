@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use Carbon\Carbon;
@@ -31,6 +33,6 @@ class CongregationFactory extends Factory
 
     public function inactive(): static
     {
-        return $this->state(fn () => ['is_active' => false]);
+        return $this->state(fn (): array => ['is_active' => false]);
     }
 }

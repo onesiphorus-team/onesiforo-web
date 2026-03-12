@@ -67,6 +67,8 @@ use Spatie\Activitylog\LogOptions;
  * @property int|null $memory_buffers
  * @property int|null $memory_cached
  * @property string|null $app_version
+ * @property MeetingJoinMode $meeting_join_mode
+ * @property bool $meeting_notifications_enabled
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at

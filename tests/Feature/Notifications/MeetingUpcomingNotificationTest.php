@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Congregation;
 use App\Models\MeetingInstance;
 use App\Models\OnesiBox;
@@ -7,7 +9,7 @@ use App\Models\User;
 use App\Notifications\MeetingUpcomingNotification;
 use Illuminate\Support\Facades\Notification;
 
-it('sends notification via database and broadcast channels', function () {
+it('sends notification via database and broadcast channels', function (): void {
     Notification::fake();
 
     $user = User::factory()->create();
@@ -18,12 +20,10 @@ it('sends notification via database and broadcast channels', function () {
     $notification = new MeetingUpcomingNotification($instance, $box);
     $user->notify($notification);
 
-    Notification::assertSentTo($user, MeetingUpcomingNotification::class, function ($n, $channels) {
-        return in_array('database', $channels) && in_array('broadcast', $channels);
-    });
+    Notification::assertSentTo($user, MeetingUpcomingNotification::class, fn ($n, $channels): bool => in_array('database', $channels) && in_array('broadcast', $channels));
 });
 
-it('includes telegram channel when user has telegram_chat_id', function () {
+it('includes telegram channel when user has telegram_chat_id', function (): void {
     Notification::fake();
 
     $user = User::factory()->create(['telegram_chat_id' => '123456']);
@@ -33,12 +33,10 @@ it('includes telegram channel when user has telegram_chat_id', function () {
     $notification = new MeetingUpcomingNotification($instance, $box);
     $user->notify($notification);
 
-    Notification::assertSentTo($user, MeetingUpcomingNotification::class, function ($n, $channels) {
-        return in_array('telegram', $channels);
-    });
+    Notification::assertSentTo($user, MeetingUpcomingNotification::class, fn ($n, $channels): bool => in_array('telegram', $channels));
 });
 
-it('excludes telegram channel when user has no telegram_chat_id', function () {
+it('excludes telegram channel when user has no telegram_chat_id', function (): void {
     Notification::fake();
 
     $user = User::factory()->create(['telegram_chat_id' => null]);
@@ -48,12 +46,10 @@ it('excludes telegram channel when user has no telegram_chat_id', function () {
     $notification = new MeetingUpcomingNotification($instance, $box);
     $user->notify($notification);
 
-    Notification::assertSentTo($user, MeetingUpcomingNotification::class, function ($n, $channels) {
-        return ! in_array('telegram', $channels);
-    });
+    Notification::assertSentTo($user, MeetingUpcomingNotification::class, fn ($n, $channels): bool => ! in_array('telegram', $channels));
 });
 
-it('has correct database notification content', function () {
+it('has correct database notification content', function (): void {
     $congregation = Congregation::factory()->create(['name' => 'Roma Centro']);
     $instance = MeetingInstance::factory()->create([
         'congregation_id' => $congregation->id,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\MeetingAttendanceStatus;
@@ -30,12 +32,12 @@ class MeetingAttendanceFactory extends Factory
 
     public function auto(): static
     {
-        return $this->state(fn () => ['join_mode' => MeetingJoinMode::Auto]);
+        return $this->state(fn (): array => ['join_mode' => MeetingJoinMode::Auto]);
     }
 
     public function joined(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn (): array => [
             'status' => MeetingAttendanceStatus::Joined,
             'joined_at' => now(),
         ]);
@@ -43,7 +45,7 @@ class MeetingAttendanceFactory extends Factory
 
     public function completed(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn (): array => [
             'status' => MeetingAttendanceStatus::Completed,
             'joined_at' => now()->subHour(),
             'left_at' => now(),

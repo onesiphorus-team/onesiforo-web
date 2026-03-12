@@ -56,7 +56,7 @@ it('has many recipients', function () {
 
     expect($congregation->recipients)->toHaveCount(1);
     expect($congregation->recipients->first()->id)->toBe($recipient->id);
-})->todo('requires congregation_id FK on recipients table — added in Task 6');
+});
 
 it('can get onesi boxes through recipients', function () {
     $congregation = Congregation::factory()->create();
@@ -65,7 +65,7 @@ it('can get onesi boxes through recipients', function () {
 
     expect($congregation->onesiBoxes)->toHaveCount(1);
     expect($congregation->onesiBoxes->first()->id)->toBe($box->id);
-})->todo('requires congregation_id FK on recipients table — added in Task 6');
+});
 
 it('can get the next upcoming meeting of any type', function () {
     $congregation = Congregation::factory()->create([

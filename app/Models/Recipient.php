@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Traits\LogsActivityAllDirty;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -24,10 +25,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $province
  * @property array<int, array{name: string, phone: string, relationship?: string}>|null $emergency_contacts
  * @property string|null $notes
+ * @property int|null $congregation_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  * @property-read OnesiBox|null $onesiBox
+ * @property-read Congregation|null $congregation
  * @property-read string $full_name
  * @property-read string|null $full_address
  */
@@ -54,6 +57,7 @@ class Recipient extends Model
         'province',
         'emergency_contacts',
         'notes',
+        'congregation_id',
     ];
 
     /**
@@ -64,6 +68,16 @@ class Recipient extends Model
     public function onesiBox(): HasOne
     {
         return $this->hasOne(OnesiBox::class);
+    }
+
+    /**
+     * Get the Congregation this recipient belongs to.
+     *
+     * @return BelongsTo<Congregation, $this>
+     */
+    public function congregation(): BelongsTo
+    {
+        return $this->belongsTo(Congregation::class);
     }
 
     /**

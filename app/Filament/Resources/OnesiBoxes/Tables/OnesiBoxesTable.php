@@ -81,6 +81,32 @@ class OnesiBoxesTable
                     ->color('gray')
                     ->toggleable(isToggledHiddenByDefault: true),
 
+                TextColumn::make('app_version')
+                    ->label(__('Versione SW'))
+                    ->badge()
+                    ->color(fn (?string $state): string => $state && version_compare($state, config('onesiforo.onesibox_min_version'), '>=') ? 'success' : 'danger')
+                    ->placeholder('N/D')
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('meeting_join_mode')
+                    ->label(__('Modalità Join'))
+                    ->badge()
+                    ->toggleable(),
+
+                TextColumn::make('next_meeting')
+                    ->label(__('Prossima adunanza'))
+                    ->state(function (OnesiBox $record): string {
+                        $congregation = $record->recipient?->congregation;
+                        if (! $congregation) {
+                            return 'N/D';
+                        }
+                        $next = $congregation->nextMeeting();
+
+                        return $next['type']->getLabel().' — '.$next['scheduled_at']->format('D d/m H:i');
+                    })
+                    ->toggleable(),
+
                 TextColumn::make('caregivers_count')
                     ->label(__('Caregiver'))
                     ->counts('caregivers')

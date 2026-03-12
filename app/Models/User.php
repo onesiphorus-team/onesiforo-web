@@ -44,6 +44,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'name',
         'email',
         'password',
+        'telegram_chat_id',
     ];
 
     /**

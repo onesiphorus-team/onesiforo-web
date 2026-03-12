@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\CommandStatus;
+use App\Enums\MeetingJoinMode;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
 use App\Traits\LogsActivityAllDirty;
@@ -340,6 +341,7 @@ class OnesiBox extends Model implements AuthenticatableContract
             'current_media_position' => 'integer',
             'current_media_duration' => 'integer',
             'current_meeting_joined_at' => 'datetime',
+            'meeting_join_mode' => MeetingJoinMode::class,
             'volume' => 'integer',
             'last_system_info_at' => 'datetime',
             'cpu_usage' => 'integer',

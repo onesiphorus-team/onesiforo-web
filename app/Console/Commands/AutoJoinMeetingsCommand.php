@@ -6,12 +6,13 @@ namespace App\Console\Commands;
 
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingJoinMode;
+use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\MeetingAttendance;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandService;
 use Illuminate\Console\Command;
 
-class AutoJoinMeetings extends Command
+class AutoJoinMeetingsCommand extends Command
 {
     protected $signature = 'meetings:auto-join';
 
@@ -36,14 +37,18 @@ class AutoJoinMeetings extends Command
             $box = $attendance->onesiBox;
             /** @var \App\Models\MeetingInstance $instance */
             $instance = $attendance->meetingInstance;
-            $participantName = $box->recipient?->full_name ?? $box->name;
+            $participantName = $box->recipient->full_name ?? $box->name;
 
-            $commandService->sendZoomUrlCommand($box, $instance->zoom_url, $participantName);
+            try {
+                $commandService->sendZoomUrlCommand($box, $instance->zoom_url, $participantName);
 
-            $attendance->update([
-                'status' => MeetingAttendanceStatus::Joined,
-                'joined_at' => now(),
-            ]);
+                $attendance->update([
+                    'status' => MeetingAttendanceStatus::Joined,
+                    'joined_at' => now(),
+                ]);
+            } catch (OnesiBoxOfflineException $e) {
+                $this->warn("OnesiBox {$box->name} is offline, skipping auto-join: {$e->getMessage()}");
+            }
         }
 
         return self::SUCCESS;

@@ -10,7 +10,7 @@ use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use Illuminate\Console\Command;
 
-class CleanupMeetings extends Command
+class CleanupMeetingsCommand extends Command
 {
     protected $signature = 'meetings:cleanup';
 

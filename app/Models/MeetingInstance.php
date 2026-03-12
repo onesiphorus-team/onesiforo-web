@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\MeetingInstanceStatus;
 use App\Enums\MeetingType;
+use App\Traits\LogsActivityAllDirty;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,8 @@ class MeetingInstance extends Model
 {
     /** @use HasFactory<\Database\Factories\MeetingInstanceFactory> */
     use HasFactory;
+
+    use LogsActivityAllDirty;
 
     protected $fillable = [
         'congregation_id',

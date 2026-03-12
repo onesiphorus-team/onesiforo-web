@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\MeetingType;
+use App\Traits\LogsActivityAllDirty;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,8 @@ class Congregation extends Model
 {
     /** @use HasFactory<\Database\Factories\CongregationFactory> */
     use HasFactory;
+
+    use LogsActivityAllDirty;
 
     protected $fillable = [
         'name',

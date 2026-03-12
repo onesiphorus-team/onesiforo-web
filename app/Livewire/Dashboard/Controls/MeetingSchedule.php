@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
+use App\Concerns\HandlesOnesiBoxErrors;
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingInstanceStatus;
 use App\Enums\MeetingJoinMode;
@@ -11,20 +12,28 @@ use App\Enums\MeetingType;
 use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use App\Models\OnesiBox;
+use App\Models\User;
 use App\Services\OnesiBoxCommandService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class MeetingSchedule extends Component
 {
+    use AuthorizesRequests;
+    use HandlesOnesiBoxErrors;
+
     public OnesiBox $onesiBox;
 
     public function mount(OnesiBox $onesiBox): void
     {
+        $this->authorizeCaregiver();
         $this->onesiBox = $onesiBox->load('recipient.congregation');
     }
 
     public function toggleJoinMode(): void
     {
+        $this->authorizeCaregiver();
+
         $newMode = $this->onesiBox->meeting_join_mode === MeetingJoinMode::Auto
             ? MeetingJoinMode::Manual
             : MeetingJoinMode::Auto;
@@ -35,17 +44,22 @@ class MeetingSchedule extends Component
 
     public function confirmJoin(int $attendanceId): void
     {
+        $this->authorizeCaregiver();
+
         $attendance = MeetingAttendance::query()
             ->where('onesi_box_id', $this->onesiBox->id)
             ->findOrFail($attendanceId);
 
         $instance = $attendance->meetingInstance;
-        $participantName = $this->onesiBox->recipient?->full_name ?? $this->onesiBox->name;
+        $participantName = $this->onesiBox->recipient->full_name ?? $this->onesiBox->name;
 
-        resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
-            $this->onesiBox,
-            (string) $instance->zoom_url,
-            $participantName,
+        $this->executeWithErrorHandling(
+            fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
+                $this->onesiBox,
+                (string) $instance->zoom_url,
+                $participantName,
+            ),
+            'Collegamento in corso...',
         );
 
         $attendance->update([
@@ -56,6 +70,8 @@ class MeetingSchedule extends Component
 
     public function skipMeeting(int $attendanceId): void
     {
+        $this->authorizeCaregiver();
+
         MeetingAttendance::query()
             ->where('onesi_box_id', $this->onesiBox->id)
             ->where('id', $attendanceId)
@@ -64,6 +80,8 @@ class MeetingSchedule extends Component
 
     public function joinNow(): void
     {
+        $this->authorizeCaregiver();
+
         $congregation = $this->onesiBox->recipient?->congregation;
         if (! $congregation) {
             return;
@@ -85,12 +103,15 @@ class MeetingSchedule extends Component
             'joined_at' => now(),
         ]);
 
-        $participantName = $this->onesiBox->recipient?->full_name ?? $this->onesiBox->name;
+        $participantName = $this->onesiBox->recipient->full_name ?? $this->onesiBox->name;
 
-        resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
-            $this->onesiBox,
-            $congregation->zoom_url,
-            $participantName,
+        $this->executeWithErrorHandling(
+            fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
+                $this->onesiBox,
+                $congregation->zoom_url,
+                $participantName,
+            ),
+            'Collegamento ad-hoc in corso...',
         );
     }
 
@@ -132,5 +153,15 @@ class MeetingSchedule extends Component
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         return view('livewire.dashboard.controls.meeting-schedule');
+    }
+
+    private function authorizeCaregiver(): void
+    {
+        $user = auth()->user();
+
+        abort_unless(
+            $user instanceof User && $this->onesiBox->userCanView($user),
+            403,
+        );
     }
 }

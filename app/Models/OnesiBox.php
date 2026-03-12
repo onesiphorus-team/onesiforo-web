@@ -344,6 +344,7 @@ class OnesiBox extends Model implements AuthenticatableContract
             'current_media_duration' => 'integer',
             'current_meeting_joined_at' => 'datetime',
             'meeting_join_mode' => MeetingJoinMode::class,
+            'meeting_notifications_enabled' => 'boolean',
             'volume' => 'integer',
             'last_system_info_at' => 'datetime',
             'cpu_usage' => 'integer',

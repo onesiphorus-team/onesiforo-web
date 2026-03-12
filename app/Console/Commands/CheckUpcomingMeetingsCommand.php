@@ -14,7 +14,7 @@ use App\Notifications\MeetingUpcomingNotification;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
-class CheckUpcomingMeetings extends Command
+class CheckUpcomingMeetingsCommand extends Command
 {
     protected $signature = 'meetings:check-upcoming';
 

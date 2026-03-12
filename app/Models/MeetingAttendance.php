@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingJoinMode;
+use App\Traits\LogsActivityAllDirty;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,8 @@ class MeetingAttendance extends Model
 {
     /** @use HasFactory<\Database\Factories\MeetingAttendanceFactory> */
     use HasFactory;
+
+    use LogsActivityAllDirty;
 
     protected $fillable = [
         'meeting_instance_id',

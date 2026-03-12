@@ -73,6 +73,7 @@ class OnesiBoxResource extends Resource
      */
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
+        /** @var Builder<OnesiBox> */
         return parent::getRecordRouteBindingEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,

@@ -71,6 +71,7 @@ class RecipientResource extends Resource
      */
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
+        /** @var Builder<Recipient> */
         return parent::getRecordRouteBindingEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,

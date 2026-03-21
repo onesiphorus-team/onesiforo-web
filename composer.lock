@@ -5011,20 +5011,20 @@
         },
         {
             "name": "oltrematica/laravel-role-lite",
-            "version": "v1.0.3",
+            "version": "v1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Oltrematica/laravel-role-lite.git",
-                "reference": "0826d09e54b666aa7789497103f1a795c65a527a"
+                "reference": "d2d7d21f7e6cf0b1df150731a218f783277ab1df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Oltrematica/laravel-role-lite/zipball/0826d09e54b666aa7789497103f1a795c65a527a",
-                "reference": "0826d09e54b666aa7789497103f1a795c65a527a",
+                "url": "https://api.github.com/repos/Oltrematica/laravel-role-lite/zipball/d2d7d21f7e6cf0b1df150731a218f783277ab1df",
+                "reference": "d2d7d21f7e6cf0b1df150731a218f783277ab1df",
                 "shasum": ""
             },
             "require": {
-                "illuminate/contracts": "^10.0|^11.0|^12.0",
+                "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
                 "php": "^8.3"
             },
             "require-dev": {
@@ -5032,7 +5032,7 @@
                 "larastan/larastan": "^3.0",
                 "laravel/pint": "^1.21",
                 "nunomaduro/collision": "^8.6",
-                "orchestra/testbench": "^10.0",
+                "orchestra/testbench": "^10.0|^11.0",
                 "pestphp/pest": "^3.7",
                 "pestphp/pest-plugin-arch": "^3.0",
                 "pestphp/pest-plugin-laravel": "^3.1",
@@ -5075,9 +5075,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Oltrematica/laravel-role-lite/issues",
-                "source": "https://github.com/Oltrematica/laravel-role-lite/tree/v1.0.3"
+                "source": "https://github.com/Oltrematica/laravel-role-lite/tree/v1.0.4"
             },
-            "time": "2025-05-27T11:17:51+00:00"
+            "time": "2026-03-18T19:25:41+00:00"
         },
         {
             "name": "openspout/openspout",

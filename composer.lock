@@ -869,28 +869,28 @@
         },
         {
             "name": "dev-to-geek/laravel-init",
-            "version": "v0.2.0",
+            "version": "v0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dev-to-geek/laravel-init.git",
-                "reference": "40f57120fcd101f94824e41f900da7722ff3bbbe"
+                "reference": "4253381a5e653aad92842951fb53ad98b9b69ca6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dev-to-geek/laravel-init/zipball/40f57120fcd101f94824e41f900da7722ff3bbbe",
-                "reference": "40f57120fcd101f94824e41f900da7722ff3bbbe",
+                "url": "https://api.github.com/repos/dev-to-geek/laravel-init/zipball/4253381a5e653aad92842951fb53ad98b9b69ca6",
+                "reference": "4253381a5e653aad92842951fb53ad98b9b69ca6",
                 "shasum": ""
             },
             "require": {
-                "illuminate/contracts": "^12.0",
+                "illuminate/contracts": "^12.0 || ^13.0",
                 "php": "^8.3"
             },
             "require-dev": {
                 "larastan/larastan": "^v3.1",
                 "laravel/pint": "^v1.21",
                 "mockery/mockery": "*",
-                "nunomaduro/collision": "^8.6.1",
-                "orchestra/testbench": "^10.0",
+                "nunomaduro/collision": "^8.6.1 || ^9.0",
+                "orchestra/testbench": "^10.0 || ^11.0",
                 "pestphp/pest": "^v4.0",
                 "pestphp/pest-plugin-arch": "^4.0",
                 "pestphp/pest-plugin-laravel": "^4.0",
@@ -932,7 +932,7 @@
             ],
             "support": {
                 "issues": "https://github.com/dev-to-geek/laravel-init/issues",
-                "source": "https://github.com/dev-to-geek/laravel-init/tree/v0.2.0"
+                "source": "https://github.com/dev-to-geek/laravel-init/tree/v0.2.1"
             },
             "funding": [
                 {
@@ -940,7 +940,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-09T00:44:01+00:00"
+            "time": "2026-03-18T19:20:34+00:00"
         },
         {
             "name": "dflydev/dot-access-data",

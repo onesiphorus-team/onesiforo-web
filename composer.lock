@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ed7e3d9355a8624d0579f135a36aa325",
+    "content-hash": "88c7cb61b241665d4430c4f46adc19f7",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -5009,16 +5009,16 @@
         },
         {
             "name": "oltrematica/laravel-role-lite",
-            "version": "v1.0.4",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Oltrematica/laravel-role-lite.git",
-                "reference": "d2d7d21f7e6cf0b1df150731a218f783277ab1df"
+                "reference": "c344f1836245a36794d48a43d3a64a381b0bbdb9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Oltrematica/laravel-role-lite/zipball/d2d7d21f7e6cf0b1df150731a218f783277ab1df",
-                "reference": "d2d7d21f7e6cf0b1df150731a218f783277ab1df",
+                "url": "https://api.github.com/repos/Oltrematica/laravel-role-lite/zipball/c344f1836245a36794d48a43d3a64a381b0bbdb9",
+                "reference": "c344f1836245a36794d48a43d3a64a381b0bbdb9",
                 "shasum": ""
             },
             "require": {
@@ -5031,9 +5031,9 @@
                 "laravel/pint": "^1.21",
                 "nunomaduro/collision": "^8.6",
                 "orchestra/testbench": "^10.0|^11.0",
-                "pestphp/pest": "^3.7",
-                "pestphp/pest-plugin-arch": "^3.0",
-                "pestphp/pest-plugin-laravel": "^3.1",
+                "pestphp/pest": "^4.4",
+                "pestphp/pest-plugin-arch": "^4.0",
+                "pestphp/pest-plugin-laravel": "^4.0",
                 "phpstan/phpstan-deprecation-rules": "^2.0",
                 "phpstan/phpstan-mockery": "^2.0",
                 "phpstan/phpstan-phpunit": "^2.0",
@@ -5073,9 +5073,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Oltrematica/laravel-role-lite/issues",
-                "source": "https://github.com/Oltrematica/laravel-role-lite/tree/v1.0.4"
+                "source": "https://github.com/Oltrematica/laravel-role-lite/tree/v2.0.0"
             },
-            "time": "2026-03-18T19:25:41+00:00"
+            "time": "2026-04-04T09:55:53+00:00"
         },
         {
             "name": "openspout/openspout",

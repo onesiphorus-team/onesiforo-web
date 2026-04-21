@@ -6,6 +6,7 @@ use App\Filament\Resources\Recipients\Pages\CreateRecipient;
 use App\Filament\Resources\Recipients\Pages\EditRecipient;
 use App\Filament\Resources\Recipients\Pages\ListRecipients;
 use App\Filament\Resources\Recipients\RecipientResource;
+use App\Models\Congregation;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
 use App\Models\User;
@@ -164,5 +165,58 @@ describe('RecipientResource: Edit', function (): void {
             ->callAction('delete');
 
         $this->assertSoftDeleted(Recipient::class, ['id' => $recipient->id]);
+    });
+});
+
+describe('RecipientResource: Congregation', function (): void {
+    it('can assign a congregation when creating a recipient', function (): void {
+        $congregation = Congregation::factory()->create();
+
+        livewire(CreateRecipient::class)
+            ->fillForm([
+                'first_name' => 'Anna',
+                'last_name' => 'Conti',
+                'congregation_id' => $congregation->id,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas(Recipient::class, [
+            'first_name' => 'Anna',
+            'congregation_id' => $congregation->id,
+        ]);
+    });
+
+    it('can change the congregation of an existing recipient', function (): void {
+        $oldCongregation = Congregation::factory()->create();
+        $newCongregation = Congregation::factory()->create();
+        $recipient = Recipient::factory()->create(['congregation_id' => $oldCongregation->id]);
+
+        livewire(EditRecipient::class, ['record' => $recipient->id])
+            ->fillForm(['congregation_id' => $newCongregation->id])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect($recipient->fresh()->congregation_id)->toBe($newCongregation->id);
+    });
+
+    it('can unassign a congregation from a recipient', function (): void {
+        $congregation = Congregation::factory()->create();
+        $recipient = Recipient::factory()->create(['congregation_id' => $congregation->id]);
+
+        livewire(EditRecipient::class, ['record' => $recipient->id])
+            ->fillForm(['congregation_id' => null])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect($recipient->fresh()->congregation_id)->toBeNull();
+    });
+
+    it('shows the congregation column in the list', function (): void {
+        $congregation = Congregation::factory()->create(['name' => 'Congregazione Milano']);
+        Recipient::factory()->create(['congregation_id' => $congregation->id]);
+
+        livewire(ListRecipients::class)
+            ->assertSee('Congregazione Milano');
     });
 });

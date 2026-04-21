@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Recipients\Schemas;
 
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Fieldset;
@@ -69,6 +70,18 @@ class RecipientForm
                             ])
                             ->columns(1),
                     ]),
+
+                Section::make(__('Congregazione'))
+                    ->schema([
+                        Select::make('congregation_id')
+                            ->label(__('Congregazione'))
+                            ->relationship('congregation', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->nullable()
+                            ->placeholder(__('Nessuna congregazione assegnata')),
+                    ])
+                    ->collapsible(),
 
                 Section::make(__('Contatti di Emergenza'))
                     ->schema([

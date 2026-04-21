@@ -7,17 +7,18 @@
     "herd_mcp": true,
     "mcp": true,
     "packages": [
-        "laravel/fortify",
         "filament/filament",
         "spatie/laravel-ray"
     ],
     "sail": false,
     "skills": [
+        "fortify-development",
+        "laravel-best-practices",
+        "pulse-development",
         "fluxui-development",
         "livewire-development",
         "pest-testing",
         "tailwindcss-development",
-        "developing-with-fortify",
         "debugging-output-and-previewing-html-using-ray"
     ]
 }

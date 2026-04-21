@@ -54,7 +54,7 @@ class EditUser extends EditRecord
 
         // Sync roles with the user
         $currentRoles = $record->roles->pluck('name')->toArray();
-        $newRoles = $this->roles ?? [];
+        $newRoles = $this->roles;
 
         // Only sync if roles have changed
         if (array_diff($currentRoles, $newRoles) || array_diff($newRoles, $currentRoles)) {

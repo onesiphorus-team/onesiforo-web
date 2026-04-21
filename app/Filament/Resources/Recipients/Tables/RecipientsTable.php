@@ -42,6 +42,13 @@ class RecipientsTable
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('congregation.name')
+                    ->label(__('Congregazione'))
+                    ->placeholder(__('Non assegnata'))
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
                 TextColumn::make('created_at')
                     ->label(__('Creato il'))
                     ->dateTime()

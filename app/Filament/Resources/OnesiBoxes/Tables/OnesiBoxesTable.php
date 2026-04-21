@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\OnesiBoxes\Tables;
 
+use App\Enums\MeetingJoinMode;
 use App\Models\OnesiBox;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -80,6 +81,42 @@ class OnesiBoxesTable
                     ->badge()
                     ->color('gray')
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('app_version')
+                    ->label(__('Versione SW'))
+                    ->badge()
+                    ->color(fn (?string $state): string => $state && version_compare($state, config('onesiforo.onesibox_min_version'), '>=') ? 'success' : 'danger')
+                    ->placeholder('N/D')
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('meeting_join_mode')
+                    ->label(__('Modalità Join'))
+                    ->badge()
+                    ->formatStateUsing(fn (MeetingJoinMode|string|null $state): string => match (true) {
+                        $state instanceof MeetingJoinMode => $state->getLabel(),
+                        is_string($state) && $state !== '' => MeetingJoinMode::tryFrom($state)?->getLabel() ?? 'N/D',
+                        default => 'N/D',
+                    })
+                    ->color(fn (MeetingJoinMode|string|null $state): string => match (true) {
+                        $state instanceof MeetingJoinMode => $state === MeetingJoinMode::Auto ? 'success' : 'gray',
+                        is_string($state) && MeetingJoinMode::tryFrom($state) === MeetingJoinMode::Auto => 'success',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
+
+                TextColumn::make('next_meeting')
+                    ->label(__('Prossima adunanza'))
+                    ->state(function (OnesiBox $record): string {
+                        $congregation = $record->recipient?->congregation;
+                        if (! $congregation) {
+                            return 'N/D';
+                        }
+                        $next = $congregation->nextMeeting();
+
+                        return $next['type']->getLabel().' — '.$next['scheduled_at']->format('D d/m H:i');
+                    })
+                    ->toggleable(),
 
                 TextColumn::make('caregivers_count')
                     ->label(__('Caregiver'))

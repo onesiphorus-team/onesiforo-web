@@ -49,3 +49,28 @@ it('does not complete attendance when meeting is still active', function (): voi
 
     expect($attendance->fresh()->status)->toBe(MeetingAttendanceStatus::Joined);
 });
+
+it('does not complete attendance when meeting_url transitions directly from one URL to another', function (): void {
+    $box = OnesiBox::factory()->create([
+        'current_meeting_url' => 'https://us05web.zoom.us/j/AAA',
+    ]);
+
+    $attendance = MeetingAttendance::factory()->joined()->create([
+        'onesi_box_id' => $box->id,
+    ]);
+
+    // The box transitions from URL-A to URL-B without an intermediate null.
+    // Expected behavior: since the box is still in *a* meeting, the previous
+    // attendance must remain Joined (it is not yet over from the caregiver's POV).
+    resolve(App\Actions\ProcessHeartbeatAction::class)($box, [
+        'status' => 'calling',
+        'current_meeting' => [
+            'meeting_url' => 'https://us05web.zoom.us/j/BBB',
+            'meeting_id' => 'BBB',
+            'joined_at' => now()->toISOString(),
+        ],
+    ]);
+
+    expect($attendance->fresh()->status)->toBe(MeetingAttendanceStatus::Joined);
+    expect($attendance->fresh()->left_at)->toBeNull();
+});

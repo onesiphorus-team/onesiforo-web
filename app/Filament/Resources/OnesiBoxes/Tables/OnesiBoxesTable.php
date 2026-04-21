@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\OnesiBoxes\Tables;
 
+use App\Enums\MeetingJoinMode;
 use App\Models\OnesiBox;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -92,6 +93,16 @@ class OnesiBoxesTable
                 TextColumn::make('meeting_join_mode')
                     ->label(__('Modalità Join'))
                     ->badge()
+                    ->formatStateUsing(fn (MeetingJoinMode|string|null $state): string => match (true) {
+                        $state instanceof MeetingJoinMode => $state->getLabel(),
+                        is_string($state) && $state !== '' => MeetingJoinMode::from($state)->getLabel(),
+                        default => 'N/D',
+                    })
+                    ->color(fn (MeetingJoinMode|string|null $state): string => match (true) {
+                        $state instanceof MeetingJoinMode => $state === MeetingJoinMode::Auto ? 'success' : 'gray',
+                        $state === 'auto' => 'success',
+                        default => 'gray',
+                    })
                     ->toggleable(),
 
                 TextColumn::make('next_meeting')

@@ -24,7 +24,7 @@ class CheckUpcomingMeetingsCommand extends Command
     {
         $congregations = Congregation::query()
             ->where('is_active', true)
-            ->with('onesiBoxes.recipient')
+            ->with(['onesiBoxes.recipient', 'onesiBoxes.caregivers'])
             ->get();
 
         foreach ($congregations as $congregation) {
@@ -54,24 +54,21 @@ class CheckUpcomingMeetingsCommand extends Command
             return;
         }
 
-        // Idempotency: check if instance already exists
-        $existing = MeetingInstance::query()
-            ->where('congregation_id', $congregation->id)
-            ->where('type', $type)
-            ->where('scheduled_at', $meetingTime->utc())
-            ->exists();
+        $instance = MeetingInstance::query()->firstOrCreate(
+            [
+                'congregation_id' => $congregation->id,
+                'type' => $type,
+                'scheduled_at' => $meetingTime->utc(),
+            ],
+            [
+                'zoom_url' => $congregation->zoom_url,
+                'status' => MeetingInstanceStatus::Scheduled,
+            ]
+        );
 
-        if ($existing) {
+        if (! $instance->wasRecentlyCreated) {
             return;
         }
-
-        $instance = MeetingInstance::query()->create([
-            'congregation_id' => $congregation->id,
-            'type' => $type,
-            'scheduled_at' => $meetingTime->utc(),
-            'zoom_url' => $congregation->zoom_url,
-            'status' => MeetingInstanceStatus::Scheduled,
-        ]);
 
         /** @var \App\Models\OnesiBox $box */
         foreach ($congregation->onesiBoxes as $box) {
@@ -82,9 +79,7 @@ class CheckUpcomingMeetingsCommand extends Command
                 'status' => MeetingAttendanceStatus::Pending,
             ]);
 
-            // Notify caregivers if notifications enabled
             if ($box->meeting_notifications_enabled) {
-                $box->load('caregivers');
                 foreach ($box->caregivers as $caregiver) {
                     $caregiver->notify(new MeetingUpcomingNotification($instance, $box));
                 }

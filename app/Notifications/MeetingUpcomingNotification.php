@@ -31,7 +31,7 @@ class MeetingUpcomingNotification extends Notification implements ShouldQueue
     {
         $channels = ['database', 'broadcast'];
 
-        if ($notifiable->telegram_chat_id) {
+        if (filled($notifiable->telegram_chat_id)) {
             $channels[] = 'telegram';
         }
 

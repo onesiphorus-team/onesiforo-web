@@ -11,6 +11,7 @@ use App\Models\MeetingAttendance;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class AutoJoinMeetingsCommand extends Command
 {
@@ -47,7 +48,11 @@ class AutoJoinMeetingsCommand extends Command
                     'joined_at' => now(),
                 ]);
             } catch (OnesiBoxOfflineException $e) {
-                $this->warn("OnesiBox {$box->name} is offline, skipping auto-join: {$e->getMessage()}");
+                Log::warning('Auto-join skipped: OnesiBox offline', [
+                    'onesi_box_id' => $box->id,
+                    'meeting_instance_id' => $instance->id,
+                    'exception_message' => $e->getMessage(),
+                ]);
             }
         }
 

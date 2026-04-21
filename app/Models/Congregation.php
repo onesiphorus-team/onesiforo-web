@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\MeetingType;
+use App\Rules\ZoomUrl;
 use App\Traits\LogsActivityAllDirty;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Facades\Validator;
 
 class Congregation extends Model
 {
@@ -73,6 +75,18 @@ class Congregation extends Model
         return ['type' => MeetingType::Weekend, 'scheduled_at' => $weekend];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Congregation $congregation): void {
+            if ($congregation->isDirty('zoom_url')) {
+                Validator::make(
+                    ['zoom_url' => $congregation->zoom_url],
+                    ['zoom_url' => [new ZoomUrl]],
+                )->validate();
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -93,7 +107,7 @@ class Congregation extends Model
 
         // If today is meeting day and time hasn't passed, use today
         $today = $now->copy()->setTime((int) $hour, (int) $minute, 0);
-        if ($now->dayOfWeek === $dayOfWeek && $now->lt($today)) {
+        if ($now->dayOfWeek === $dayOfWeek && $now->lte($today)) {
             return $today;
         }
 

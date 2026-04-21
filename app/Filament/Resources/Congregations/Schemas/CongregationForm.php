@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Congregations\Schemas;
 
+use App\Rules\ZoomUrl;
+use App\Support\Days;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
@@ -16,15 +18,7 @@ class CongregationForm
 {
     public static function configure(Schema $schema): Schema
     {
-        $days = [
-            0 => __('Domenica'),
-            1 => __('Lunedì'),
-            2 => __('Martedì'),
-            3 => __('Mercoledì'),
-            4 => __('Giovedì'),
-            5 => __('Venerdì'),
-            6 => __('Sabato'),
-        ];
+        $days = Days::labels();
 
         return $schema
             ->components([
@@ -39,10 +33,7 @@ class CongregationForm
                             ->label(__('URL Zoom'))
                             ->url()
                             ->required()
-                            ->regex('/^https:\/\/[a-z0-9]+\.zoom\.us\/j\/[0-9]+(\?pwd=.+)?$/i')
-                            ->validationMessages([
-                                'regex' => __('Inserisci un URL Zoom valido (es. https://us05web.zoom.us/j/1234567890).'),
-                            ])
+                            ->rules([new ZoomUrl])
                             ->placeholder('https://us05web.zoom.us/j/1234567890?pwd=abc123')
                             ->columnSpanFull(),
                     ]),

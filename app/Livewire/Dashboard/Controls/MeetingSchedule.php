@@ -87,6 +87,27 @@ class MeetingSchedule extends Component
             return;
         }
 
+        $participantName = $this->onesiBox->recipient->full_name ?? $this->onesiBox->name;
+
+        $existingAttendance = MeetingAttendance::query()
+            ->where('onesi_box_id', $this->onesiBox->id)
+            ->where('status', MeetingAttendanceStatus::Joined)
+            ->whereHas('meetingInstance', fn ($q) => $q->where('status', MeetingInstanceStatus::InProgress))
+            ->first();
+
+        if ($existingAttendance !== null) {
+            $this->executeWithErrorHandling(
+                fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
+                    $this->onesiBox,
+                    $congregation->zoom_url,
+                    $participantName,
+                ),
+                'Collegamento ad-hoc in corso...',
+            );
+
+            return;
+        }
+
         $instance = MeetingInstance::query()->create([
             'congregation_id' => $congregation->id,
             'type' => MeetingType::Adhoc,
@@ -102,8 +123,6 @@ class MeetingSchedule extends Component
             'status' => MeetingAttendanceStatus::Joined,
             'joined_at' => now(),
         ]);
-
-        $participantName = $this->onesiBox->recipient->full_name ?? $this->onesiBox->name;
 
         $this->executeWithErrorHandling(
             fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
@@ -145,7 +164,7 @@ class MeetingSchedule extends Component
         return MeetingAttendance::query()
             ->where('onesi_box_id', $this->onesiBox->id)
             ->with('meetingInstance.congregation')
-            ->latest()
+            ->latest('id')
             ->limit(10)
             ->get();
     }

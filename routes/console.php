@@ -13,6 +13,6 @@ Artisan::command('inspire', function () {
 Schedule::command('app:expire-sessions')->everyMinute()->withoutOverlapping();
 Schedule::command('app:prune-playback-events')->daily()->at('03:00');
 
-Schedule::command('meetings:check-upcoming')->everyMinute()->withoutOverlapping();
-Schedule::command('meetings:auto-join')->everyMinute()->withoutOverlapping();
-Schedule::command('meetings:cleanup')->daily()->at('04:00');
+Schedule::command('meetings:check-upcoming')->everyMinute()->withoutOverlapping(10);
+Schedule::command('meetings:auto-join')->everyMinute()->withoutOverlapping(10);
+Schedule::command('meetings:cleanup')->daily()->at('04:00')->withoutOverlapping(60);

@@ -27,7 +27,7 @@ class CleanupMeetingsCommand extends Command
         foreach ($staleInstances as $instance) {
             /** @var MeetingAttendance $attendance */
             foreach ($instance->attendances as $attendance) {
-                if (in_array($attendance->status, [MeetingAttendanceStatus::Pending, MeetingAttendanceStatus::Confirmed])) {
+                if ($attendance->status === MeetingAttendanceStatus::Pending) {
                     $attendance->update(['status' => MeetingAttendanceStatus::Skipped]);
                 } elseif ($attendance->status === MeetingAttendanceStatus::Joined) {
                     $attendance->update([

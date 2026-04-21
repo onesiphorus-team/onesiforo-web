@@ -102,3 +102,25 @@ it('can trigger adhoc join', function (): void {
     expect(MeetingInstance::query()->where('type', 'adhoc')->count())->toBe(1);
     expect(MeetingAttendance::query()->count())->toBe(1);
 });
+
+it('joinNow is idempotent when an in-progress session already exists', function (): void {
+    $mock = Mockery::mock(OnesiBoxCommandService::class);
+    $mock->shouldReceive('sendZoomUrlCommand')->twice();
+    app()->instance(OnesiBoxCommandService::class, $mock);
+
+    $component = Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box]);
+
+    $component->call('joinNow');
+    $component->call('joinNow');
+
+    expect(MeetingInstance::query()->count())->toBe(1);
+    expect(MeetingAttendance::query()->count())->toBe(1);
+});
+
+it('denies toggleJoinMode to a non-caregiver user', function (): void {
+    $otherUser = User::factory()->create();
+
+    Livewire::actingAs($otherUser)
+        ->test(MeetingSchedule::class, ['onesiBox' => $this->box])
+        ->assertForbidden();
+});

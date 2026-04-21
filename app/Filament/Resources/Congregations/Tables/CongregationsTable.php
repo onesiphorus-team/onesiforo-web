@@ -4,27 +4,21 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Congregations\Tables;
 
+use App\Support\Days;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class CongregationsTable
 {
-    private const array DAY_NAMES = [
-        0 => 'Domenica',
-        1 => 'Lunedì',
-        2 => 'Martedì',
-        3 => 'Mercoledì',
-        4 => 'Giovedì',
-        5 => 'Venerdì',
-        6 => 'Sabato',
-    ];
-
     public static function configure(Table $table): Table
     {
+        $dayLabels = Days::labels();
+
         return $table
             ->columns([
                 TextColumn::make('name')
@@ -39,7 +33,7 @@ class CongregationsTable
 
                 TextColumn::make('midweek_day')
                     ->label(__('Giorno Infrasettimanale'))
-                    ->formatStateUsing(fn (int $state): string => __(self::DAY_NAMES[$state] ?? (string) $state))
+                    ->formatStateUsing(fn (int $state): string => (string) __($dayLabels[$state] ?? (string) $state))
                     ->sortable(),
 
                 TextColumn::make('midweek_time')
@@ -49,7 +43,7 @@ class CongregationsTable
 
                 TextColumn::make('weekend_day')
                     ->label(__('Giorno Fine Settimana'))
-                    ->formatStateUsing(fn (int $state): string => __(self::DAY_NAMES[$state] ?? (string) $state))
+                    ->formatStateUsing(fn (int $state): string => (string) __($dayLabels[$state] ?? (string) $state))
                     ->sortable(),
 
                 TextColumn::make('weekend_time')
@@ -80,7 +74,10 @@ class CongregationsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('name')
-            ->filters([])
+            ->filters([
+                TernaryFilter::make('is_active')
+                    ->label(__('Stato attivazione')),
+            ])
             ->recordActions([
                 EditAction::make(),
             ])

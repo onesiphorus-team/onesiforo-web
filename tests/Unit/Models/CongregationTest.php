@@ -85,3 +85,21 @@ it('can get the next upcoming meeting of any type', function (): void {
     expect($next['type']->value)->toBe('midweek');
     expect($next['scheduled_at']->dayOfWeek)->toBe(Carbon::WEDNESDAY);
 });
+
+it('computes next meeting respecting the congregation timezone', function (): void {
+    $congregation = Congregation::factory()->create([
+        'midweek_day' => Carbon::WEDNESDAY,
+        'midweek_time' => '19:00',
+        'timezone' => 'America/New_York',
+    ]);
+
+    // In New York è ancora martedì 23:00, a Roma sono già le 05:00 di mercoledì.
+    // La congregazione deve vedere l'orario nel proprio fuso: mercoledì 19:00 (NY).
+    Carbon::setTestNow(Carbon::parse('2026-03-11 05:00', 'Europe/Rome'));
+
+    $next = $congregation->nextMidweekMeeting();
+
+    expect($next->timezone->getName())->toBe('America/New_York');
+    expect($next->dayOfWeek)->toBe(Carbon::WEDNESDAY);
+    expect($next->format('Y-m-d H:i'))->toBe('2026-03-11 19:00');
+});

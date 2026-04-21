@@ -105,3 +105,30 @@ it('skips congregations with no upcoming meeting in window', function (): void {
 
     expect(MeetingInstance::query()->count())->toBe(0);
 });
+
+it('respects congregation timezone when evaluating the window', function (): void {
+    // Europe/Rome is 2026-03-11 18:35 (set in beforeEach).
+    // In America/New_York that corresponds to 2026-03-11 13:35 local.
+    $congregation = Congregation::factory()->create([
+        'midweek_day' => Carbon::WEDNESDAY,
+        'midweek_time' => '19:00',
+        'timezone' => 'America/New_York',
+    ]);
+    $recipient = Recipient::factory()->create(['congregation_id' => $congregation->id]);
+    OnesiBox::factory()->create([
+        'recipient_id' => $recipient->id,
+        'meeting_join_mode' => MeetingJoinMode::Manual,
+    ]);
+
+    $this->artisan('meetings:check-upcoming')->assertExitCode(0);
+
+    // 13:35 NY is > 30 min before 19:00 NY, so no instance should be created.
+    expect(MeetingInstance::query()->count())->toBe(0);
+
+    // Advance test clock: now it's 18:45 NY (15 min before 19:00 NY) which in Europe/Rome is 23:45.
+    Carbon::setTestNow(Carbon::parse('2026-03-11 18:45', 'America/New_York'));
+
+    $this->artisan('meetings:check-upcoming')->assertExitCode(0);
+
+    expect(MeetingInstance::query()->count())->toBe(1);
+});

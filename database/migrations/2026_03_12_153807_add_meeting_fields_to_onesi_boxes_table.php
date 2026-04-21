@@ -14,8 +14,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('onesi_boxes', function (Blueprint $table): void {
-            $table->string('meeting_join_mode')->default('manual');
-            $table->boolean('meeting_notifications_enabled')->default(true);
+            if (! Schema::hasColumn('onesi_boxes', 'meeting_join_mode')) {
+                $table->string('meeting_join_mode')->default('manual');
+            }
+            if (! Schema::hasColumn('onesi_boxes', 'meeting_notifications_enabled')) {
+                $table->boolean('meeting_notifications_enabled')->default(true);
+            }
         });
     }
 
@@ -25,7 +29,14 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('onesi_boxes', function (Blueprint $table): void {
-            $table->dropColumn(['meeting_join_mode', 'meeting_notifications_enabled']);
+            $columns = array_filter(
+                ['meeting_join_mode', 'meeting_notifications_enabled'],
+                fn (string $column): bool => Schema::hasColumn('onesi_boxes', $column),
+            );
+
+            if ($columns !== []) {
+                $table->dropColumn($columns);
+            }
         });
     }
 };

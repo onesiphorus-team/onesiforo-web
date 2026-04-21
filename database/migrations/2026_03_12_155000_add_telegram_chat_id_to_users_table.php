@@ -10,6 +10,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('users', 'telegram_chat_id')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table): void {
             $table->string('telegram_chat_id')->nullable()->after('remember_token');
         });
@@ -17,6 +21,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('users', 'telegram_chat_id')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table): void {
             $table->dropColumn('telegram_chat_id');
         });

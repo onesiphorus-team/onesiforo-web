@@ -13,6 +13,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class CongregationForm
 {
@@ -23,11 +24,14 @@ class CongregationForm
         return $schema
             ->components([
                 Section::make(__('Informazioni Congregazione'))
+                    ->icon(Heroicon::OutlinedBuildingLibrary)
+                    ->description(__('Dati identificativi e link alla riunione Zoom'))
                     ->schema([
                         TextInput::make('name')
                             ->label(__('Nome'))
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->columnSpan(1),
 
                         TextInput::make('zoom_url')
                             ->label(__('URL Zoom'))
@@ -35,54 +39,74 @@ class CongregationForm
                             ->required()
                             ->rules([new ZoomUrl])
                             ->placeholder('https://us05web.zoom.us/j/1234567890?pwd=abc123')
+                            ->helperText(__('Formato atteso: https://*.zoom.us/j/<id>, /w/ o /s/, con pwd opzionale.'))
                             ->columnSpanFull(),
-                    ]),
+                    ])
+                    ->columns(2)
+                    ->columnSpanFull(),
 
-                Section::make(__('Adunanza Infrasettimanale'))
+                Grid::make(2)
                     ->schema([
-                        Grid::make(2)
+                        Section::make(__('Adunanza Infrasettimanale'))
+                            ->icon(Heroicon::OutlinedCalendarDays)
                             ->schema([
-                                Select::make('midweek_day')
-                                    ->label(__('Giorno'))
-                                    ->options($days)
-                                    ->required(),
+                                Grid::make(2)
+                                    ->schema([
+                                        Select::make('midweek_day')
+                                            ->label(__('Giorno'))
+                                            ->options($days)
+                                            ->native(false)
+                                            ->required(),
 
-                                TimePicker::make('midweek_time')
-                                    ->label(__('Orario'))
-                                    ->required()
-                                    ->seconds(false),
+                                        TimePicker::make('midweek_time')
+                                            ->label(__('Orario'))
+                                            ->required()
+                                            ->seconds(false),
+                                    ]),
                             ]),
-                    ]),
 
-                Section::make(__('Adunanza del Fine Settimana'))
-                    ->schema([
-                        Grid::make(2)
+                        Section::make(__('Adunanza del Fine Settimana'))
+                            ->icon(Heroicon::OutlinedCalendarDays)
                             ->schema([
-                                Select::make('weekend_day')
-                                    ->label(__('Giorno'))
-                                    ->options($days)
-                                    ->required(),
+                                Grid::make(2)
+                                    ->schema([
+                                        Select::make('weekend_day')
+                                            ->label(__('Giorno'))
+                                            ->options($days)
+                                            ->native(false)
+                                            ->required(),
 
-                                TimePicker::make('weekend_time')
-                                    ->label(__('Orario'))
-                                    ->required()
-                                    ->seconds(false),
+                                        TimePicker::make('weekend_time')
+                                            ->label(__('Orario'))
+                                            ->required()
+                                            ->seconds(false),
+                                    ]),
                             ]),
-                    ]),
+                    ])
+                    ->columnSpanFull(),
 
                 Section::make(__('Impostazioni'))
+                    ->icon(Heroicon::OutlinedCog6Tooth)
                     ->schema([
                         Select::make('timezone')
                             ->label(__('Fuso Orario'))
-                            ->options(fn () => collect(timezone_identifiers_list())->mapWithKeys(fn ($tz): array => [$tz => $tz])->all())
+                            ->options(fn (): array => collect(timezone_identifiers_list())
+                                ->mapWithKeys(fn (string $tz): array => [$tz => $tz])
+                                ->all())
                             ->searchable()
                             ->required()
-                            ->default('Europe/Rome'),
+                            ->default('Europe/Rome')
+                            ->columnSpan(1),
 
                         Toggle::make('is_active')
                             ->label(__('Attiva'))
-                            ->default(true),
-                    ]),
+                            ->helperText(__('Se disabilitata, non verrà pianificata alcuna adunanza per questa congregazione.'))
+                            ->default(true)
+                            ->inline(false)
+                            ->columnSpan(1),
+                    ])
+                    ->columns(2)
+                    ->columnSpanFull(),
             ]);
     }
 }

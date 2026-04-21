@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Congregations;
 use App\Filament\Resources\Congregations\Pages\CreateCongregation;
 use App\Filament\Resources\Congregations\Pages\EditCongregation;
 use App\Filament\Resources\Congregations\Pages\ListCongregations;
+use App\Filament\Resources\Congregations\RelationManagers\RecipientsRelationManager;
 use App\Filament\Resources\Congregations\Schemas\CongregationForm;
 use App\Filament\Resources\Congregations\Tables\CongregationsTable;
 use App\Models\Congregation;
@@ -46,7 +47,9 @@ class CongregationResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RecipientsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

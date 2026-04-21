@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Filament\Resources\Congregations\Pages\CreateCongregation;
 use App\Filament\Resources\Congregations\Pages\EditCongregation;
 use App\Filament\Resources\Congregations\Pages\ListCongregations;
+use App\Filament\Resources\Congregations\RelationManagers\RecipientsRelationManager;
 use App\Models\Congregation;
+use App\Models\Recipient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Oltrematica\RoleLite\Models\Role;
@@ -81,4 +83,45 @@ it('can deactivate a congregation', function (): void {
         ->assertHasNoFormErrors();
 
     expect($congregation->fresh()->is_active)->toBeFalse();
+});
+
+describe('CongregationResource: Recipients RelationManager', function (): void {
+    it('lists recipients assigned to the congregation', function (): void {
+        $congregation = Congregation::factory()->create();
+        $assigned = Recipient::factory()->create(['congregation_id' => $congregation->id]);
+        $other = Recipient::factory()->create();
+
+        livewire(RecipientsRelationManager::class, [
+            'ownerRecord' => $congregation,
+            'pageClass' => EditCongregation::class,
+        ])
+            ->assertCanSeeTableRecords([$assigned])
+            ->assertCanNotSeeTableRecords([$other]);
+    });
+
+    it('can associate an existing recipient to the congregation', function (): void {
+        $congregation = Congregation::factory()->create();
+        $recipient = Recipient::factory()->create(['congregation_id' => null]);
+
+        livewire(RecipientsRelationManager::class, [
+            'ownerRecord' => $congregation,
+            'pageClass' => EditCongregation::class,
+        ])
+            ->callTableAction('associate', data: ['recordId' => [$recipient->id]]);
+
+        expect($recipient->fresh()->congregation_id)->toBe($congregation->id);
+    });
+
+    it('can dissociate a recipient from the congregation', function (): void {
+        $congregation = Congregation::factory()->create();
+        $recipient = Recipient::factory()->create(['congregation_id' => $congregation->id]);
+
+        livewire(RecipientsRelationManager::class, [
+            'ownerRecord' => $congregation,
+            'pageClass' => EditCongregation::class,
+        ])
+            ->callTableAction('dissociate', $recipient);
+
+        expect($recipient->fresh()->congregation_id)->toBeNull();
+    });
 });

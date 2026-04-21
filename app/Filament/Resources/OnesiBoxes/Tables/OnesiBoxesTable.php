@@ -95,12 +95,12 @@ class OnesiBoxesTable
                     ->badge()
                     ->formatStateUsing(fn (MeetingJoinMode|string|null $state): string => match (true) {
                         $state instanceof MeetingJoinMode => $state->getLabel(),
-                        is_string($state) && $state !== '' => MeetingJoinMode::from($state)->getLabel(),
+                        is_string($state) && $state !== '' => MeetingJoinMode::tryFrom($state)?->getLabel() ?? 'N/D',
                         default => 'N/D',
                     })
                     ->color(fn (MeetingJoinMode|string|null $state): string => match (true) {
                         $state instanceof MeetingJoinMode => $state === MeetingJoinMode::Auto ? 'success' : 'gray',
-                        $state === 'auto' => 'success',
+                        is_string($state) && MeetingJoinMode::tryFrom($state) === MeetingJoinMode::Auto => 'success',
                         default => 'gray',
                     })
                     ->toggleable(),

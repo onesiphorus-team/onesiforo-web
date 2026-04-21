@@ -57,7 +57,7 @@ class ZoomUrl implements ValidationRule
             return;
         }
 
-        if (preg_match('#^/(j|w|s)/\d+$#', $parsed['path']) !== 1) {
+        if (preg_match('#^/(j|w|s)/\d+/?$#', $parsed['path']) !== 1) {
             $fail(self::ERROR_MESSAGE);
 
             return;

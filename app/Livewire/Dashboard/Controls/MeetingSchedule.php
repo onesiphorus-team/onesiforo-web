@@ -15,6 +15,7 @@ use App\Models\OnesiBox;
 use App\Models\User;
 use App\Services\OnesiBoxCommandService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class MeetingSchedule extends Component
@@ -89,13 +90,48 @@ class MeetingSchedule extends Component
 
         $participantName = $this->onesiBox->recipient->full_name ?? $this->onesiBox->name;
 
-        $existingAttendance = MeetingAttendance::query()
-            ->where('onesi_box_id', $this->onesiBox->id)
-            ->where('status', MeetingAttendanceStatus::Joined)
-            ->whereHas('meetingInstance', fn ($q) => $q->where('status', MeetingInstanceStatus::InProgress))
-            ->first();
+        $lock = Cache::lock("onesi-box:{$this->onesiBox->id}:join-now", 10);
 
-        if ($existingAttendance !== null) {
+        if (! $lock->get()) {
+            return;
+        }
+
+        try {
+            $existingAttendance = MeetingAttendance::query()
+                ->where('onesi_box_id', $this->onesiBox->id)
+                ->where('status', MeetingAttendanceStatus::Joined)
+                ->whereHas('meetingInstance', fn ($q) => $q->where('status', MeetingInstanceStatus::InProgress))
+                ->first();
+
+            if ($existingAttendance !== null) {
+                $this->executeWithErrorHandling(
+                    fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
+                        $this->onesiBox,
+                        $congregation->zoom_url,
+                        $participantName,
+                    ),
+                    'Collegamento ad-hoc in corso...',
+                );
+
+                return;
+            }
+
+            $instance = MeetingInstance::query()->create([
+                'congregation_id' => $congregation->id,
+                'type' => MeetingType::Adhoc,
+                'scheduled_at' => now(),
+                'zoom_url' => $congregation->zoom_url,
+                'status' => MeetingInstanceStatus::InProgress,
+            ]);
+
+            MeetingAttendance::query()->create([
+                'meeting_instance_id' => $instance->id,
+                'onesi_box_id' => $this->onesiBox->id,
+                'join_mode' => $this->onesiBox->meeting_join_mode,
+                'status' => MeetingAttendanceStatus::Joined,
+                'joined_at' => now(),
+            ]);
+
             $this->executeWithErrorHandling(
                 fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
                     $this->onesiBox,
@@ -104,34 +140,9 @@ class MeetingSchedule extends Component
                 ),
                 'Collegamento ad-hoc in corso...',
             );
-
-            return;
+        } finally {
+            $lock->release();
         }
-
-        $instance = MeetingInstance::query()->create([
-            'congregation_id' => $congregation->id,
-            'type' => MeetingType::Adhoc,
-            'scheduled_at' => now(),
-            'zoom_url' => $congregation->zoom_url,
-            'status' => MeetingInstanceStatus::InProgress,
-        ]);
-
-        MeetingAttendance::query()->create([
-            'meeting_instance_id' => $instance->id,
-            'onesi_box_id' => $this->onesiBox->id,
-            'join_mode' => $this->onesiBox->meeting_join_mode,
-            'status' => MeetingAttendanceStatus::Joined,
-            'joined_at' => now(),
-        ]);
-
-        $this->executeWithErrorHandling(
-            fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
-                $this->onesiBox,
-                $congregation->zoom_url,
-                $participantName,
-            ),
-            'Collegamento ad-hoc in corso...',
-        );
     }
 
     /** @return array{type: MeetingType, scheduled_at: \Carbon\Carbon}|null */

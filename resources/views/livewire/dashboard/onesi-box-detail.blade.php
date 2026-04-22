@@ -1,6 +1,5 @@
 <style>
     @media (min-width: 768px) {
-        .detail-accordions > details > summary ~ * { display: block !important; }
         .detail-accordions details summary { cursor: default; pointer-events: none; }
         .detail-accordions details summary .chevron-toggle { display: none; }
     }
@@ -33,6 +32,9 @@
     </header>
 
     <div class="px-4 sm:px-6">
+        {{-- Bottom bar (renders inline on desktop, sticky bottom on mobile) --}}
+        <livewire:dashboard.controls.bottom-bar :onesiBox="$onesiBox" wire:key="bottom-bar-{{ $onesiBox->id }}" />
+
         @if($onesiBox->status === \App\Enums\OnesiBoxStatus::Error)
             <flux:callout variant="danger" icon="exclamation-triangle" class="mb-4">
                 <flux:callout.heading>Dispositivo in stato di errore</flux:callout.heading>
@@ -73,7 +75,7 @@
                     </details>
                 @endif
 
-                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" @if($this->accordionDefaults['commands'] ?? false) open @endif>
+                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800 md:open:block" @if($this->accordionDefaults['commands'] ?? false) open @endif x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
                     <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                         <span>Comandi in coda</span>
                         <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
@@ -83,7 +85,7 @@
                     </div>
                 </details>
 
-                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
                     <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                         <span>Meeting programmati</span>
                         <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
@@ -96,7 +98,7 @@
             @endif
 
             @if($this->recipient)
-                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
                     <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                         <span>Contatti destinatario</span>
                         <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
@@ -115,7 +117,7 @@
                     </flux:heading>
 
                     <div class="space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 detail-accordions">
-                        <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                        <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
                             <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                                 <span>Sistema</span>
                                 <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
@@ -125,7 +127,7 @@
                             </div>
                         </details>
 
-                        <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                        <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
                             <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                                 <span>Rete</span>
                                 <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
@@ -136,7 +138,7 @@
                         </details>
 
                         @if($this->isOnline)
-                            <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                            <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
                                 <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                                     <span>Controlli sistema</span>
                                     <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
@@ -146,7 +148,7 @@
                                 </div>
                             </details>
 
-                            <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                            <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
                                 <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                                     <span>Log</span>
                                     <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
@@ -162,7 +164,5 @@
         </div>
     </div>
 
-    {{-- Bottom bar + Quick play sheet --}}
-    <livewire:dashboard.controls.bottom-bar :onesiBox="$onesiBox" wire:key="bottom-bar-{{ $onesiBox->id }}" />
     <livewire:dashboard.controls.quick-play-sheet :onesiBox="$onesiBox" wire:key="quick-play-sheet-{{ $onesiBox->id }}" />
 </div>

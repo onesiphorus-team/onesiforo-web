@@ -58,5 +58,8 @@ it('hides the bottom bar for a caregiver without Full permission', function (): 
 
     $page->assertSee('ReadOnly Box')
         ->assertNotPresent('[data-slot="stop"]')
+        ->assertNotPresent('[data-slot="volume"]')
+        ->assertNotPresent('[data-slot="new"]')
+        ->assertNotPresent('[data-slot="call"]')
         ->assertNoJavaScriptErrors();
 });

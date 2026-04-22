@@ -41,6 +41,15 @@
                 </flux:text>
             </div>
         @endif
+
+        <div class="mt-4 flex gap-2">
+            @if($isPaused)
+                <flux:button wire:click="resume" variant="primary" icon="play" class="flex-1">Riprendi</flux:button>
+            @else
+                <flux:button wire:click="pause" variant="filled" icon="pause" class="flex-1">Pausa</flux:button>
+            @endif
+            <flux:button wire:click="stop" variant="danger" icon="stop" class="flex-1">Stop</flux:button>
+        </div>
     @elseif($state === 'call')
         <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300">
             <flux:icon name="phone" class="h-5 w-5" />
@@ -52,6 +61,10 @@
                 Iniziata {{ $onesiBox->current_meeting_joined_at->diffForHumans() }}
             </flux:text>
         @endif
+
+        <div class="mt-4">
+            <flux:button wire:click="leaveZoom" variant="danger" icon="phone-x-mark" class="w-full">Termina chiamata</flux:button>
+        </div>
     @elseif($state === 'offline')
         <div class="flex items-center gap-2 text-amber-700 dark:text-amber-300">
             <flux:icon name="exclamation-triangle" class="h-5 w-5" />

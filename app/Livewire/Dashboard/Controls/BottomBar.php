@@ -24,10 +24,17 @@ class BottomBar extends Component
     #[Locked]
     public OnesiBox $onesiBox;
 
+    public bool $showVolume = false;
+
     #[Computed]
     public function isOnline(): bool
     {
         return $this->onesiBox->isOnline();
+    }
+
+    public function openVolume(): void
+    {
+        $this->showVolume = true;
     }
 
     public function stopAll(OnesiBoxCommandServiceInterface $commandService): void

@@ -56,3 +56,15 @@ it('stopAll dispatches Stop when media is playing, and also LeaveZoom if in a ca
         ->test(BottomBar::class, ['onesiBox' => $box])
         ->call('stopAll');
 });
+
+it('renders a modal trigger that mounts the VolumeControl component', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSet('showVolume', false)
+        ->call('openVolume')
+        ->assertSet('showVolume', true);
+});

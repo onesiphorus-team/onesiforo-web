@@ -151,6 +151,7 @@
                 <div class="grid grid-cols-1 gap-4">
                     <livewire:dashboard.controls.audio-player :onesiBox="$onesiBox" wire:key="audio-{{ $onesiBox->id }}" />
                     <livewire:dashboard.controls.video-player :onesiBox="$onesiBox" wire:key="video-{{ $onesiBox->id }}" />
+                    <livewire:dashboard.controls.stream-player :onesiBox="$onesiBox" wire:key="stream-{{ $onesiBox->id }}" />
                     <livewire:dashboard.controls.zoom-call :onesiBox="$onesiBox" wire:key="zoom-{{ $onesiBox->id }}" />
                     <livewire:dashboard.controls.meeting-schedule :onesi-box="$onesiBox" wire:key="meeting-schedule-{{ $onesiBox->id }}" />
                 </div>

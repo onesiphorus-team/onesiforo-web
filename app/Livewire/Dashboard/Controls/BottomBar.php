@@ -32,6 +32,12 @@ class BottomBar extends Component
         return $this->onesiBox->isOnline();
     }
 
+    #[Computed]
+    public function isInCall(): bool
+    {
+        return $this->onesiBox->status === OnesiBoxStatus::Calling;
+    }
+
     public function openVolume(): void
     {
         $this->showVolume = true;

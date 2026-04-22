@@ -31,21 +31,19 @@
                 <button type="button"
                         data-slot="call"
                         wire:click="callAction"
-                        class="flex min-h-14 min-w-14 flex-col items-center justify-center gap-1 rounded-lg text-xs {{ $onesiBox->status === \App\Enums\OnesiBoxStatus::Calling ? 'text-red-600 dark:text-red-400' : '' }}"
-                        aria-label="{{ $onesiBox->status === \App\Enums\OnesiBoxStatus::Calling ? 'Termina chiamata' : 'Avvia chiamata' }}">
-                    <flux:icon name="{{ $onesiBox->status === \App\Enums\OnesiBoxStatus::Calling ? 'phone-x-mark' : 'phone' }}" class="h-6 w-6" />
-                    <span>{{ $onesiBox->status === \App\Enums\OnesiBoxStatus::Calling ? 'Termina' : 'Chiama' }}</span>
+                        class="flex min-h-14 min-w-14 flex-col items-center justify-center gap-1 rounded-lg text-xs {{ $this->isInCall ? 'text-red-600 dark:text-red-400' : '' }}"
+                        aria-label="{{ $this->isInCall ? 'Termina chiamata' : 'Avvia chiamata' }}">
+                    <flux:icon name="{{ $this->isInCall ? 'phone-x-mark' : 'phone' }}" class="h-6 w-6" />
+                    <span>{{ $this->isInCall ? 'Termina' : 'Chiama' }}</span>
                 </button>
             </div>
         </nav>
 
-        @if($showVolume)
-            <flux:modal wire:model="showVolume" name="bottom-bar-volume" class="max-w-md">
-                <div class="p-4">
-                    <flux:heading size="lg" class="mb-4">Volume</flux:heading>
-                    <livewire:dashboard.controls.volume-control :onesiBox="$onesiBox" wire:key="bottom-volume-{{ $onesiBox->id }}" />
-                </div>
-            </flux:modal>
-        @endif
+        <flux:modal wire:model="showVolume" name="bottom-bar-volume" class="max-w-md">
+            <div class="p-4">
+                <flux:heading size="lg" class="mb-4">Volume</flux:heading>
+                <livewire:dashboard.controls.volume-control :onesiBox="$onesiBox" wire:key="bottom-volume-{{ $onesiBox->id }}" />
+            </div>
+        </flux:modal>
     @endif
 </div>

@@ -107,3 +107,28 @@ it('callAction() ends the current call when in a call', function () {
         ->test(BottomBar::class, ['onesiBox' => $box])
         ->call('callAction');
 });
+
+it('stopAll() is forbidden for a user without Full permission', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Playing]);
+    // No caregivers attached
+
+    Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->call('stopAll')
+        ->assertForbidden();
+});
+
+it('callAction() is forbidden for a user without Full permission', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create([
+        'status' => OnesiBoxStatus::Calling,
+        'current_meeting_id' => '999',
+    ]);
+    // No caregivers attached
+
+    Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->call('callAction')
+        ->assertForbidden();
+});

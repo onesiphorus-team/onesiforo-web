@@ -67,3 +67,13 @@ it('renders the call variant with meeting id', function () {
         ->assertSee('123456789')
         ->assertSeeHtml('data-hero-state="call"');
 });
+
+it('renders the offline variant with warning styling and last seen', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->offline()->create(['last_seen_at' => now()->subHours(2)]);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'offline'])
+        ->assertSee('Dispositivo offline')
+        ->assertSeeHtml('data-hero-state="offline"');
+});

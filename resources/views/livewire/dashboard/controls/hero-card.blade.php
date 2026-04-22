@@ -1,4 +1,6 @@
-<div data-hero-state="{{ $state }}" class="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4" aria-live="polite">
+<div data-hero-state="{{ $state }}"
+     class="rounded-lg border p-4 {{ $state === 'offline' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700' }}"
+     aria-live="polite">
     @if($state === 'idle')
         <div class="flex items-center gap-2">
             <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
@@ -50,7 +52,16 @@
                 Iniziata {{ $onesiBox->current_meeting_joined_at->diffForHumans() }}
             </flux:text>
         @endif
-    @else
-        {{-- other variants follow in later tasks --}}
+    @elseif($state === 'offline')
+        <div class="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+            <flux:icon name="exclamation-triangle" class="h-5 w-5" />
+            <flux:text class="font-medium">Dispositivo offline</flux:text>
+        </div>
+        <flux:text class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+            Ultimo contatto: {{ $onesiBox->last_seen_at?->diffForHumans() ?? '—' }}
+        </flux:text>
+        @if($onesiBox->app_version)
+            <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">v{{ $onesiBox->app_version }}</flux:text>
+        @endif
     @endif
 </div>

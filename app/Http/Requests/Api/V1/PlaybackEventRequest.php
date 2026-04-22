@@ -18,6 +18,7 @@ use Illuminate\Validation\Rule;
  * @property-read int|null $position
  * @property-read int|null $duration
  * @property-read string|null $error_message
+ * @property-read string|null $error_code
  * @property-read string|null $session_id
  */
 class PlaybackEventRequest extends FormRequest
@@ -63,6 +64,12 @@ class PlaybackEventRequest extends FormRequest
                 'string',
                 'max:1000',
             ],
+            'error_code' => [
+                'nullable',
+                'string',
+                'regex:/^E\d{3}$/',
+                'max:10',
+            ],
             'session_id' => [
                 'nullable',
                 'string',
@@ -91,6 +98,8 @@ class PlaybackEventRequest extends FormRequest
             'duration.min' => 'La durata non può essere negativa.',
             'duration.integer' => 'La durata deve essere un numero intero.',
             'error_message.max' => 'Il messaggio di errore non può superare 1000 caratteri.',
+            'error_code.regex' => 'Il codice errore deve essere nel formato E### (es. E110, E112).',
+            'error_code.max' => 'Il codice errore non può superare 10 caratteri.',
             'session_id.uuid' => 'Il session_id deve essere un UUID valido.',
         ];
     }
@@ -109,6 +118,7 @@ class PlaybackEventRequest extends FormRequest
             'position' => 'posizione',
             'duration' => 'durata',
             'error_message' => 'messaggio di errore',
+            'error_code' => 'codice errore',
             'session_id' => 'ID sessione',
         ];
     }

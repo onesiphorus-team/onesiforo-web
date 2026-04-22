@@ -142,3 +142,40 @@ it('associates event with correct OnesiBox', function (): void {
     expect($event->onesiBox->id)->toBe($anotherOnesiBox->id)
         ->and($event->onesiBox->id)->not->toBe($this->onesiBox->id);
 });
+
+it('persists error_code when provided', function (): void {
+    $event = ($this->action)(
+        onesiBox: $this->onesiBox,
+        event: PlaybackEventType::Error,
+        mediaUrl: 'https://stream.jw.org/6311-4713-5379-2156',
+        mediaType: 'video',
+        errorMessage: 'Ordinal 99 exceeds playlist length 4',
+        errorCode: 'E112',
+    );
+
+    expect($event->error_code)->toBe('E112')
+        ->and($event->error_message)->toBe('Ordinal 99 exceeds playlist length 4');
+});
+
+it('persists null error_code when not provided', function (): void {
+    $event = ($this->action)(
+        onesiBox: $this->onesiBox,
+        event: PlaybackEventType::Started,
+        mediaUrl: 'https://www.jw.org/...',
+        mediaType: 'video',
+    );
+
+    expect($event->error_code)->toBeNull();
+});
+
+it('fromArray extracts error_code from payload', function (): void {
+    $event = $this->action->fromArray($this->onesiBox, [
+        'event' => 'error',
+        'media_url' => 'https://stream.jw.org/x',
+        'media_type' => 'video',
+        'error_code' => 'E111',
+        'error_message' => 'No tiles found',
+    ]);
+
+    expect($event->error_code)->toBe('E111');
+});

@@ -189,3 +189,35 @@ it('creates a PlayMedia command using generic sendMediaCommand', function (strin
     Queue::assertPushed(SendOnesiBoxCommand::class, fn ($job): bool => $job->command->id === $command->id);
     Event::assertDispatched(OnesiBoxCommandSent::class, fn ($event): bool => $event->command->id === $command->id);
 })->with(['audio', 'video']);
+
+it('sendStreamItemCommand creates a command with correct payload and priority', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+
+    $this->actingAs($user);
+
+    $service = new OnesiBoxCommandService;
+    $service->sendStreamItemCommand($onesiBox, 'https://stream.jw.org/6311-4713-5379-2156', 2);
+
+    $command = Command::query()->latest()->first();
+    expect($command)
+        ->not->toBeNull()
+        ->type->toBe(CommandType::PlayStreamItem)
+        ->payload->toBe(['url' => 'https://stream.jw.org/6311-4713-5379-2156', 'ordinal' => 2])
+        ->priority->toBe(2)
+        ->status->toBe(CommandStatus::Pending)
+        ->onesi_box_id->toBe($onesiBox->id);
+
+    Queue::assertPushed(SendOnesiBoxCommand::class);
+    Event::assertDispatched(OnesiBoxCommandSent::class);
+});
+
+it('sendStreamItemCommand throws if box is offline', function (): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->offline()->create();
+
+    $this->actingAs($user);
+
+    $service = new OnesiBoxCommandService;
+    $service->sendStreamItemCommand($onesiBox, 'https://stream.jw.org/x', 1);
+})->throws(OnesiBoxOfflineException::class);

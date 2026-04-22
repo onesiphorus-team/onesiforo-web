@@ -103,4 +103,14 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendVolumeCommand(OnesiBox $onesiBox, int $level): void;
+
+    /**
+     * Invia comando di riproduzione di un item specifico di una playlist JW Stream.
+     *
+     * @param  int  $ordinal  Ordinale del video nella playlist (1-indexed, 1-50)
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendStreamItemCommand(OnesiBox $onesiBox, string $url, int $ordinal): void;
 }

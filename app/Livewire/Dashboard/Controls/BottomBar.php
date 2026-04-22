@@ -52,6 +52,27 @@ class BottomBar extends Component
         );
     }
 
+    public function openNew(): void
+    {
+        $this->dispatch('open-quick-play');
+    }
+
+    public function callAction(OnesiBoxCommandServiceInterface $commandService): void
+    {
+        $this->authorize('control', $this->onesiBox);
+
+        if ($this->onesiBox->status === OnesiBoxStatus::Calling) {
+            $this->executeWithErrorHandling(
+                callback: fn () => $commandService->sendLeaveZoomCommand($this->onesiBox),
+                successMessage: 'Chiamata terminata',
+            );
+
+            return;
+        }
+
+        $this->dispatch('open-quick-play', tab: 'zoom');
+    }
+
     public function render(): View
     {
         return view('livewire.dashboard.controls.bottom-bar');

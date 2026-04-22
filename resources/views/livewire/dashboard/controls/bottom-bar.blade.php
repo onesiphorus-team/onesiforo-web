@@ -19,8 +19,23 @@
                     <flux:icon name="speaker-wave" class="h-6 w-6" />
                     <span>Volume</span>
                 </button>
-                <button type="button" data-slot="new" class="flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold" aria-label="Nuovo contenuto"></button>
-                <button type="button" data-slot="call" class="flex min-h-14 min-w-14 flex-col items-center justify-center gap-1 rounded-lg text-xs" aria-label="Chiama"></button>
+                <button type="button"
+                        data-slot="new"
+                        wire:click="openNew"
+                        class="flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-lg bg-indigo-600 text-xs font-semibold text-white dark:bg-indigo-500"
+                        aria-label="Nuovo contenuto">
+                    <flux:icon name="plus-circle" class="h-6 w-6" />
+                    <span>Nuovo</span>
+                </button>
+
+                <button type="button"
+                        data-slot="call"
+                        wire:click="callAction"
+                        class="flex min-h-14 min-w-14 flex-col items-center justify-center gap-1 rounded-lg text-xs {{ $onesiBox->status === \App\Enums\OnesiBoxStatus::Calling ? 'text-red-600 dark:text-red-400' : '' }}"
+                        aria-label="{{ $onesiBox->status === \App\Enums\OnesiBoxStatus::Calling ? 'Termina chiamata' : 'Avvia chiamata' }}">
+                    <flux:icon name="{{ $onesiBox->status === \App\Enums\OnesiBoxStatus::Calling ? 'phone-x-mark' : 'phone' }}" class="h-6 w-6" />
+                    <span>{{ $onesiBox->status === \App\Enums\OnesiBoxStatus::Calling ? 'Termina' : 'Chiama' }}</span>
+                </button>
             </div>
         </nav>
 

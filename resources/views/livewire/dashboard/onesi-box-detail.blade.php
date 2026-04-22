@@ -1,4 +1,12 @@
-<div class="mx-auto max-w-4xl pb-24" wire:poll.15s="refreshFromDatabase">
+<style>
+    @media (min-width: 768px) {
+        .detail-accordions > details > summary ~ * { display: block !important; }
+        .detail-accordions details summary { cursor: default; pointer-events: none; }
+        .detail-accordions details summary .chevron-toggle { display: none; }
+    }
+</style>
+
+<div class="mx-auto max-w-4xl md:max-w-6xl pb-24 md:pb-8" wire:poll.15s="refreshFromDatabase">
     {{-- Sticky header --}}
     <header class="sticky top-0 z-30 -mx-4 mb-4 border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95 sm:-mx-6 sm:px-6">
         <div class="flex items-center gap-3">
@@ -51,13 +59,13 @@
         @endif
 
         {{-- Accordion body (native <details>) --}}
-        <div class="mt-4 space-y-2">
+        <div class="mt-4 space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 detail-accordions">
             @if($this->canControl && $this->isOnline)
                 @if($this->accordionDefaults['session'] ?? false)
                     <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" open>
                         <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                             <span>Sessione in corso</span>
-                            <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                            <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
                         </summary>
                         <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
                             <livewire:dashboard.controls.session-status :onesiBox="$onesiBox" wire:key="session-status-{{ $onesiBox->id }}" />
@@ -68,7 +76,7 @@
                 <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" @if($this->accordionDefaults['commands'] ?? false) open @endif>
                     <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                         <span>Comandi in coda</span>
-                        <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                        <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
                     </summary>
                     <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
                         <livewire:dashboard.controls.command-queue :onesiBox="$onesiBox" wire:key="command-queue-{{ $onesiBox->id }}" />
@@ -78,7 +86,7 @@
                 <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
                     <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                         <span>Meeting programmati</span>
-                        <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                        <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
                     </summary>
                     <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
                         <livewire:dashboard.controls.meeting-schedule :onesi-box="$onesiBox" wire:key="meeting-schedule-{{ $onesiBox->id }}" />
@@ -91,7 +99,7 @@
                 <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
                     <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                         <span>Contatti destinatario</span>
-                        <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                        <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
                     </summary>
                     <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
                         @include('livewire.dashboard.partials.recipient-contacts', ['recipient' => $this->recipient])
@@ -100,17 +108,17 @@
             @endif
 
             @if($this->isAdmin)
-                <div class="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div class="md:col-span-2 mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                     <flux:heading size="sm" class="mb-2 flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
                         <flux:icon name="shield-check" class="h-4 w-4" />
                         Amministrazione
                     </flux:heading>
 
-                    <div class="space-y-2">
+                    <div class="space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 detail-accordions">
                         <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
                             <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                                 <span>Sistema</span>
-                                <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                                <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
                             </summary>
                             <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
                                 <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" />
@@ -120,7 +128,7 @@
                         <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
                             <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                                 <span>Rete</span>
-                                <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                                <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
                             </summary>
                             <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
                                 <livewire:dashboard.controls.network-info :onesiBox="$onesiBox" wire:key="network-info-{{ $onesiBox->id }}" />
@@ -131,7 +139,7 @@
                             <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
                                 <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                                     <span>Controlli sistema</span>
-                                    <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                                    <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
                                 </summary>
                                 <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
                                     <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
@@ -141,7 +149,7 @@
                             <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
                                 <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
                                     <span>Log</span>
-                                    <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                                    <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
                                 </summary>
                                 <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
                                     <livewire:dashboard.controls.log-viewer :onesiBox="$onesiBox" wire:key="logs-{{ $onesiBox->id }}" />

@@ -250,7 +250,7 @@ describe('sendPauseCommand', function (): void {
 describe('sendResumeCommand', function (): void {
     uses(RefreshDatabase::class);
 
-    it('sendResumeCommand enqueues a ResumeMedia command', function () {
+    it('enqueues a ResumeMedia command', function () {
         $onesiBox = OnesiBox::factory()->online()->create();
 
         /** @var OnesiBoxCommandServiceInterface $service */
@@ -258,10 +258,11 @@ describe('sendResumeCommand', function (): void {
 
         $service->sendResumeCommand($onesiBox);
 
+        expect(Command::query()->where('onesi_box_id', $onesiBox->id)->count())->toBe(1);
         expect(Command::query()->latest('id')->first()->type)->toBe(CommandType::ResumeMedia);
     });
 
-    it('sendResumeCommand throws if the box is offline', function (): void {
+    it('throws if the box is offline', function (): void {
         $onesiBox = OnesiBox::factory()->offline()->create();
         $service = app(OnesiBoxCommandServiceInterface::class);
 

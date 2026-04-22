@@ -153,11 +153,11 @@ class StreamPlayer extends Component
     #[On('echo-private:appliance.{onesiBox.serial_number},.playback.event-received')]
     public function handlePlaybackEvent(array $payload): void
     {
-        if (($payload['media_url'] ?? null) !== $this->url) {
+        if ($payload['media_url'] !== $this->url) {
             return;
         }
 
-        if (($payload['event'] ?? null) !== 'error') {
+        if ($payload['event'] !== 'error') {
             return;
         }
 
@@ -185,7 +185,7 @@ class StreamPlayer extends Component
     protected function rules(): array
     {
         return [
-            'url' => ['required', new JwStreamUrl()],
+            'url' => ['required', new JwStreamUrl],
         ];
     }
 }

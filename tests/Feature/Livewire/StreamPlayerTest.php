@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
     $this->box = OnesiBox::factory()->create();
-    $this->box->caregivers()->attach($this->user, ['permission' => \App\Enums\OnesiBoxPermission::Full]);
+    $this->box->caregivers()->attach($this->user, ['permission' => App\Enums\OnesiBoxPermission::Full]);
 });
 
 it('mounts with clean state when no recent stream item commands', function () {
@@ -130,11 +130,11 @@ it('playFromStart rejects non-stream.jw.org URL', function () {
 it('playFromStart calls sendStreamItemCommand with ordinal 1', function () {
     $this->box->update(['last_seen_at' => now()]);
 
-    $service = $this->mock(\App\Services\OnesiBoxCommandServiceInterface::class);
+    $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldReceive('sendStreamItemCommand')
         ->once()
         ->with(
-            \Mockery::on(fn ($box) => $box->id === $this->box->id),
+            Mockery::on(fn ($box) => $box->id === $this->box->id),
             'https://stream.jw.org/6311-4713-5379-2156',
             1
         );
@@ -150,10 +150,10 @@ it('playFromStart calls sendStreamItemCommand with ordinal 1', function () {
 it('next increments ordinal and calls service', function () {
     $this->box->update(['last_seen_at' => now()]);
 
-    $service = $this->mock(\App\Services\OnesiBoxCommandServiceInterface::class);
+    $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldReceive('sendStreamItemCommand')
         ->once()
-        ->with(\Mockery::any(), 'https://stream.jw.org/x', 3);
+        ->with(Mockery::any(), 'https://stream.jw.org/x', 3);
 
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('url', 'https://stream.jw.org/x')
@@ -165,7 +165,7 @@ it('next increments ordinal and calls service', function () {
 });
 
 it('next does nothing when reachedEnd is true', function () {
-    $service = $this->mock(\App\Services\OnesiBoxCommandServiceInterface::class);
+    $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldNotReceive('sendStreamItemCommand');
 
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
@@ -179,10 +179,10 @@ it('next does nothing when reachedEnd is true', function () {
 it('previous decrements ordinal and resets reachedEnd', function () {
     $this->box->update(['last_seen_at' => now()]);
 
-    $service = $this->mock(\App\Services\OnesiBoxCommandServiceInterface::class);
+    $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldReceive('sendStreamItemCommand')
         ->once()
-        ->with(\Mockery::any(), 'https://stream.jw.org/x', 2);
+        ->with(Mockery::any(), 'https://stream.jw.org/x', 2);
 
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('url', 'https://stream.jw.org/x')
@@ -194,7 +194,7 @@ it('previous decrements ordinal and resets reachedEnd', function () {
 });
 
 it('previous does nothing when lastOrdinalSent is 1', function () {
-    $service = $this->mock(\App\Services\OnesiBoxCommandServiceInterface::class);
+    $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldNotReceive('sendStreamItemCommand');
 
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
@@ -207,10 +207,10 @@ it('previous does nothing when lastOrdinalSent is 1', function () {
 it('stop calls sendStopCommand', function () {
     $this->box->update(['last_seen_at' => now()]);
 
-    $service = $this->mock(\App\Services\OnesiBoxCommandServiceInterface::class);
+    $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldReceive('sendStopCommand')
         ->once()
-        ->with(\Mockery::on(fn ($box) => $box->id === $this->box->id));
+        ->with(Mockery::on(fn ($box) => $box->id === $this->box->id));
 
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->call('stop');

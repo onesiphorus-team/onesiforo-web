@@ -276,3 +276,24 @@ it('dismissError clears errorCode', function () {
         ->call('dismissError')
         ->assertSet('errorCode', null);
 });
+
+it('renders the form with stream.jw.org placeholder', function () {
+    Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
+        ->assertSee('stream.jw.org')
+        ->assertSee('Avvia playlist');
+});
+
+it('renders the Precedente/Successivo/Stop controls when lastOrdinalSent is set', function () {
+    Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
+        ->set('lastOrdinalSent', 2)
+        ->assertSee('Precedente')
+        ->assertSee('Successivo')
+        ->assertSee('Stop');
+});
+
+it('renders the error banner with E112 message when reachedEnd', function () {
+    Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
+        ->set('errorCode', 'E112')
+        ->set('reachedEnd', true)
+        ->assertSee('Ultimo video della playlist raggiunto');
+});

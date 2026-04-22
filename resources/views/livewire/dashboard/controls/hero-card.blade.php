@@ -39,6 +39,17 @@
                 </flux:text>
             </div>
         @endif
+    @elseif($state === 'call')
+        <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+            <flux:icon name="phone" class="h-5 w-5" />
+            <flux:text class="font-medium">Chiamata in corso</flux:text>
+        </div>
+        <flux:heading size="lg" class="mt-2">Meeting {{ $onesiBox->current_meeting_id }}</flux:heading>
+        @if($onesiBox->current_meeting_joined_at)
+            <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">
+                Iniziata {{ $onesiBox->current_meeting_joined_at->diffForHumans() }}
+            </flux:text>
+        @endif
     @else
         {{-- other variants follow in later tasks --}}
     @endif

@@ -52,3 +52,18 @@ it('does not render progress bar when position/duration are null', function () {
         ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'media'])
         ->assertDontSeeHtml('role="progressbar"');
 });
+
+it('renders the call variant with meeting id', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create([
+        'status' => OnesiBoxStatus::Calling,
+        'current_meeting_id' => '123456789',
+        'current_meeting_joined_at' => now()->subMinutes(12),
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'call'])
+        ->assertSee('Chiamata in corso')
+        ->assertSee('123456789')
+        ->assertSeeHtml('data-hero-state="call"');
+});

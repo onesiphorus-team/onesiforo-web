@@ -7,6 +7,38 @@
         <flux:text class="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
             Ultimo contatto: {{ $onesiBox->last_seen_at?->diffForHumans() ?? '—' }}
         </flux:text>
+    @elseif($state === 'media')
+        @php
+            $type = strtoupper((string) $onesiBox->current_media_type);
+            $host = $onesiBox->current_media_url
+                ? (parse_url($onesiBox->current_media_url, PHP_URL_HOST) ?? $onesiBox->current_media_url)
+                : null;
+            $title = $onesiBox->current_media_title ?: $host;
+            $pos = $onesiBox->current_media_position;
+            $dur = $onesiBox->current_media_duration;
+            $pct = ($pos !== null && $dur !== null && $dur > 0) ? min(100, (int) round($pos / $dur * 100)) : null;
+        @endphp
+
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                ▶ {{ $type }}
+            </span>
+        </div>
+        <flux:heading size="lg" class="mt-2 line-clamp-2 break-words">{{ $title }}</flux:heading>
+        @if($host)
+            <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">Fonte: {{ $host }}</flux:text>
+        @endif
+
+        @if($pct !== null)
+            <div class="mt-3 flex items-center gap-2">
+                <div class="h-2 flex-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $pct }}">
+                    <div class="h-full bg-green-500" style="width: {{ $pct }}%"></div>
+                </div>
+                <flux:text class="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
+                    {{ gmdate($dur >= 3600 ? 'H:i:s' : 'i:s', (int) $pos) }} / {{ gmdate($dur >= 3600 ? 'H:i:s' : 'i:s', (int) $dur) }}
+                </flux:text>
+            </div>
+        @endif
     @else
         {{-- other variants follow in later tasks --}}
     @endif

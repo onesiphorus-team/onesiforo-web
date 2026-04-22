@@ -72,6 +72,79 @@ class StreamPlayer extends Component
         }
     }
 
+    public function playFromStart(OnesiBoxCommandServiceInterface $commandService): void
+    {
+        $this->authorize('control', $this->onesiBox);
+
+        $this->validate();
+
+        $this->executeWithErrorHandling(
+            callback: fn () => $commandService->sendStreamItemCommand(
+                $this->onesiBox,
+                $this->url,
+                1
+            ),
+            successMessage: 'Playlist avviata'
+        );
+
+        $this->lastOrdinalSent = 1;
+        $this->reachedEnd = false;
+        $this->errorCode = null;
+    }
+
+    public function next(OnesiBoxCommandServiceInterface $commandService): void
+    {
+        $this->authorize('control', $this->onesiBox);
+
+        if ($this->reachedEnd || $this->lastOrdinalSent === null) {
+            return;
+        }
+
+        $this->executeWithErrorHandling(
+            callback: fn () => $commandService->sendStreamItemCommand(
+                $this->onesiBox,
+                $this->url,
+                $this->lastOrdinalSent + 1
+            ),
+            successMessage: 'Prossimo video inviato'
+        );
+
+        $this->lastOrdinalSent++;
+        $this->errorCode = null;
+    }
+
+    public function previous(OnesiBoxCommandServiceInterface $commandService): void
+    {
+        $this->authorize('control', $this->onesiBox);
+
+        if ($this->lastOrdinalSent === null || $this->lastOrdinalSent <= 1) {
+            return;
+        }
+
+        $this->executeWithErrorHandling(
+            callback: fn () => $commandService->sendStreamItemCommand(
+                $this->onesiBox,
+                $this->url,
+                $this->lastOrdinalSent - 1
+            ),
+            successMessage: 'Video precedente inviato'
+        );
+
+        $this->lastOrdinalSent--;
+        $this->reachedEnd = false;
+        $this->errorCode = null;
+    }
+
+    public function stop(OnesiBoxCommandServiceInterface $commandService): void
+    {
+        $this->authorize('control', $this->onesiBox);
+
+        $this->executeWithErrorHandling(
+            callback: fn () => $commandService->sendStopCommand($this->onesiBox),
+            successMessage: 'Riproduzione interrotta'
+        );
+    }
+
     public function render(): View
     {
         return view('livewire.dashboard.controls.stream-player');

@@ -90,6 +90,14 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         ]);
     }
 
+    public function sendStreamItemCommand(OnesiBox $onesiBox, string $url, int $ordinal): void
+    {
+        $this->sendCommand($onesiBox, CommandType::PlayStreamItem, [
+            'url' => $url,
+            'ordinal' => $ordinal,
+        ], priority: 2);
+    }
+
     /**
      * Send a command to an OnesiBox appliance.
      *

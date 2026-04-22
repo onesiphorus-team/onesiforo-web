@@ -9,6 +9,10 @@
         <flux:text class="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
             Ultimo contatto: {{ $onesiBox->last_seen_at?->diffForHumans() ?? '—' }}
         </flux:text>
+        <div class="mt-4 flex flex-col gap-2">
+            <flux:button wire:click="openSession" variant="primary" icon="queue-list" class="w-full">Avvia sessione playlist</flux:button>
+            <flux:button wire:click="openNew" variant="filled" icon="plus" class="w-full">Nuovo contenuto</flux:button>
+        </div>
     @elseif($state === 'media')
         @php
             $type = strtoupper((string) $onesiBox->current_media_type);

@@ -177,3 +177,23 @@ it('leaveZoom() is forbidden for a user without Full permission', function () {
         ->call('leaveZoom')
         ->assertForbidden();
 });
+
+it('openSession() dispatches open-quick-play with tab=session', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'idle'])
+        ->call('openSession')
+        ->assertDispatched('open-quick-play', tab: 'session');
+});
+
+it('openNew() dispatches open-quick-play without tab', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'idle'])
+        ->call('openNew')
+        ->assertDispatched('open-quick-play');
+});

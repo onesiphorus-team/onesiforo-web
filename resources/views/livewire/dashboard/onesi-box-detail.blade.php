@@ -53,16 +53,17 @@
         {{-- Accordion body (native <details>) --}}
         <div class="mt-4 space-y-2">
             @if($this->canControl && $this->isOnline)
-                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" @if($this->accordionDefaults['session'] ?? false) open @endif>
-                    <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                        <span>Sessione in corso</span>
-                        <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div class="space-y-3 border-t border-zinc-200 p-4 dark:border-zinc-700">
-                        <livewire:dashboard.controls.session-status :onesiBox="$onesiBox" wire:key="session-status-{{ $onesiBox->id }}" />
-                        <livewire:dashboard.controls.session-manager :onesiBox="$onesiBox" wire:key="session-manager-{{ $onesiBox->id }}" />
-                    </div>
-                </details>
+                @if($this->accordionDefaults['session'] ?? false)
+                    <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" open>
+                        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
+                            <span>Sessione in corso</span>
+                            <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
+                        </summary>
+                        <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
+                            <livewire:dashboard.controls.session-status :onesiBox="$onesiBox" wire:key="session-status-{{ $onesiBox->id }}" />
+                        </div>
+                    </details>
+                @endif
 
                 <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" @if($this->accordionDefaults['commands'] ?? false) open @endif>
                     <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
@@ -84,16 +85,6 @@
                     </div>
                 </details>
 
-                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
-                    <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                        <span>Playlist salvate</span>
-                        <flux:icon name="chevron-down" class="h-4 w-4 transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div class="space-y-4 border-t border-zinc-200 p-4 dark:border-zinc-700">
-                        <livewire:dashboard.controls.saved-playlists :onesiBox="$onesiBox" wire:key="saved-playlists-{{ $onesiBox->id }}" />
-                        <livewire:dashboard.controls.playlist-builder :onesiBox="$onesiBox" wire:key="playlist-builder-{{ $onesiBox->id }}" />
-                    </div>
-                </details>
             @endif
 
             @if($this->recipient)

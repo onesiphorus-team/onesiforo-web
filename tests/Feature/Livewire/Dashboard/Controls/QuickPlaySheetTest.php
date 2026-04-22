@@ -123,3 +123,12 @@ it('selectTab() ignores invalid tab names', function () {
         ->call('selectTab', 'bogus')
         ->assertSet('tab', null);
 });
+
+it('mounts SessionManager when tab=session', function () {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
+        ->dispatch('open-quick-play', tab: 'session')
+        ->assertSeeLivewire(App\Livewire\Dashboard\Controls\SessionManager::class);
+});

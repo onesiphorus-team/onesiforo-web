@@ -6,6 +6,7 @@
                 <flux:button wire:click="selectTab('audio')" variant="ghost" icon="musical-note" class="justify-start">Audio da URL</flux:button>
                 <flux:button wire:click="selectTab('video')" variant="ghost" icon="video-camera" class="justify-start">Video da URL</flux:button>
                 <flux:button wire:click="selectTab('stream')" variant="ghost" icon="play" class="justify-start">Stream YouTube</flux:button>
+                <flux:button wire:click="selectTab('session')" variant="ghost" icon="queue-list" class="justify-start">Sessione playlist</flux:button>
                 <flux:button wire:click="selectTab('playlists')" variant="ghost" icon="queue-list" class="justify-start">Dalle playlist salvate</flux:button>
                 <flux:button wire:click="selectTab('zoom')" variant="ghost" icon="phone" class="justify-start">Avvia chiamata Zoom</flux:button>
             </div>
@@ -27,6 +28,9 @@
                         @break
                     @case('playlists')
                         <livewire:dashboard.controls.saved-playlists :onesiBox="$onesiBox" wire:key="qps-playlists-{{ $onesiBox->id }}" />
+                        @break
+                    @case('session')
+                        <livewire:dashboard.controls.session-manager :onesiBox="$onesiBox" wire:key="qps-session-{{ $onesiBox->id }}" />
                         @break
                     @default
                         <flux:text class="text-sm text-zinc-500">Tab: {{ $tab }}</flux:text>

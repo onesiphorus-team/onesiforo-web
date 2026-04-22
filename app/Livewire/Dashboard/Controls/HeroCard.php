@@ -67,6 +67,16 @@ class HeroCard extends Component
         );
     }
 
+    public function openSession(): void
+    {
+        $this->dispatch('open-quick-play', tab: 'session');
+    }
+
+    public function openNew(): void
+    {
+        $this->dispatch('open-quick-play');
+    }
+
     public function render(): View
     {
         return view('livewire.dashboard.controls.hero-card');

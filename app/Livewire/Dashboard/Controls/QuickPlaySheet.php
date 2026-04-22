@@ -12,7 +12,7 @@ use Livewire\Component;
 
 class QuickPlaySheet extends Component
 {
-    private const VALID_TABS = ['audio', 'video', 'stream', 'zoom', 'playlists'];
+    private const VALID_TABS = ['audio', 'video', 'stream', 'zoom', 'playlists', 'session'];
 
     #[Locked]
     public OnesiBox $onesiBox;

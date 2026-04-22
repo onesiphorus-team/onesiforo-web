@@ -27,6 +27,7 @@ class StorePlaybackEventAction
      * @param  int|null  $duration  Total media duration in seconds
      * @param  string|null  $errorMessage  Error message for error events
      * @param  string|null  $sessionId  The playback session UUID for analytics tracking
+     * @param  string|null  $errorCode  Error code for error events (e.g., E110, E111, E112, E113)
      * @return PlaybackEvent The created playback event
      */
     public function __invoke(
@@ -38,6 +39,7 @@ class StorePlaybackEventAction
         ?int $duration = null,
         ?string $errorMessage = null,
         ?string $sessionId = null,
+        ?string $errorCode = null,
     ): PlaybackEvent {
         $eventType = $event instanceof PlaybackEventType
             ? $event
@@ -51,6 +53,7 @@ class StorePlaybackEventAction
             'position' => $position,
             'duration' => $duration,
             'error_message' => $errorMessage,
+            'error_code' => $errorCode,
             'session_id' => $sessionId,
         ]);
     }
@@ -59,7 +62,7 @@ class StorePlaybackEventAction
      * Store a playback event from an array of data.
      *
      * @param  OnesiBox  $onesiBox  The OnesiBox reporting the event
-     * @param  array{event: string, media_url: string, media_type: string, position?: int|null, duration?: int|null, error_message?: string|null, session_id?: string|null}  $data
+     * @param  array{event: string, media_url: string, media_type: string, position?: int|null, duration?: int|null, error_message?: string|null, error_code?: string|null, session_id?: string|null}  $data
      * @return PlaybackEvent The created playback event
      */
     public function fromArray(OnesiBox $onesiBox, array $data): PlaybackEvent
@@ -73,6 +76,7 @@ class StorePlaybackEventAction
             duration: $data['duration'] ?? null,
             errorMessage: $data['error_message'] ?? null,
             sessionId: $data['session_id'] ?? null,
+            errorCode: $data['error_code'] ?? null,
         );
     }
 }

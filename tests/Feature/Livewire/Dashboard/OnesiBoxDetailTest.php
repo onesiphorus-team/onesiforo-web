@@ -6,6 +6,9 @@ use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
 use App\Enums\PlaybackSessionStatus;
+use App\Livewire\Dashboard\Controls\BottomBar;
+use App\Livewire\Dashboard\Controls\HeroCard;
+use App\Livewire\Dashboard\Controls\QuickPlaySheet;
 use App\Livewire\Dashboard\OnesiBoxDetail;
 use App\Models\Command;
 use App\Models\OnesiBox;
@@ -13,6 +16,7 @@ use App\Models\PlaybackEvent;
 use App\Models\PlaybackSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 use function Pest\Livewire\livewire;
 
@@ -139,4 +143,15 @@ it('accordionDefaults opens commands when pending commands exist', function () {
         ->get('accordionDefaults');
 
     expect($defaults)->toHaveKey('commands', true);
+});
+
+it('mounts HeroCard, BottomBar and QuickPlaySheet in the detail view', function () {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($this->user)
+        ->test(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSeeLivewire(HeroCard::class)
+        ->assertSeeLivewire(BottomBar::class)
+        ->assertSeeLivewire(QuickPlaySheet::class);
 });

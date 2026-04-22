@@ -121,4 +121,12 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendPauseCommand(OnesiBox $onesiBox): void;
+
+    /**
+     * Invia comando di ripresa sul media corrente precedentemente messo in pausa.
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendResumeCommand(OnesiBox $onesiBox): void;
 }

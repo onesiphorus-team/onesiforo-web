@@ -113,4 +113,12 @@ interface OnesiBoxCommandServiceInterface
      * @throws OnesiBoxCommandException
      */
     public function sendStreamItemCommand(OnesiBox $onesiBox, string $url, int $ordinal): void;
+
+    /**
+     * Invia comando di pausa sul media corrente.
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendPauseCommand(OnesiBox $onesiBox): void;
 }

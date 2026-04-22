@@ -23,9 +23,7 @@ class PlaybackEventReceived implements ShouldBroadcastNow
     use InteractsWithSockets;
     use SerializesModels;
 
-    public function __construct(public PlaybackEvent $playbackEvent)
-    {
-    }
+    public function __construct(public PlaybackEvent $playbackEvent) {}
 
     public function broadcastOn(): PrivateChannel
     {

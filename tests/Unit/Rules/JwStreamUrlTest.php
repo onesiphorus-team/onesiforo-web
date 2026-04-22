@@ -6,11 +6,12 @@ use App\Rules\JwStreamUrl;
 
 function validateJwStreamUrl(mixed $value): ?string
 {
-    $rule = new JwStreamUrl();
+    $rule = new JwStreamUrl;
     $error = null;
     $rule->validate('url', $value, function ($message) use (&$error) {
         $error = (string) $message;
     });
+
     return $error;
 }
 

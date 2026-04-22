@@ -12,6 +12,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
 {
     // Media
     case PlayMedia = 'play_media';
+    case PlayStreamItem = 'play_stream_item';
     case StopMedia = 'stop_media';
     case PauseMedia = 'pause_media';
     case ResumeMedia = 'resume_media';
@@ -72,6 +73,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
     {
         return match ($this) {
             self::PlayMedia => __('Riproduci media'),
+            self::PlayStreamItem => __('Riproduci playlist JW Stream'),
             self::StopMedia => __('Ferma media'),
             self::PauseMedia => __('Pausa media'),
             self::ResumeMedia => __('Riprendi media'),
@@ -97,6 +99,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
     {
         return match ($this) {
             self::PlayMedia => 'heroicon-o-play',
+            self::PlayStreamItem => 'heroicon-o-queue-list',
             self::StopMedia => 'heroicon-o-stop',
             self::PauseMedia => 'heroicon-o-pause',
             self::ResumeMedia => 'heroicon-o-play-circle',
@@ -119,7 +122,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
     public function getColor(): string
     {
         return match ($this) {
-            self::PlayMedia, self::ResumeMedia => 'success',
+            self::PlayMedia, self::ResumeMedia, self::PlayStreamItem => 'success',
             self::StopMedia, self::PauseMedia => 'warning',
             self::SetVolume => 'info',
             self::JoinZoom, self::StartJitsi => 'primary',

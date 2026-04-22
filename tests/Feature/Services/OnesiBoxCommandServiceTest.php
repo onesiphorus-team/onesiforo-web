@@ -238,4 +238,11 @@ describe('sendPauseCommand', function (): void {
         expect(Command::query()->where('onesi_box_id', $onesiBox->id)->count())->toBe(1);
         expect(Command::query()->latest('id')->first()->type)->toBe(CommandType::PauseMedia);
     });
+
+    it('throws if the box is offline', function (): void {
+        $onesiBox = OnesiBox::factory()->offline()->create();
+        $service = app(OnesiBoxCommandServiceInterface::class);
+
+        $service->sendPauseCommand($onesiBox);
+    })->throws(OnesiBoxOfflineException::class);
 });

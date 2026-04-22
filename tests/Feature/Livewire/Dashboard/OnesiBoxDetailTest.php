@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
+use App\Enums\PlaybackSessionStatus;
 use App\Livewire\Dashboard\OnesiBoxDetail;
+use App\Models\Command;
 use App\Models\OnesiBox;
+use App\Models\PlaybackEvent;
+use App\Models\PlaybackSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -61,12 +66,6 @@ it('heroState returns idle when the box is online and nothing is playing', funct
 
 // Task 5 tests
 
-use App\Enums\CommandStatus;
-use App\Enums\PlaybackSessionStatus;
-use App\Models\Command;
-use App\Models\PlaybackEvent;
-use App\Models\PlaybackSession;
-
 it('isInCall reflects the Calling status', function () {
     $boxInCall = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
@@ -97,6 +96,21 @@ it('isMediaPaused is true only when the last PlaybackEvent is Paused', function 
 
     livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
         ->assertSet('isMediaPaused', true);
+});
+
+it('isMediaPaused is false when the last PlaybackEvent is not Paused', function () {
+    $box = OnesiBox::factory()->online()->create([
+        'status' => OnesiBoxStatus::Playing,
+        'current_media_url' => 'https://example.com/song.mp3',
+        'current_media_type' => 'audio',
+    ]);
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
+
+    PlaybackEvent::factory()->for($box, 'onesiBox')->paused()->create();
+    PlaybackEvent::factory()->for($box, 'onesiBox')->resumed()->create();
+
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSet('isMediaPaused', false);
 });
 
 it('accordionDefaults opens session when an active session exists', function () {

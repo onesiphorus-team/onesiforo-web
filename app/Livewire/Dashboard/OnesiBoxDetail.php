@@ -147,7 +147,7 @@ class OnesiBoxDetail extends Component
     #[Computed]
     public function heroState(): string
     {
-        if (! $this->isOnline) {
+        if (! $this->isOnline()) {
             return 'offline';
         }
 

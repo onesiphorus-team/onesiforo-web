@@ -153,3 +153,27 @@ it('leaveZoom() dispatches a LeaveZoom command while on a call', function () {
         ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'call'])
         ->call('leaveZoom');
 });
+
+it('pause() is forbidden for a user without Full permission', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Playing]);
+    // No caregivers attached at all
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'media'])
+        ->call('pause')
+        ->assertForbidden();
+});
+
+it('leaveZoom() is forbidden for a user without Full permission', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create([
+        'status' => OnesiBoxStatus::Calling,
+        'current_meeting_id' => '999',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'call'])
+        ->call('leaveZoom')
+        ->assertForbidden();
+});

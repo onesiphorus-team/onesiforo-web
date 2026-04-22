@@ -24,6 +24,7 @@ class HeroCard extends Component
     #[Locked]
     public string $state = 'idle';
 
+    #[Locked]
     public bool $isPaused = false;
 
     public function pause(OnesiBoxCommandServiceInterface $commandService): void

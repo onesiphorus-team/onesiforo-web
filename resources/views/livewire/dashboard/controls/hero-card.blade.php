@@ -46,9 +46,9 @@
             @if($isPaused)
                 <flux:button wire:click="resume" variant="primary" icon="play" class="flex-1">Riprendi</flux:button>
             @else
-                <flux:button wire:click="pause" variant="filled" icon="pause" class="flex-1">Pausa</flux:button>
+                <flux:button wire:click="pause" variant="primary" icon="pause" class="flex-1">Pausa</flux:button>
             @endif
-            <flux:button wire:click="stop" variant="danger" icon="stop" class="flex-1">Stop</flux:button>
+            <flux:button wire:click="stop" variant="danger" icon="stop-circle" class="flex-1">Stop</flux:button>
         </div>
     @elseif($state === 'call')
         <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300">

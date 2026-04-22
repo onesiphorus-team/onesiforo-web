@@ -102,3 +102,24 @@ it('mounts SavedPlaylists when tab=playlists', function () {
         ->dispatch('open-quick-play', tab: 'playlists')
         ->assertSeeLivewire(App\Livewire\Dashboard\Controls\SavedPlaylists::class);
 });
+
+it('back() clears the active tab', function () {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
+        ->set('open', true)
+        ->set('tab', 'audio')
+        ->call('back')
+        ->assertSet('tab', null)
+        ->assertSet('open', true);
+});
+
+it('selectTab() ignores invalid tab names', function () {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
+        ->call('selectTab', 'bogus')
+        ->assertSet('tab', null);
+});

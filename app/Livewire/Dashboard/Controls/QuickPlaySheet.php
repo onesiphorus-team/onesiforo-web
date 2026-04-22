@@ -12,6 +12,8 @@ use Livewire\Component;
 
 class QuickPlaySheet extends Component
 {
+    private const VALID_TABS = ['audio', 'video', 'stream', 'zoom', 'playlists'];
+
     #[Locked]
     public OnesiBox $onesiBox;
 
@@ -23,11 +25,15 @@ class QuickPlaySheet extends Component
     public function openSheet(?string $tab = null): void
     {
         $this->open = true;
-        $this->tab = $tab;
+        $this->tab = ($tab !== null && in_array($tab, self::VALID_TABS, true)) ? $tab : null;
     }
 
     public function selectTab(string $tab): void
     {
+        if (! in_array($tab, self::VALID_TABS, true)) {
+            return;
+        }
+
         $this->tab = $tab;
     }
 

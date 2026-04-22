@@ -137,6 +137,30 @@ class OnesiBoxDetail extends Component
     }
 
     /**
+     * Get the current hero card variant.
+     *
+     * @return 'offline'|'call'|'media'|'idle'
+     */
+    #[Computed]
+    public function heroState(): string
+    {
+        if (! $this->isOnline) {
+            return 'offline';
+        }
+
+        if ($this->onesiBox->status === OnesiBoxStatus::Calling
+            && $this->onesiBox->current_meeting_id !== null) {
+            return 'call';
+        }
+
+        if ($this->onesiBox->current_media_url !== null) {
+            return 'media';
+        }
+
+        return 'idle';
+    }
+
+    /**
      * Get the current volume level.
      */
     #[Computed]

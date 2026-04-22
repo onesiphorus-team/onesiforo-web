@@ -215,3 +215,64 @@ it('stop calls sendStopCommand', function () {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->call('stop');
 });
+
+it('handlePlaybackEvent sets reachedEnd true when error code is E112', function () {
+    Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
+        ->set('url', 'https://stream.jw.org/x')
+        ->call('handlePlaybackEvent', [
+            'event' => 'error',
+            'media_url' => 'https://stream.jw.org/x',
+            'media_type' => 'video',
+            'error_code' => 'E112',
+            'error_message' => 'Ordinal 5 exceeds playlist length 4',
+        ])
+        ->assertSet('errorCode', 'E112')
+        ->assertSet('reachedEnd', true);
+});
+
+it('handlePlaybackEvent sets errorCode for E110/E111/E113 but not reachedEnd', function () {
+    Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
+        ->set('url', 'https://stream.jw.org/x')
+        ->call('handlePlaybackEvent', [
+            'event' => 'error',
+            'media_url' => 'https://stream.jw.org/x',
+            'media_type' => 'video',
+            'error_code' => 'E110',
+            'error_message' => 'DNS timeout',
+        ])
+        ->assertSet('errorCode', 'E110')
+        ->assertSet('reachedEnd', false);
+});
+
+it('handlePlaybackEvent ignores events with different media_url', function () {
+    Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
+        ->set('url', 'https://stream.jw.org/current')
+        ->set('errorCode', null)
+        ->call('handlePlaybackEvent', [
+            'event' => 'error',
+            'media_url' => 'https://stream.jw.org/OTHER',
+            'media_type' => 'video',
+            'error_code' => 'E112',
+        ])
+        ->assertSet('errorCode', null)
+        ->assertSet('reachedEnd', false);
+});
+
+it('handlePlaybackEvent does nothing on non-error events', function () {
+    Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
+        ->set('url', 'https://stream.jw.org/x')
+        ->set('errorCode', 'E110')
+        ->call('handlePlaybackEvent', [
+            'event' => 'started',
+            'media_url' => 'https://stream.jw.org/x',
+            'media_type' => 'video',
+        ])
+        ->assertSet('errorCode', 'E110');
+});
+
+it('dismissError clears errorCode', function () {
+    Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
+        ->set('errorCode', 'E110')
+        ->call('dismissError')
+        ->assertSet('errorCode', null);
+});

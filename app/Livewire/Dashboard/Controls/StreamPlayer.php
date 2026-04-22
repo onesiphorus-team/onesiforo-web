@@ -145,6 +145,35 @@ class StreamPlayer extends Component
         );
     }
 
+    /**
+     * Echo listener per eventi di playback broadcast dal PlaybackController.
+     *
+     * @param  array{event: string, media_url: string, media_type: string, error_code?: string|null, error_message?: string|null, occurred_at?: string}  $payload
+     */
+    #[On('echo-private:appliance.{onesiBox.serial_number},.playback.event-received')]
+    public function handlePlaybackEvent(array $payload): void
+    {
+        if (($payload['media_url'] ?? null) !== $this->url) {
+            return;
+        }
+
+        if (($payload['event'] ?? null) !== 'error') {
+            return;
+        }
+
+        $code = $payload['error_code'] ?? null;
+        $this->errorCode = $code;
+
+        if ($code === 'E112') {
+            $this->reachedEnd = true;
+        }
+    }
+
+    public function dismissError(): void
+    {
+        $this->errorCode = null;
+    }
+
     public function render(): View
     {
         return view('livewire.dashboard.controls.stream-player');

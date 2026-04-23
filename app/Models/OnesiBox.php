@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * Represents an OnesiBox appliance hardware device.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 trait LogsActivityAllDirty
 {

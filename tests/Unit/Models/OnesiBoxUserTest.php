@@ -126,8 +126,8 @@ describe('OnesiBoxUser Activity Logging', function (): void {
             ->first();
 
         expect($activity)->not->toBeNull()
-            ->and($activity->properties['old']['permission'])->toBe(OnesiBoxPermission::Full->value)
-            ->and($activity->properties['attributes']['permission'])->toBe(OnesiBoxPermission::ReadOnly->value);
+            ->and($activity->attribute_changes['old']['permission'])->toBe(OnesiBoxPermission::Full->value)
+            ->and($activity->attribute_changes['attributes']['permission'])->toBe(OnesiBoxPermission::ReadOnly->value);
     });
 
     it('logs activity when pivot record is deleted', function (): void {

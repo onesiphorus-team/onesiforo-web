@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.9.3] - 2026-04-23
+
+### Features
+
+- Mostra volume attuale e rinomina azione in Zoom (#183)
+
 ## [0.9.2] - 2026-04-23
 
 ### Bug Fixes

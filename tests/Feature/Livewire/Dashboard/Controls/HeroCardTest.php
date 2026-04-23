@@ -197,3 +197,31 @@ it('openNew() dispatches open-quick-play without tab', function () {
         ->call('openNew')
         ->assertDispatched('open-quick-play');
 });
+
+it('stop() is forbidden for a user without Full permission', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create([
+        'status' => OnesiBoxStatus::Playing,
+        'current_media_url' => 'https://example.com/x.mp3',
+        'current_media_type' => 'audio',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'media'])
+        ->call('stop')
+        ->assertForbidden();
+});
+
+it('resume() is forbidden for a user without Full permission', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create([
+        'status' => OnesiBoxStatus::Playing,
+        'current_media_url' => 'https://example.com/x.mp3',
+        'current_media_type' => 'audio',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $box, 'state' => 'media', 'isPaused' => true])
+        ->call('resume')
+        ->assertForbidden();
+});

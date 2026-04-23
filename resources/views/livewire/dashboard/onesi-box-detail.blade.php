@@ -1,9 +1,11 @@
-<style>
-    @media (min-width: 768px) {
-        .detail-accordions details summary { cursor: default; pointer-events: none; }
-        .detail-accordions details summary .chevron-toggle { display: none; }
-    }
-</style>
+@once
+    <style>
+        @media (min-width: 768px) {
+            .detail-accordions details summary { cursor: default; pointer-events: none; }
+            .detail-accordions details summary .chevron-toggle { display: none; }
+        }
+    </style>
+@endonce
 
 <div class="mx-auto max-w-4xl md:max-w-6xl pb-24 md:pb-8" wire:poll.15s="refreshFromDatabase">
     {{-- Sticky header --}}
@@ -60,53 +62,29 @@
             </flux:callout>
         @endif
 
-        {{-- Accordion body (native <details>) --}}
+        {{-- Accordion body (native <details> via x-accordion-item component) --}}
         <div class="mt-4 space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 detail-accordions">
             @if($this->canControl && $this->isOnline)
                 @if($this->accordionDefaults['session'] ?? false)
-                    <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" open>
-                        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                            <span>Sessione in corso</span>
-                            <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
-                        </summary>
-                        <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
-                            <livewire:dashboard.controls.session-status :onesiBox="$onesiBox" wire:key="session-status-{{ $onesiBox->id }}" />
-                        </div>
-                    </details>
+                    <x-accordion-item title="Sessione in corso" :open="true">
+                        <livewire:dashboard.controls.session-status :onesiBox="$onesiBox" wire:key="session-status-{{ $onesiBox->id }}" />
+                    </x-accordion-item>
                 @endif
 
-                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800 md:open:block" @if($this->accordionDefaults['commands'] ?? false) open @endif x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
-                    <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                        <span>Comandi in coda</span>
-                        <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
-                        <livewire:dashboard.controls.command-queue :onesiBox="$onesiBox" wire:key="command-queue-{{ $onesiBox->id }}" />
-                    </div>
-                </details>
+                <x-accordion-item title="Comandi in coda" :open="$this->accordionDefaults['commands'] ?? false">
+                    <livewire:dashboard.controls.command-queue :onesiBox="$onesiBox" wire:key="command-queue-{{ $onesiBox->id }}" />
+                </x-accordion-item>
 
-                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
-                    <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                        <span>Meeting programmati</span>
-                        <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
-                        <livewire:dashboard.controls.meeting-schedule :onesi-box="$onesiBox" wire:key="meeting-schedule-{{ $onesiBox->id }}" />
-                    </div>
-                </details>
+                <x-accordion-item title="Meeting programmati">
+                    <livewire:dashboard.controls.meeting-schedule :onesi-box="$onesiBox" wire:key="meeting-schedule-{{ $onesiBox->id }}" />
+                </x-accordion-item>
 
             @endif
 
             @if($this->recipient)
-                <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
-                    <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                        <span>Contatti destinatario</span>
-                        <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
-                        @include('livewire.dashboard.partials.recipient-contacts', ['recipient' => $this->recipient])
-                    </div>
-                </details>
+                <x-accordion-item title="Contatti destinatario">
+                    @include('livewire.dashboard.partials.recipient-contacts', ['recipient' => $this->recipient])
+                </x-accordion-item>
             @endif
 
             @if($this->isAdmin)
@@ -117,46 +95,22 @@
                     </flux:heading>
 
                     <div class="space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 detail-accordions">
-                        <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
-                            <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                                <span>Sistema</span>
-                                <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
-                            </summary>
-                            <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
-                                <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" />
-                            </div>
-                        </details>
+                        <x-accordion-item title="Sistema">
+                            <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" />
+                        </x-accordion-item>
 
-                        <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
-                            <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                                <span>Rete</span>
-                                <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
-                            </summary>
-                            <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
-                                <livewire:dashboard.controls.network-info :onesiBox="$onesiBox" wire:key="network-info-{{ $onesiBox->id }}" />
-                            </div>
-                        </details>
+                        <x-accordion-item title="Rete">
+                            <livewire:dashboard.controls.network-info :onesiBox="$onesiBox" wire:key="network-info-{{ $onesiBox->id }}" />
+                        </x-accordion-item>
 
                         @if($this->isOnline)
-                            <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
-                                <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                                    <span>Controlli sistema</span>
-                                    <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
-                                </summary>
-                                <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
-                                    <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
-                                </div>
-                            </details>
+                            <x-accordion-item title="Controlli sistema">
+                                <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
+                            </x-accordion-item>
 
-                            <details class="group rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800" x-data x-init="if (window.matchMedia('(min-width: 768px)').matches) $el.setAttribute('open', '')">
-                                <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium select-none">
-                                    <span>Log</span>
-                                    <flux:icon name="chevron-down" class="chevron-toggle h-4 w-4 transition-transform group-open:rotate-180" />
-                                </summary>
-                                <div class="border-t border-zinc-200 p-4 dark:border-zinc-700">
-                                    <livewire:dashboard.controls.log-viewer :onesiBox="$onesiBox" wire:key="logs-{{ $onesiBox->id }}" />
-                                </div>
-                            </details>
+                            <x-accordion-item title="Log">
+                                <livewire:dashboard.controls.log-viewer :onesiBox="$onesiBox" wire:key="logs-{{ $onesiBox->id }}" />
+                            </x-accordion-item>
                         @endif
                     </div>
                 </div>
@@ -164,5 +118,7 @@
         </div>
     </div>
 
-    <livewire:dashboard.controls.quick-play-sheet :onesiBox="$onesiBox" wire:key="quick-play-sheet-{{ $onesiBox->id }}" />
+    @if($this->canControl)
+        <livewire:dashboard.controls.quick-play-sheet :onesiBox="$onesiBox" wire:key="quick-play-sheet-{{ $onesiBox->id }}" />
+    @endif
 </div>

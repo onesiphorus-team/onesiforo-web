@@ -132,3 +132,13 @@ it('mounts SessionManager when tab=session', function () {
         ->dispatch('open-quick-play', tab: 'session')
         ->assertSeeLivewire(App\Livewire\Dashboard\Controls\SessionManager::class);
 });
+
+it('openSheet() is forbidden for a user without Full permission', function () {
+    $box = OnesiBox::factory()->online()->create();
+    // No caregiver attach — user has no permission
+
+    Livewire::actingAs($this->user)
+        ->test(QuickPlaySheet::class, ['onesiBox' => $box])
+        ->dispatch('open-quick-play')
+        ->assertForbidden();
+});

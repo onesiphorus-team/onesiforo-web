@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
+use App\Concerns\ChecksOnesiBoxPermission;
 use App\Concerns\HandlesOnesiBoxErrors;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandServiceInterface;
@@ -15,6 +16,7 @@ use Livewire\Component;
 class HeroCard extends Component
 {
     use AuthorizesRequests;
+    use ChecksOnesiBoxPermission;
     use HandlesOnesiBoxErrors;
 
     #[Locked]

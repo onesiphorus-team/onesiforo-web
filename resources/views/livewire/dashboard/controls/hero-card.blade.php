@@ -9,10 +9,12 @@
         <flux:text class="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
             Ultimo contatto: {{ $onesiBox->last_seen_at?->diffForHumans() ?? '—' }}
         </flux:text>
-        <div class="mt-4 flex flex-col gap-2 md:flex-row md:gap-3">
-            <flux:button wire:click="openSession" variant="primary" icon="queue-list" class="w-full md:w-auto">Avvia sessione playlist</flux:button>
-            <flux:button wire:click="openNew" variant="filled" icon="plus" class="w-full md:w-auto">Nuovo contenuto</flux:button>
-        </div>
+        @if($this->canControl)
+            <div class="mt-4 flex flex-col gap-2 md:flex-row md:gap-3">
+                <flux:button wire:click="openSession" variant="primary" icon="queue-list" class="w-full md:w-auto">Avvia sessione playlist</flux:button>
+                <flux:button wire:click="openNew" variant="filled" icon="plus" class="w-full md:w-auto">Nuovo contenuto</flux:button>
+            </div>
+        @endif
     @elseif($state === 'media')
         @php
             $type = strtoupper((string) $onesiBox->current_media_type);
@@ -46,14 +48,16 @@
             </div>
         @endif
 
-        <div class="mt-4 flex gap-2">
-            @if($isPaused)
-                <flux:button wire:click="resume" variant="primary" icon="play" class="flex-1">Riprendi</flux:button>
-            @else
-                <flux:button wire:click="pause" variant="primary" icon="pause" class="flex-1">Pausa</flux:button>
-            @endif
-            <flux:button wire:click="stop" variant="danger" icon="stop-circle" class="flex-1">Stop</flux:button>
-        </div>
+        @if($this->canControl)
+            <div class="mt-4 flex gap-2">
+                @if($isPaused)
+                    <flux:button wire:click="resume" variant="primary" icon="play" class="flex-1">Riprendi</flux:button>
+                @else
+                    <flux:button wire:click="pause" variant="primary" icon="pause" class="flex-1">Pausa</flux:button>
+                @endif
+                <flux:button wire:click="stop" variant="danger" icon="stop-circle" class="flex-1">Stop</flux:button>
+            </div>
+        @endif
     @elseif($state === 'call')
         <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300">
             <flux:icon name="phone" class="h-5 w-5" />
@@ -66,9 +70,11 @@
             </flux:text>
         @endif
 
-        <div class="mt-4">
-            <flux:button wire:click="leaveZoom" variant="danger" icon="phone-x-mark" class="w-full">Termina chiamata</flux:button>
-        </div>
+        @if($this->canControl)
+            <div class="mt-4">
+                <flux:button wire:click="leaveZoom" variant="danger" icon="phone-x-mark" class="w-full">Termina chiamata</flux:button>
+            </div>
+        @endif
     @elseif($state === 'offline')
         <div class="flex items-center gap-2 text-amber-700 dark:text-amber-300">
             <flux:icon name="exclamation-triangle" class="h-5 w-5" />

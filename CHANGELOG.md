@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.9.1] - 2026-04-23
+
+### Bug Fixes
+
+- Riparare e semplificare la modale del volume
+
 ## [0.9.0] - 2026-04-23
 
 ### Bug Fixes

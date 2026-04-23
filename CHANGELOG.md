@@ -1,318 +1,356 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
+
+## [0.9.0] - 2026-04-23
+
+### Bug Fixes
+
+- Remove remoteUser from devcontainer to fix permission errors
+- Remove npm install from devcontainer postCreateCommand
+- Address code review issues for adunanze feature
+- Resolve PHPStan return type errors in Filament resources
+- Address second round of code review findings for adunanze
+- Make adunanze column migrations idempotent
+- Address third round of review findings for adunanze
+- Address review findings on OnesiBoxDetail computeds
+- Harden HeroCard — lock isPaused, add auth tests, correct icon/variant
+- Harden BottomBar — add isInCall computed, auth tests, remove redundant if
+- Guard QuickPlaySheet tab selection and test back()
+- Use grid layout on BottomBar for uniform mobile spacing
+- Rename Stream YouTube label to Playlist JW Stream
+- Force details open on desktop via Alpine and move action bar under header
+- Address PR review — gate QuickPlaySheet, HeroCard action permissions, @once style, DRY accordions, extra auth tests
+- Consolidate QuickPlaySheetTest imports and add authorize() to BottomBar::openNew()
+
+### Features
+
+- Add Docker development environment with FrankenPHP
+- Add MeetingType enum
+- Add MeetingJoinMode enum
+- Add Congregation model with scheduling logic
+- Add congregation_id FK to recipients
+- Add meeting_join_mode and notifications to OnesiBox
+- Add MeetingInstance model with factory
+- Add MeetingAttendanceStatus enum and missing test files
+- Add MeetingAttendance model with factory
+- Add meetings:check-upcoming scheduler command
+- Add meetings:auto-join scheduler command
+- Add meetings:cleanup command for stale instances
+- Register meeting scheduler commands
+- Complete meeting attendance on heartbeat meeting exit
+- Install telegram notification channel
+- Add MeetingUpcomingNotification with database, broadcast, and telegram channels
+- Add Filament CongregationResource with form and table
+- Add app_version badge column to OnesiBox admin table
+- Add MeetingSchedule Livewire component with join/skip/adhoc
+- Wire MeetingSchedule into OnesiBox detail page
+- Add git-cliff configuration for automatic changelog
+- Migrate changelog workflow to git-cliff
+- Expose congregation assignment in recipient UI
+- Add error_code column for granular error tracking
+- Accept and persist error_code via API
+- Broadcast PlaybackEventReceived for reactive UI
+- Add PlayStreamItem case to CommandType enum
+- Add JwStreamUrl validation rule for stream.jw.org URLs
+- Add sendStreamItemCommand to OnesiBoxCommandService
+- StreamPlayer skeleton with state restoration from commands
+- Add playFromStart/next/previous/stop methods to StreamPlayer
+- Add Echo listener and dismissError to StreamPlayer
+- Add full Blade view for StreamPlayer component
+- Mount StreamPlayer Livewire component in OnesiBox detail
+- Add sendPauseCommand to OnesiBoxCommandService
+- Add sendResumeCommand to OnesiBoxCommandService
+- Add heroState computed to OnesiBoxDetail
+- Add isInCall, isMediaPaused, accordionDefaults computeds
+- Add HeroCard skeleton with idle variant
+- Render media variant with progress bar in HeroCard
+- Render call variant in HeroCard
+- Render offline variant in HeroCard
+- Add pause/resume/stop/leaveZoom actions to HeroCard
+- Add BottomBar skeleton with visibility gating
+- Wire Stop slot in BottomBar
+- Wire Volume slot via modal hosting VolumeControl
+- Wire New and Call slots in BottomBar
+- Add QuickPlaySheet skeleton with initial menu
+- Restructure onesi-box-detail view with hero, accordion body, bottom bar
+- Responsive desktop layout with inline actions and open accordions
+- Upgrade spatie/laravel-activitylog v4 → v5
+
+### Refactoring
+
+- Apply rector, pint, and phpstan fixes
+- Move session creation to QuickPlaySheet, gate session accordion
+- Simplify session creation hierarchy on mobile
+
+### Build
+
+- Bump laravel/boost from 2.2.1 to 2.2.3
+- Bump sentry/sentry-laravel from 4.21.0 to 4.21.1
+- Bump livewire/flux from 2.12.2 to 2.13.0
+- Bump driftingly/rector-laravel from 2.1.9 to 2.1.12
+- Bump spatie/laravel-ray from 1.43.6 to 1.43.7
+- Bump filament/filament from 5.2.4 to 5.3.2
+- Bump sentry/sentry-laravel from 4.21.1 to 4.22.0
+- Bump filament/filament from 5.3.2 to 5.3.5
+- Bump laravel/pulse from 1.6.0 to 1.7.0
+- Bump barryvdh/laravel-debugbar from 4.0.10 to 4.1.3
+- Bump laravel/framework from 12.53.0 to 12.54.1
+- Bump laravel/boost from 2.2.3 to 2.3.1
+- Bump laravel/fortify from 1.35.0 to 1.36.1
+- Bump laravel/pint from 1.27.1 to 1.29.0
+- Bump pestphp/pest from 4.4.1 to 4.4.2
+- Bump rector/rector from 2.3.8 to 2.3.9
+- Bump filament/filament from 5.3.5 to 5.4.1
+- Bump laravel/reverb from 1.8.0 to 1.8.1
+- Bump laravel/boost from 2.3.1 to 2.3.4
+- Bump dedoc/scramble from 0.13.14 to 0.13.16
+- Bump laravel/pulse from 1.7.0 to 1.7.2
+- Bump laravel/sail from 1.53.0 to 1.54.0
+- Bump driftingly/rector-laravel from 2.1.12 to 2.2.0
+- Bump blade-ui-kit/blade-heroicons from 2.6.0 to 2.7.0
+- Bump sentry/sentry-laravel from 4.22.0 to 4.23.0
+- Bump oltrematica/laravel-role-lite from 1.0.3 to 1.0.4
+- Bump dev-to-geek/laravel-init from 0.2.0 to 0.2.1
+- Bump laravel/fortify from 1.36.1 to 1.36.2
+- Bump livewire/livewire from 4.2.1 to 4.2.2
+- Bump livewire/flux from 2.13.0 to 2.13.1
+- Bump laravel/boost from 2.3.4 to 2.4.1
+- Bump sentry/sentry-laravel from 4.23.0 to 4.24.0
+- Bump pestphp/pest from 4.4.2 to 4.4.3
+- Bump laravel/sail from 1.54.0 to 1.55.0
+- Bump dedoc/scramble from 0.13.16 to 0.13.17
+- Bump laravel/reverb from 1.8.1 to 1.9.0
+- Bump laravel/reverb from 1.9.0 to 1.10.0
+- Bump filament/filament from 5.4.1 to 5.4.4
+- Bump livewire/flux from 2.13.1 to 2.13.2
+- Bump rector/rector from 2.3.9 to 2.4.0
+- Bump livewire/livewire from 4.2.2 to 4.2.4
+- Bump barryvdh/laravel-debugbar from 4.1.3 to 4.2.4
+- Bump pestphp/pest from 4.4.3 to 4.4.5
+- Bump laravel/sail from 1.55.0 to 1.56.0
+- Bump rector/rector from 2.4.0 to 2.4.1
+- Bump pestphp/pest from 4.4.5 to 4.5.0
+- Bump pestphp/pest-plugin-browser from 4.3.0 to 4.3.1
+- Bump laravel/boost from 2.4.1 to 2.4.3
+- Bump laravel/pulse from 1.7.2 to 1.7.3
+- Bump barryvdh/laravel-debugbar from 4.2.4 to 4.2.6
+- Bump filament/filament from 5.4.4 to 5.5.0
+- Bump sentry/sentry-laravel from 4.24.0 to 4.25.0
+- Bump dedoc/scramble from 0.13.17 to 0.13.18
+- Bump spatie/laravel-ray from 1.43.7 to 1.43.8
+- Bump dedoc/scramble from 0.13.18 to 0.13.20
+- Bump filament/filament from 5.5.0 to 5.5.2
+- Bump larastan/larastan from 3.9.3 to 3.9.6
+- Bump driftingly/rector-laravel from 2.2.0 to 2.3.0
+- Bump laravel/tinker from 2.11.1 to 3.0.2
+- Bump oltrematica/laravel-role-lite from 1.0.4 to 2.0.0
+- Bump dependabot/fetch-metadata from 2.5.0 to 3.0.0
+- Bump ramsey/composer-install from 3 to 4
 
-## v0.8.7 - 2026-02-27
+## [0.8.9] - 2026-02-28
 
-### What's Changed
+### Bug Fixes
 
-* build(deps): bump laravel/framework from 12.51.0 to 12.52.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/78
-* build(deps): bump livewire/flux from 2.12.0 to 2.12.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/79
-* build(deps): bump dedoc/scramble from 0.13.13 to 0.13.14 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/80
-* build(deps): bump spatie/laravel-ray from 1.43.5 to 1.43.6 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/81
-* build(deps-dev): bump pestphp/pest-plugin-laravel from 4.0.0 to 4.1.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/82
-* build(deps-dev): bump nunomaduro/collision from 8.8.3 to 8.9.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/84
-* build(deps-dev): bump pestphp/pest from 4.3.2 to 4.4.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/85
-* build(deps): bump filament/filament from 5.2.1 to 5.2.2 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/86
-* build(deps-dev): bump rector/rector from 2.3.6 to 2.3.7 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/83
-* build(deps-dev): bump laravel/boost from 2.1.1 to 2.2.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/88
-* build(deps-dev): bump pestphp/pest-plugin-browser from 4.2.1 to 4.3.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/89
-* Code quality fixes, Pulse Reverb widgets, and workshop docs by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/90
+- Use MySQL-compatible DATE_ADD in ExpirePlaybackSessionsCommand (#106)
+
+### Build
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.6...v0.8.7
+- Bump laravel/reverb from 1.7.1 to 1.8.0
+- Bump larastan/larastan from 3.9.2 to 3.9.3
+- Bump sentry/sentry-laravel from 4.20.1 to 4.21.0
+- Bump barryvdh/laravel-debugbar from 4.0.7 to 4.0.9
+- Bump spatie/laravel-activitylog from 4.11.0 to 4.12.1
+- Bump laravel/boost from 2.2.0 to 2.2.1
+- Bump livewire/flux from 2.12.1 to 2.12.2
+- Bump rector/rector from 2.3.7 to 2.3.8
+- Bump spatie/laravel-login-link from 1.6.3 to 1.6.6
+- Bump livewire/livewire from 4.1.4 to 4.2.1
+- Bump laravel/fortify from 1.34.1 to 1.35.0
+- Bump laravel/pulse from 1.5.0 to 1.6.0
+- Bump filament/filament from 5.2.2 to 5.2.4
 
-## v0.8.6 - 2026-02-20
+## [0.8.8] - 2026-02-27
 
-### What's Changed
+### Bug Fixes
 
-* fix: prevent duplicate advance in playlist mode by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/77
+- LogViewer reads 'lines' array instead of nonexistent 'logs' key
+- LogViewer reads 'lines' array instead of nonexistent 'logs' key
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.5...v0.8.6
+## [0.8.7] - 2026-02-27
 
-## v0.8.5 - 2026-02-17
+### Bug Fixes
 
-### What's Changed
+- Restrict viewApiDocs gate and use Roles enum in OnesiBoxPolicy
+- Route volume commands through OnesiBoxCommandService
 
-* feat: include payload in NewCommand WebSocket broadcast by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/76
+### Features
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.4...v0.8.5
+- Add session_id index and scheduled playback event pruning
+- Add Reverb WebSocket monitoring to Pulse dashboard
 
-## v0.8.4 - 2026-02-16
+### Performance
 
-### What's Changed
+- Filter expired sessions in SQL instead of PHP
+- Exclude telemetry fields from activity log on OnesiBox
 
-* fix: address code review findings by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/75
+### Build
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.3...v0.8.4
+- Bump laravel/framework from 12.51.0 to 12.52.0
+- Bump livewire/flux from 2.12.0 to 2.12.1
+- Bump dedoc/scramble from 0.13.13 to 0.13.14
+- Bump spatie/laravel-ray from 1.43.5 to 1.43.6
+- Bump pestphp/pest-plugin-laravel from 4.0.0 to 4.1.0
+- Bump nunomaduro/collision from 8.8.3 to 8.9.1
+- Bump pestphp/pest from 4.3.2 to 4.4.1
+- Bump filament/filament from 5.2.1 to 5.2.2
+- Bump rector/rector from 2.3.6 to 2.3.7
+- Bump laravel/boost from 2.1.1 to 2.2.0
+- Bump pestphp/pest-plugin-browser from 4.2.1 to 4.3.0
 
-## v0.8.3 - 2026-02-16
+## [0.8.6] - 2026-02-20
 
-### What's Changed
+### Bug Fixes
 
-* fix: use serial_number for appliance WebSocket channel by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/74
+- Prevent duplicate advance in playlist mode
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.2...v0.8.3
+## [0.8.5] - 2026-02-17
 
-## v0.8.2 - 2026-02-14
+### Features
 
-### What's Changed
+- Include payload in NewCommand WebSocket broadcast
 
-* fix: dispatch WebSocket broadcast for volume commands by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/73
+## [0.8.4] - 2026-02-16
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.1...v0.8.2
+### Bug Fixes
 
-## v0.8.1 - 2026-02-14
+- Address code review findings
 
-### What's Changed
+## [0.8.3] - 2026-02-16
 
-* fix: correct type handling in appliance broadcast channel auth by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/72
+### Bug Fixes
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.8.0...v0.8.1
+- Use serial_number instead of id for appliance WebSocket channel
 
-## v0.8.0 - 2026-02-14
+## [0.8.2] - 2026-02-14
 
-### What's Changed
+### Bug Fixes
 
-* build(deps): bump dev-to-geek/laravel-init from 0.1.6 to 0.2.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/68
-* feat: enable Reverb WebSocket broadcasting for appliances by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/70
-* fix: session expiration, stale status cleanup, status-aware UI by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/71
+- Dispatch WebSocket broadcast for volume commands
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.17...v0.8.0
+## [0.8.1] - 2026-02-14
 
-## v0.7.17 - 2026-02-13
+### Bug Fixes
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.16...v0.7.17
+- Correct type handling in appliance broadcast channel authorization
 
-## v0.7.16 - 2026-02-13
+## [0.8.0] - 2026-02-14
 
-### What's Changed
+### Bug Fixes
 
-* sentry ready by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/67
+- Address review findings — port mismatch, toOthers, allowed_origins
+- PR review findings — ShouldBroadcastNow, broadcast resilience, docs
+- Update test to match renamed log message (queued → dispatched)
+- Add session expiration, clear stale status, and status-aware UI
+- PR review findings — session race condition, SQL compat, title wipe
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.15...v0.7.16
+### Features
 
-## v0.7.15 - 2026-02-08
+- Enable Reverb WebSocket broadcasting for appliance commands
+- Store media position/duration and meeting URL/joined_at from heartbeat
 
-### What's Changed
+### Build
 
-* feat: granular volume slider with redesigned UI by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/66
+- Bump dev-to-geek/laravel-init from 0.1.6 to 0.2.0
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.14...v0.7.15
+## [0.7.15] - 2026-02-08
 
-## v0.7.14 - 2026-02-08
+### Features
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.13...v0.7.14
+- Add granular volume slider with debounce and touch-friendly controls
+- Redesign volume control with visual bar, mute toggle and dropdown
 
-## v0.7.13 - 2026-02-08
+## [0.7.14] - 2026-02-08
 
-### What's Changed
+### Features
 
-* Admin panel: user form redesign e traduzioni italiano by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/65
+- Add 50% volume preset level
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.12...v0.7.13
+## [0.7.13] - 2026-02-08
 
-## v0.7.12 - 2026-02-08
+### Bug Fixes
 
-### What's Changed
+- Use custom orderQueryUsing for BelongsToMany role grouping
+- Revert filters layout to default dropdown
 
-* feat: improve admin panel dashboard, navigation and users table by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/64
+### Features
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.11...v0.7.12
+- Improve user form layout with sections and account status
+- Redesign user form layout and translate entire admin panel to Italian
 
-## v0.7.11 - 2026-02-07
+### Refactoring
 
-### What's Changed
+- Remove role grouping and display filters above table content
 
-* fix: relax heartbeat validation for sensor edge cases by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/63
+## [0.7.12] - 2026-02-08
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.10...v0.7.11
+### Bug Fixes
 
-## v0.7.9 - 2026-02-07
+- Validate wifi signal_dbm must be negative (max:0)
 
-### What's Changed
+### Features
 
-* fix: restrict volume levels to 60-100 range by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/61
+- Improve admin panel dashboard, navigation and users table
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.8...v0.7.9
+### Refactoring
 
-## v0.7.8 - 2026-02-07
+- Use event() helper instead of static dispatch
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.7...v0.7.8
+## [0.7.11] - 2026-02-07
 
-## v0.7.7 - 2026-02-07
+### Bug Fixes
 
-### What's Changed
+- Relax heartbeat validation for real-world sensor edge cases
 
-* Bump laravel/fortify from 1.34.0 to 1.34.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/50
-* Bump laravel/reverb from 1.7.0 to 1.7.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/52
-* Bump dedoc/scramble from 0.13.11 to 0.13.12 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/53
-* Bump laravel/pail from 1.2.4 to 1.2.5 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/54
-* Bump laravel/boost from 2.0.4 to 2.1.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/55
-* Bump filament/filament from 5.1.3 to 5.2.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/56
-* Bump larastan/larastan from 3.9.1 to 3.9.2 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/57
-* Bump laravel/framework from 12.49.0 to 12.50.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/58
-* Bump barryvdh/laravel-debugbar from 4.0.5 to 4.0.7 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/60
-* feat: timed video playlist sessions for OnesiBox by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/49
+## [0.7.10] - 2026-02-07
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.6...v0.7.7
+### Features
 
-## v0.7.6 - 2026-02-01
+- Add mute (0%) button with speaker-x-mark icon to volume control
 
-### What's Changed
+## [0.7.9] - 2026-02-07
 
-* Fix heartbeat not saving all fields to database by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/48
+### Bug Fixes
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.5...v0.7.6
+- Restrict volume levels to 60-100 range
 
-## v0.7.5 - 2026-01-31
+## [0.7.8] - 2026-02-07
 
-### What's Changed
+### Bug Fixes
 
-* laravel boost 2 and skiils update by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/46
-* Add volume synchronization with nearest preset rounding by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/47
+- Update volume display in real-time on dashboard
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.4...v0.7.5
+## [0.7.7] - 2026-02-07
 
-## v0.7.4 - 2026-01-31
+### Bug Fixes
 
-### What's Changed
+- Resolve PHPStan errors and skip incompatible Rector rule
 
-* Improve admin section visibility and system controls UI by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/45
+### Features
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.3...v0.7.4
+- Add timed video playlist sessions for OnesiBox
 
-## v0.7.3 - 2026-01-31
+### Refactoring
 
-### What's Changed
+- Improve DRY, fix N+1 queries, and apply Laravel idioms
+- Wire Actions into controllers and use ApiErrorCode enum
 
-* Improve security, DRY principles, and code organization by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/32
-* Bump barryvdh/laravel-debugbar from 3.16.3 to 4.0.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/22
-* Bump laravel/boost from 2.0.0 to 2.0.4 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/33
-* Bump filament/filament from 5.1.0 to 5.1.3 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/34
-* Bump spatie/laravel-ray from 1.43.3 to 1.43.5 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/35
-* Bump barryvdh/laravel-debugbar from 4.0.2 to 4.0.5 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/36
-* Bump dedoc/scramble from 0.13.10 to 0.13.11 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/37
-* Bump laravel/fortify from 1.33.0 to 1.34.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/38
-* Bump laravel/framework from 12.48.1 to 12.49.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/39
-* Bump livewire/livewire from 4.0.3 to 4.1.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/40
-* Bump pestphp/pest from 4.3.1 to 4.3.2 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/41
-* Bump laravel/sanctum from 4.2.4 to 4.3.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/43
-* Make Zoom participant name configurable based on recipient by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/44
+## [0.7.3] - 2026-01-31
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.2...v0.7.3
+### Features
 
-## v0.7.2 - 2026-01-26
+- Update
 
-### What's Changed
+## [0.1.0] - 2026-01-22
 
-* Fix button icon alignment in dashboard views by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/31
 
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.1...v0.7.2
-
-## v0.7.1 - 2026-01-26
-
-### What's Changed
-
-* Add enhanced diagnostics feature by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/30
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.7.0...v0.7.1
-
-## v0.7.0 - 2026-01-25
-
-### What's Changed
-
-* Bump filament/filament from 5.0.0 to 5.1.0 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/23
-* Bump laravel/framework from 12.47.0 to 12.48.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/25
-* Bump larastan/larastan from 3.8.1 to 3.9.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/26
-* Bump livewire/livewire from 4.0.1 to 4.0.3 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/27
-* Bump livewire/flux from 2.10.2 to 2.11.1 by @dependabot[bot] in https://github.com/onesiphorus-team/onesiforo-web/pull/28
-* Add OnesiBox caregiver controls (US1-US4) by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/29
-
-### New Contributors
-
-* @dependabot[bot] made their first contribution in https://github.com/onesiphorus-team/onesiforo-web/pull/23
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.6.1...v0.7.0
-
-## v0.6.1 - 2026-01-23
-
-### What's Changed
-
-* Refactor codebase with traits, actions, and improve test coverage by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/21
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.6.0...v0.6.1
-
-## v0.6.0 - 2026-01-22
-
-### What's Changed
-
-* Improve caregiver dashboard UI for mobile by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/20
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.5.3...v0.6.0
-
-## v0.5.3 - 2026-01-22
-
-### What's Changed
-
-* Add stop playback and admin reboot controls to dashboard by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/19
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.5.2...v0.5.3
-
-## v0.5.2 - 2026-01-22
-
-### What's Changed
-
-* Add JW.org URL validation for video/audio players by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/18
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.5.1...v0.5.2
-
-## v0.5.1 - 2026-01-22
-
-### What's Changed
-
-* Add test to verify email is sent upon registration by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/16
-* Add version display in footer from git tag by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/17
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.5.0...v0.5.1
-
-## v0.5.0 - 2026-01-22
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.4.1...v0.5.0
-
-### What's Changed
-
-* Add caregiver assignment to OnesiBox via Filament RelationManager by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/15
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.4.1...v0.5.0
-
-## v0.4.1 - 2026-01-22
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.4.0...v0.4.1
-
-## v0.4.0 - 2026-01-22
-
-### What's Changed
-
-* Improve user registration flow and dashboard access control by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/14
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.3.0...v0.4.0
-
-## v0.3.0 - 2026-01-22
-
-### What's Changed
-
-* Improve user registration flow and add admin notifications by @mirchaemanuel in https://github.com/onesiphorus-team/onesiforo-web/pull/13
-
-**Full Changelog**: https://github.com/onesiphorus-team/onesiforo-web/compare/v0.2.0...v0.3.0
-
-## [Unreleased]
-
-## [v0.1.0] - 2026-01-15
-
-### Added
-
-- Initial release with user management
-- Filament admin panel
-- OnesiBox management
-- Caregiver dashboard
-- OnesiBox API webservices

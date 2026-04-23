@@ -3,7 +3,13 @@
 declare(strict_types=1);
 
 use App\Enums\OnesiBoxPermission;
+use App\Livewire\Dashboard\Controls\AudioPlayer;
 use App\Livewire\Dashboard\Controls\QuickPlaySheet;
+use App\Livewire\Dashboard\Controls\SavedPlaylists;
+use App\Livewire\Dashboard\Controls\SessionManager;
+use App\Livewire\Dashboard\Controls\StreamPlayer;
+use App\Livewire\Dashboard\Controls\VideoPlayer;
+use App\Livewire\Dashboard\Controls\ZoomCall;
 use App\Models\OnesiBox;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,7 +70,7 @@ it('mounts AudioPlayer inside the sheet when tab=audio', function () {
 
     Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
         ->dispatch('open-quick-play', tab: 'audio')
-        ->assertSeeLivewire(App\Livewire\Dashboard\Controls\AudioPlayer::class);
+        ->assertSeeLivewire(AudioPlayer::class);
 });
 
 it('mounts VideoPlayer when tab=video', function () {
@@ -73,7 +79,7 @@ it('mounts VideoPlayer when tab=video', function () {
 
     Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
         ->dispatch('open-quick-play', tab: 'video')
-        ->assertSeeLivewire(App\Livewire\Dashboard\Controls\VideoPlayer::class);
+        ->assertSeeLivewire(VideoPlayer::class);
 });
 
 it('mounts StreamPlayer when tab=stream', function () {
@@ -82,7 +88,7 @@ it('mounts StreamPlayer when tab=stream', function () {
 
     Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
         ->dispatch('open-quick-play', tab: 'stream')
-        ->assertSeeLivewire(App\Livewire\Dashboard\Controls\StreamPlayer::class);
+        ->assertSeeLivewire(StreamPlayer::class);
 });
 
 it('mounts ZoomCall when tab=zoom', function () {
@@ -91,7 +97,7 @@ it('mounts ZoomCall when tab=zoom', function () {
 
     Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
         ->dispatch('open-quick-play', tab: 'zoom')
-        ->assertSeeLivewire(App\Livewire\Dashboard\Controls\ZoomCall::class);
+        ->assertSeeLivewire(ZoomCall::class);
 });
 
 it('mounts SavedPlaylists when tab=playlists', function () {
@@ -100,7 +106,7 @@ it('mounts SavedPlaylists when tab=playlists', function () {
 
     Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
         ->dispatch('open-quick-play', tab: 'playlists')
-        ->assertSeeLivewire(App\Livewire\Dashboard\Controls\SavedPlaylists::class);
+        ->assertSeeLivewire(SavedPlaylists::class);
 });
 
 it('back() clears the active tab', function () {
@@ -130,7 +136,7 @@ it('mounts SessionManager when tab=session', function () {
 
     Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
         ->dispatch('open-quick-play', tab: 'session')
-        ->assertSeeLivewire(App\Livewire\Dashboard\Controls\SessionManager::class);
+        ->assertSeeLivewire(SessionManager::class);
 });
 
 it('openSheet() is forbidden for a user without Full permission', function () {

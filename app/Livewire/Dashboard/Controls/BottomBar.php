@@ -66,6 +66,8 @@ class BottomBar extends Component
 
     public function openNew(): void
     {
+        $this->authorize('control', $this->onesiBox);
+
         $this->dispatch('open-quick-play');
     }
 

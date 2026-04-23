@@ -119,6 +119,17 @@ it('stopAll() is forbidden for a user without Full permission', function () {
         ->assertForbidden();
 });
 
+it('openNew() is forbidden for a user without Full permission', function () {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create();
+    // No caregivers attached
+
+    Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->call('openNew')
+        ->assertForbidden();
+});
+
 it('callAction() is forbidden for a user without Full permission', function () {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([

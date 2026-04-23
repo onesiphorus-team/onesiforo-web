@@ -24,7 +24,6 @@ class BottomBar extends Component
     #[Locked]
     public OnesiBox $onesiBox;
 
-    #[Locked]
     public bool $showVolume = false;
 
     #[Computed]
@@ -42,11 +41,6 @@ class BottomBar extends Component
     public function openVolume(): void
     {
         $this->showVolume = true;
-    }
-
-    public function closeVolume(): void
-    {
-        $this->showVolume = false;
     }
 
     public function stopAll(OnesiBoxCommandServiceInterface $commandService): void

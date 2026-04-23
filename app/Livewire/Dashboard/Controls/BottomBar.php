@@ -38,6 +38,12 @@ class BottomBar extends Component
         return $this->onesiBox->status === OnesiBoxStatus::Calling;
     }
 
+    #[Computed]
+    public function currentVolume(): int
+    {
+        return (int) ($this->onesiBox->volume ?? 80);
+    }
+
     public function openVolume(): void
     {
         $this->showVolume = true;

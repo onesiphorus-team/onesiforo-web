@@ -143,3 +143,36 @@ it('callAction() is forbidden for a user without Full permission', function (): 
         ->call('callAction')
         ->assertForbidden();
 });
+
+it('displays the current volume percentage on the volume button', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create(['volume' => 65]);
+    $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSeeHtml('Volume 65%')
+        ->assertSeeHtml('>65%<');
+});
+
+it('displays "Muto" when volume is zero', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create(['volume' => 0]);
+    $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSeeHtml('Muto');
+});
+
+it('renders the call slot labelled "Zoom" when not in a call', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
+    $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSeeHtml('>Zoom<')
+        ->assertSeeHtml('Avvia chiamata Zoom')
+        ->assertDontSeeHtml('>Chiama<');
+});

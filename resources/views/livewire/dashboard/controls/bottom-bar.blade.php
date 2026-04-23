@@ -14,9 +14,9 @@
                     data-slot="volume"
                     wire:click="openVolume"
                     class="flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px] hover:bg-zinc-100 dark:hover:bg-zinc-700"
-                    aria-label="Volume">
-                <flux:icon name="speaker-wave" class="h-6 w-6" />
-                <span>Volume</span>
+                    aria-label="Volume {{ $this->currentVolume }}%">
+                <flux:icon name="{{ $this->currentVolume === 0 ? 'speaker-x-mark' : 'speaker-wave' }}" class="h-6 w-6" />
+                <span>{{ $this->currentVolume === 0 ? __('Muto') : 'Volume ' . $this->currentVolume . '%' }}</span>
             </button>
             <button type="button"
                     data-slot="new"
@@ -30,9 +30,9 @@
                     data-slot="call"
                     wire:click="callAction"
                     class="flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px] hover:bg-zinc-100 dark:hover:bg-zinc-700 {{ $this->isInCall ? 'text-red-600 dark:text-red-400' : '' }}"
-                    aria-label="{{ $this->isInCall ? 'Termina chiamata' : 'Avvia chiamata' }}">
-                <flux:icon name="{{ $this->isInCall ? 'phone-x-mark' : 'phone' }}" class="h-6 w-6" />
-                <span>{{ $this->isInCall ? 'Termina' : 'Chiama' }}</span>
+                    aria-label="{{ $this->isInCall ? 'Termina chiamata Zoom' : 'Avvia chiamata Zoom' }}">
+                <flux:icon name="{{ $this->isInCall ? 'phone-x-mark' : 'video-camera' }}" class="h-6 w-6" />
+                <span>{{ $this->isInCall ? 'Termina' : 'Zoom' }}</span>
             </button>
         </div>
 
@@ -52,9 +52,9 @@
                         data-slot="volume"
                         wire:click="openVolume"
                         class="col-span-1 flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px]"
-                        aria-label="Volume">
-                    <flux:icon name="speaker-wave" class="h-6 w-6" />
-                    <span>Volume</span>
+                        aria-label="Volume {{ $this->currentVolume }}%">
+                    <flux:icon name="{{ $this->currentVolume === 0 ? 'speaker-x-mark' : 'speaker-wave' }}" class="h-6 w-6" />
+                    <span>{{ $this->currentVolume === 0 ? __('Muto') : $this->currentVolume . '%' }}</span>
                 </button>
                 <button type="button"
                         data-slot="new"
@@ -69,9 +69,9 @@
                         data-slot="call"
                         wire:click="callAction"
                         class="col-span-1 flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px] {{ $this->isInCall ? 'text-red-600 dark:text-red-400' : '' }}"
-                        aria-label="{{ $this->isInCall ? 'Termina chiamata' : 'Avvia chiamata' }}">
-                    <flux:icon name="{{ $this->isInCall ? 'phone-x-mark' : 'phone' }}" class="h-6 w-6" />
-                    <span>{{ $this->isInCall ? 'Termina' : 'Chiama' }}</span>
+                        aria-label="{{ $this->isInCall ? 'Termina chiamata Zoom' : 'Avvia chiamata Zoom' }}">
+                    <flux:icon name="{{ $this->isInCall ? 'phone-x-mark' : 'video-camera' }}" class="h-6 w-6" />
+                    <span>{{ $this->isInCall ? 'Termina' : 'Zoom' }}</span>
                 </button>
             </div>
         </nav>

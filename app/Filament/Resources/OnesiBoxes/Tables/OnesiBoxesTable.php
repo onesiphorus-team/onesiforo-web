@@ -28,7 +28,7 @@ class OnesiBoxesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with('recipient'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('recipient.congregation'))
             ->columns([
                 TextColumn::make('name')
                     ->label(__('Nome'))

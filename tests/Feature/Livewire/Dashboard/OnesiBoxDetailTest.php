@@ -22,12 +22,12 @@ use function Pest\Livewire\livewire;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
 });
 
-it('heroState returns offline when the box is offline', function () {
+it('heroState returns offline when the box is offline', function (): void {
     $box = OnesiBox::factory()->offline()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
 
@@ -35,7 +35,7 @@ it('heroState returns offline when the box is offline', function () {
         ->assertSet('heroState', 'offline');
 });
 
-it('heroState returns call when the box is in a Zoom call', function () {
+it('heroState returns call when the box is in a Zoom call', function (): void {
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
         'current_meeting_id' => '1234567890',
@@ -46,7 +46,7 @@ it('heroState returns call when the box is in a Zoom call', function () {
         ->assertSet('heroState', 'call');
 });
 
-it('heroState returns media when a media is playing and no call is active', function () {
+it('heroState returns media when a media is playing and no call is active', function (): void {
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
         'current_media_url' => 'https://example.com/song.mp3',
@@ -58,7 +58,7 @@ it('heroState returns media when a media is playing and no call is active', func
         ->assertSet('heroState', 'media');
 });
 
-it('heroState returns idle when the box is online and nothing is playing', function () {
+it('heroState returns idle when the box is online and nothing is playing', function (): void {
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Idle,
     ]);
@@ -70,7 +70,7 @@ it('heroState returns idle when the box is online and nothing is playing', funct
 
 // Task 5 tests
 
-it('isInCall reflects the Calling status', function () {
+it('isInCall reflects the Calling status', function (): void {
     $boxInCall = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
         'current_meeting_id' => '1234567890',
@@ -87,7 +87,7 @@ it('isInCall reflects the Calling status', function () {
         ->assertSet('isInCall', false);
 });
 
-it('isMediaPaused is true only when the last PlaybackEvent is Paused', function () {
+it('isMediaPaused is true only when the last PlaybackEvent is Paused', function (): void {
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
         'current_media_url' => 'https://example.com/song.mp3',
@@ -102,7 +102,7 @@ it('isMediaPaused is true only when the last PlaybackEvent is Paused', function 
         ->assertSet('isMediaPaused', true);
 });
 
-it('isMediaPaused is false when the last PlaybackEvent is not Paused', function () {
+it('isMediaPaused is false when the last PlaybackEvent is not Paused', function (): void {
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
         'current_media_url' => 'https://example.com/song.mp3',
@@ -117,7 +117,7 @@ it('isMediaPaused is false when the last PlaybackEvent is not Paused', function 
         ->assertSet('isMediaPaused', false);
 });
 
-it('accordionDefaults opens session when an active session exists', function () {
+it('accordionDefaults opens session when an active session exists', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
 
@@ -131,7 +131,7 @@ it('accordionDefaults opens session when an active session exists', function () 
     expect($defaults)->toHaveKey('session', true);
 });
 
-it('accordionDefaults opens commands when pending commands exist', function () {
+it('accordionDefaults opens commands when pending commands exist', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
 
@@ -145,7 +145,7 @@ it('accordionDefaults opens commands when pending commands exist', function () {
     expect($defaults)->toHaveKey('commands', true);
 });
 
-it('mounts HeroCard, BottomBar and QuickPlaySheet in the detail view', function () {
+it('mounts HeroCard, BottomBar and QuickPlaySheet in the detail view', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 

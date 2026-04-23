@@ -15,7 +15,7 @@ class QuickPlaySheet extends Component
 {
     use AuthorizesRequests;
 
-    private const VALID_TABS = ['audio', 'video', 'stream', 'zoom', 'playlists', 'session'];
+    private const array VALID_TABS = ['audio', 'video', 'stream', 'zoom', 'playlists', 'session'];
 
     #[Locked]
     public OnesiBox $onesiBox;

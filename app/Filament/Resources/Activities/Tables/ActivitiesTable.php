@@ -18,6 +18,7 @@ class ActivitiesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('causer'))
             ->columns([
                 TextColumn::make('created_at')
                     ->label(__('Data'))

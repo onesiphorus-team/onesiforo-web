@@ -231,7 +231,7 @@ describe('sendPauseCommand', function (): void {
         $onesiBox = OnesiBox::factory()->online()->create();
 
         /** @var OnesiBoxCommandServiceInterface $service */
-        $service = app(OnesiBoxCommandServiceInterface::class);
+        $service = resolve(OnesiBoxCommandServiceInterface::class);
 
         $service->sendPauseCommand($onesiBox);
 
@@ -241,7 +241,7 @@ describe('sendPauseCommand', function (): void {
 
     it('throws if the box is offline', function (): void {
         $onesiBox = OnesiBox::factory()->offline()->create();
-        $service = app(OnesiBoxCommandServiceInterface::class);
+        $service = resolve(OnesiBoxCommandServiceInterface::class);
 
         $service->sendPauseCommand($onesiBox);
     })->throws(OnesiBoxOfflineException::class);
@@ -250,11 +250,11 @@ describe('sendPauseCommand', function (): void {
 describe('sendResumeCommand', function (): void {
     uses(RefreshDatabase::class);
 
-    it('enqueues a ResumeMedia command', function () {
+    it('enqueues a ResumeMedia command', function (): void {
         $onesiBox = OnesiBox::factory()->online()->create();
 
         /** @var OnesiBoxCommandServiceInterface $service */
-        $service = app(OnesiBoxCommandServiceInterface::class);
+        $service = resolve(OnesiBoxCommandServiceInterface::class);
 
         $service->sendResumeCommand($onesiBox);
 
@@ -264,7 +264,7 @@ describe('sendResumeCommand', function (): void {
 
     it('throws if the box is offline', function (): void {
         $onesiBox = OnesiBox::factory()->offline()->create();
-        $service = app(OnesiBoxCommandServiceInterface::class);
+        $service = resolve(OnesiBoxCommandServiceInterface::class);
 
         $service->sendResumeCommand($onesiBox);
     })->throws(OnesiBoxOfflineException::class);

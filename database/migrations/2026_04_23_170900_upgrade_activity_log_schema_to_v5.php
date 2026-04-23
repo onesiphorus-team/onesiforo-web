@@ -35,8 +35,8 @@ return new class extends Migration
                     DB::table('activity_log')
                         ->where('id', $row->id)
                         ->update([
-                            'attribute_changes' => empty($changes) ? null : json_encode($changes),
-                            'properties' => empty($remaining) ? null : json_encode($remaining),
+                            'attribute_changes' => $changes === [] ? null : json_encode($changes),
+                            'properties' => $remaining === [] ? null : json_encode($remaining),
                         ]);
                 }
             });
@@ -68,7 +68,7 @@ return new class extends Migration
                     DB::table('activity_log')
                         ->where('id', $row->id)
                         ->update([
-                            'properties' => empty($merged) ? null : json_encode($merged),
+                            'properties' => $merged === [] ? null : json_encode($merged),
                         ]);
                 }
             });

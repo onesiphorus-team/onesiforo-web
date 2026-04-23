@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('playback_events', function (Blueprint $table) {
+        Schema::table('playback_events', function (Blueprint $table): void {
             $table->string('error_code', 10)->nullable()->after('error_message');
             $table->index('error_code');
         });
@@ -18,7 +18,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('playback_events', function (Blueprint $table) {
+        Schema::table('playback_events', function (Blueprint $table): void {
             $table->dropIndex(['error_code']);
             $table->dropColumn('error_code');
         });

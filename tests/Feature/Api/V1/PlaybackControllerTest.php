@@ -6,7 +6,7 @@ use App\Events\PlaybackEventReceived;
 use App\Models\OnesiBox;
 use Illuminate\Support\Facades\Event;
 
-it('broadcasts PlaybackEventReceived when a playback event is stored', function () {
+it('broadcasts PlaybackEventReceived when a playback event is stored', function (): void {
     Event::fake([PlaybackEventReceived::class]);
 
     $box = OnesiBox::factory()->create();
@@ -26,13 +26,11 @@ it('broadcasts PlaybackEventReceived when a playback event is stored', function 
 
     $response->assertOk();
 
-    Event::assertDispatched(PlaybackEventReceived::class, function ($event) use ($box) {
-        return $event->playbackEvent->onesi_box_id === $box->id
-            && $event->playbackEvent->error_code === 'E112';
-    });
+    Event::assertDispatched(PlaybackEventReceived::class, fn ($event): bool => $event->playbackEvent->onesi_box_id === $box->id
+        && $event->playbackEvent->error_code === 'E112');
 });
 
-it('accepts valid error_code values', function () {
+it('accepts valid error_code values', function (): void {
     $box = OnesiBox::factory()->create();
     $token = $box->createToken('onesibox-api-token');
 
@@ -51,7 +49,7 @@ it('accepts valid error_code values', function () {
     $response->assertOk();
 });
 
-it('rejects malformed error_code', function () {
+it('rejects malformed error_code', function (): void {
     $box = OnesiBox::factory()->create();
     $token = $box->createToken('onesibox-api-token');
 

@@ -13,6 +13,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class RecipientsRelationManager extends RelationManager
 {
@@ -29,6 +30,7 @@ class RecipientsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('first_name')
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('onesiBox'))
             ->columns([
                 TextColumn::make('full_name')
                     ->label(__('Nome'))

@@ -12,14 +12,14 @@ use App\Models\PlaybackEvent;
 use App\Models\User;
 use Livewire\Livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
     $this->box = OnesiBox::factory()->create();
     $this->box->caregivers()->attach($this->user, ['permission' => App\Enums\OnesiBoxPermission::Full]);
 });
 
-it('mounts with clean state when no recent stream item commands', function () {
+it('mounts with clean state when no recent stream item commands', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->assertSet('url', '')
         ->assertSet('lastOrdinalSent', null)
@@ -27,7 +27,7 @@ it('mounts with clean state when no recent stream item commands', function () {
         ->assertSet('reachedEnd', false);
 });
 
-it('restores url and lastOrdinalSent from latest play_stream_item command in last 6 hours', function () {
+it('restores url and lastOrdinalSent from latest play_stream_item command in last 6 hours', function (): void {
     Command::query()->create([
         'onesi_box_id' => $this->box->id,
         'type' => CommandType::PlayStreamItem,
@@ -44,7 +44,7 @@ it('restores url and lastOrdinalSent from latest play_stream_item command in las
         ->assertSet('reachedEnd', false);
 });
 
-it('ignores stream item commands older than 6 hours', function () {
+it('ignores stream item commands older than 6 hours', function (): void {
     Command::query()->create([
         'onesi_box_id' => $this->box->id,
         'type' => CommandType::PlayStreamItem,
@@ -59,7 +59,7 @@ it('ignores stream item commands older than 6 hours', function () {
         ->assertSet('lastOrdinalSent', null);
 });
 
-it('restores reachedEnd true if latest error event has code E112', function () {
+it('restores reachedEnd true if latest error event has code E112', function (): void {
     $url = 'https://stream.jw.org/6311-4713-5379-2156';
 
     $command = Command::query()->create([
@@ -86,7 +86,7 @@ it('restores reachedEnd true if latest error event has code E112', function () {
         ->assertSet('errorCode', 'E112');
 });
 
-it('restores errorCode from latest error event (E110/E111/E113) without setting reachedEnd', function () {
+it('restores errorCode from latest error event (E110/E111/E113) without setting reachedEnd', function (): void {
     $url = 'https://stream.jw.org/6311-4713-5379-2156';
 
     $command = Command::query()->create([
@@ -113,28 +113,28 @@ it('restores errorCode from latest error event (E110/E111/E113) without setting 
         ->assertSet('reachedEnd', false);
 });
 
-it('playFromStart validates empty url and shows error', function () {
+it('playFromStart validates empty url and shows error', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('url', '')
         ->call('playFromStart')
         ->assertHasErrors(['url']);
 });
 
-it('playFromStart rejects non-stream.jw.org URL', function () {
+it('playFromStart rejects non-stream.jw.org URL', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('url', 'https://www.jw.org/mediaitems/x')
         ->call('playFromStart')
         ->assertHasErrors(['url']);
 });
 
-it('playFromStart calls sendStreamItemCommand with ordinal 1', function () {
+it('playFromStart calls sendStreamItemCommand with ordinal 1', function (): void {
     $this->box->update(['last_seen_at' => now()]);
 
     $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldReceive('sendStreamItemCommand')
         ->once()
         ->with(
-            Mockery::on(fn ($box) => $box->id === $this->box->id),
+            Mockery::on(fn ($box): bool => $box->id === $this->box->id),
             'https://stream.jw.org/6311-4713-5379-2156',
             1
         );
@@ -147,7 +147,7 @@ it('playFromStart calls sendStreamItemCommand with ordinal 1', function () {
         ->assertSet('errorCode', null);
 });
 
-it('next increments ordinal and calls service', function () {
+it('next increments ordinal and calls service', function (): void {
     $this->box->update(['last_seen_at' => now()]);
 
     $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
@@ -164,7 +164,7 @@ it('next increments ordinal and calls service', function () {
         ->assertSet('errorCode', null);
 });
 
-it('next does nothing when reachedEnd is true', function () {
+it('next does nothing when reachedEnd is true', function (): void {
     $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldNotReceive('sendStreamItemCommand');
 
@@ -176,7 +176,7 @@ it('next does nothing when reachedEnd is true', function () {
         ->assertSet('lastOrdinalSent', 4);
 });
 
-it('previous decrements ordinal and resets reachedEnd', function () {
+it('previous decrements ordinal and resets reachedEnd', function (): void {
     $this->box->update(['last_seen_at' => now()]);
 
     $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
@@ -193,7 +193,7 @@ it('previous decrements ordinal and resets reachedEnd', function () {
         ->assertSet('reachedEnd', false);
 });
 
-it('previous does nothing when lastOrdinalSent is 1', function () {
+it('previous does nothing when lastOrdinalSent is 1', function (): void {
     $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldNotReceive('sendStreamItemCommand');
 
@@ -204,19 +204,19 @@ it('previous does nothing when lastOrdinalSent is 1', function () {
         ->assertSet('lastOrdinalSent', 1);
 });
 
-it('stop calls sendStopCommand', function () {
+it('stop calls sendStopCommand', function (): void {
     $this->box->update(['last_seen_at' => now()]);
 
     $service = $this->mock(App\Services\OnesiBoxCommandServiceInterface::class);
     $service->shouldReceive('sendStopCommand')
         ->once()
-        ->with(Mockery::on(fn ($box) => $box->id === $this->box->id));
+        ->with(Mockery::on(fn ($box): bool => $box->id === $this->box->id));
 
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->call('stop');
 });
 
-it('handlePlaybackEvent sets reachedEnd true when error code is E112', function () {
+it('handlePlaybackEvent sets reachedEnd true when error code is E112', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('url', 'https://stream.jw.org/x')
         ->call('handlePlaybackEvent', [
@@ -230,7 +230,7 @@ it('handlePlaybackEvent sets reachedEnd true when error code is E112', function 
         ->assertSet('reachedEnd', true);
 });
 
-it('handlePlaybackEvent sets errorCode for E110/E111/E113 but not reachedEnd', function () {
+it('handlePlaybackEvent sets errorCode for E110/E111/E113 but not reachedEnd', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('url', 'https://stream.jw.org/x')
         ->call('handlePlaybackEvent', [
@@ -244,10 +244,10 @@ it('handlePlaybackEvent sets errorCode for E110/E111/E113 but not reachedEnd', f
         ->assertSet('reachedEnd', false);
 });
 
-it('handlePlaybackEvent ignores events with different media_url', function () {
+it('handlePlaybackEvent ignores events with different media_url', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('url', 'https://stream.jw.org/current')
-        ->set('errorCode', null)
+        ->set('errorCode')
         ->call('handlePlaybackEvent', [
             'event' => 'error',
             'media_url' => 'https://stream.jw.org/OTHER',
@@ -258,7 +258,7 @@ it('handlePlaybackEvent ignores events with different media_url', function () {
         ->assertSet('reachedEnd', false);
 });
 
-it('handlePlaybackEvent does nothing on non-error events', function () {
+it('handlePlaybackEvent does nothing on non-error events', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('url', 'https://stream.jw.org/x')
         ->set('errorCode', 'E110')
@@ -270,20 +270,20 @@ it('handlePlaybackEvent does nothing on non-error events', function () {
         ->assertSet('errorCode', 'E110');
 });
 
-it('dismissError clears errorCode', function () {
+it('dismissError clears errorCode', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('errorCode', 'E110')
         ->call('dismissError')
         ->assertSet('errorCode', null);
 });
 
-it('renders the form with stream.jw.org placeholder', function () {
+it('renders the form with stream.jw.org placeholder', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->assertSee('stream.jw.org')
         ->assertSee('Avvia playlist');
 });
 
-it('renders the Precedente/Successivo/Stop controls when lastOrdinalSent is set', function () {
+it('renders the Precedente/Successivo/Stop controls when lastOrdinalSent is set', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('lastOrdinalSent', 2)
         ->assertSee('Precedente')
@@ -291,7 +291,7 @@ it('renders the Precedente/Successivo/Stop controls when lastOrdinalSent is set'
         ->assertSee('Stop');
 });
 
-it('renders the error banner with E112 message when reachedEnd', function () {
+it('renders the error banner with E112 message when reachedEnd', function (): void {
     Livewire::test(StreamPlayer::class, ['onesiBox' => $this->box])
         ->set('errorCode', 'E112')
         ->set('reachedEnd', true)

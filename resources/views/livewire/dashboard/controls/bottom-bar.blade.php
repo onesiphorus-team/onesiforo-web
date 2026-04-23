@@ -76,9 +76,12 @@
             </div>
         </nav>
 
-        <flux:modal :show="$showVolume" wire:close="closeVolume" name="bottom-bar-volume" class="max-w-md">
-            <div class="p-4">
-                <flux:heading size="lg" class="mb-4">Volume</flux:heading>
+        <flux:modal wire:model="showVolume" name="bottom-bar-volume" class="md:min-w-96">
+            <div class="space-y-5">
+                <div>
+                    <flux:heading size="lg">Volume</flux:heading>
+                    <flux:text class="mt-1">Regola il volume del dispositivo.</flux:text>
+                </div>
                 <livewire:dashboard.controls.volume-control :onesiBox="$onesiBox" wire:key="bottom-volume-{{ $onesiBox->id }}" />
             </div>
         </flux:modal>

@@ -6,7 +6,7 @@ Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
 ### Bug Fixes
 
-- Risolto LazyLoadingViolationException sulla lista OnesiBox quando la colonna "Prossima adunanza" era attiva (eager-load nidificato di `recipient.congregation`)
+- Eager-load nested recipient.congregation on OnesiBoxes list (#181)
 
 ## [0.9.1] - 2026-04-23
 

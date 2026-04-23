@@ -1,194 +1,124 @@
-<div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8" wire:poll.15s="refreshFromDatabase">
-    {{-- Header --}}
-    <div class="mb-6">
-        <flux:button variant="subtle" wire:click="goBack" class="mb-4" icon="arrow-left">
-            Torna alla lista
-        </flux:button>
+@once
+    <style>
+        @media (min-width: 768px) {
+            .detail-accordions details summary { cursor: default; pointer-events: none; }
+            .detail-accordions details summary .chevron-toggle { display: none; }
+        }
+    </style>
+@endonce
 
-        <div class="flex items-center justify-between">
-            <div>
-                <flux:heading size="xl">{{ $onesiBox->name }}</flux:heading>
-                @if($onesiBox->last_seen_at)
-                    <flux:text class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                        Ultimo contatto: {{ $onesiBox->last_seen_at->diffForHumans() }}
-                    </flux:text>
-                @endif
-            </div>
+<div class="mx-auto max-w-4xl md:max-w-6xl pb-24 md:pb-8" wire:poll.15s="refreshFromDatabase">
+    {{-- Sticky header --}}
+    <header class="sticky top-0 z-30 -mx-4 mb-4 border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95 sm:-mx-6 sm:px-6">
+        <div class="flex items-center gap-3">
+            <flux:button variant="subtle" wire:click="goBack" icon="arrow-left" size="sm" aria-label="Torna alla lista" />
 
-            <div class="flex items-center gap-3">
-                {{-- Online Status with Pulse Indicator --}}
-                <div class="flex items-center gap-2">
-                    @if($this->isOnline)
-                        <span class="relative flex h-3 w-3">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                        </span>
-                        <span class="text-sm font-medium text-green-600 dark:text-green-400">Online</span>
-                    @else
-                        <span class="h-3 w-3 rounded-full bg-zinc-400"></span>
-                        <span class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Offline</span>
-                    @endif
-                </div>
-
-                @if($onesiBox->status)
-                    <flux:badge :color="$onesiBox->status->getColor()" size="sm">
-                        {{ $onesiBox->status->getLabel() }}
-                    </flux:badge>
-                @endif
-
-                {{-- App Version --}}
+            <div class="min-w-0 flex-1">
+                <flux:heading class="truncate text-base font-semibold">{{ $onesiBox->name }}</flux:heading>
                 @if($onesiBox->app_version)
-                    <flux:badge color="zinc" size="sm">v{{ $onesiBox->app_version }}</flux:badge>
+                    <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">v{{ $onesiBox->app_version }}</flux:text>
                 @endif
             </div>
-        </div>
 
-        {{-- Contextual Status Info --}}
-        @if($this->currentMediaInfo)
-            <div class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                <div class="flex items-center gap-2 text-green-700 dark:text-green-300">
-                    <flux:icon name="{{ $this->currentMediaInfo['type'] === 'video' ? 'video-camera' : 'musical-note' }}" class="w-5 h-5" />
-                    <span class="font-medium">
-                        {{ $this->currentMediaInfo['type'] === 'video' ? 'Video' : 'Audio' }} in riproduzione
+            <div class="flex items-center gap-2">
+                @if($this->isOnline)
+                    <span class="relative flex h-2.5 w-2.5" role="status" aria-label="Online">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
                     </span>
-                </div>
-                <p class="mt-1 text-sm text-green-600 dark:text-green-400 truncate">
-                    {{ $this->currentMediaInfo['title'] ?? $this->currentMediaInfo['url'] }}
-                </p>
-            </div>
-        @endif
-
-        @if($this->currentMeetingInfo)
-            <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                    <flux:icon name="phone" class="w-5 h-5" />
-                    <span class="font-medium">Chiamata in corso</span>
-                </div>
-                <p class="mt-1 text-sm text-blue-600 dark:text-blue-400">
-                    Meeting ID: {{ $this->currentMeetingInfo['meeting_id'] }}
-                </p>
-            </div>
-        @endif
-    </div>
-
-    {{-- Recipient Contacts --}}
-    @if($this->recipient)
-        <div class="p-4 sm:p-6 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 mb-6">
-            <flux:heading size="lg" class="mb-4">Contatti Destinatario</flux:heading>
-
-            <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                    <flux:icon name="user" class="w-5 h-5 text-zinc-400" />
-                    <flux:text>{{ $this->recipient->full_name }}</flux:text>
-                </div>
-
-                @if($this->recipient->phone)
-                    <div class="flex items-center gap-3">
-                        <flux:icon name="phone" class="w-5 h-5 text-zinc-400" />
-                        <a href="tel:{{ $this->recipient->phone }}" class="text-blue-600 hover:underline dark:text-blue-400">
-                            {{ $this->recipient->phone }}
-                        </a>
-                    </div>
-                @endif
-
-                @if($this->recipient->full_address)
-                    <div class="flex items-center gap-3">
-                        <flux:icon name="map-pin" class="w-5 h-5 text-zinc-400" />
-                        <flux:text>{{ $this->recipient->full_address }}</flux:text>
-                    </div>
-                @endif
-
-                @if($this->recipient->emergency_contacts && count($this->recipient->emergency_contacts) > 0)
-                    <div class="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                        <flux:text class="font-semibold text-sm text-zinc-600 dark:text-zinc-300 mb-2">
-                            Contatti di emergenza
-                        </flux:text>
-                        @foreach($this->recipient->emergency_contacts as $contact)
-                            <div class="flex items-center gap-3 mb-2">
-                                <flux:icon name="exclamation-triangle" class="w-5 h-5 text-amber-500" />
-                                <flux:text>
-                                    {{ $contact['name'] }}
-                                    @if(isset($contact['relationship'])) ({{ $contact['relationship'] }}) @endif
-                                    - {{ $contact['phone'] }}
-                                </flux:text>
-                            </div>
-                        @endforeach
-                    </div>
+                @else
+                    <span class="h-2.5 w-2.5 rounded-full bg-zinc-400" role="status" aria-label="Offline"></span>
                 @endif
             </div>
         </div>
-    @else
-        <flux:callout variant="warning" icon="exclamation-triangle" class="mb-6">
-            <flux:callout.heading>Nessun destinatario associato</flux:callout.heading>
-            <flux:callout.text>
-                Questa OnesiBox non ha ancora un destinatario associato. Contatta l'amministratore per configurare il dispositivo.
-            </flux:callout.text>
-        </flux:callout>
-    @endif
+    </header>
 
-    {{-- Session Status (visible to all caregivers, including read-only) --}}
-    <livewire:dashboard.controls.session-status :onesiBox="$onesiBox" wire:key="session-status-{{ $onesiBox->id }}" />
+    <div class="px-4 sm:px-6">
+        {{-- Bottom bar (renders inline on desktop, sticky bottom on mobile) --}}
+        <livewire:dashboard.controls.bottom-bar :onesiBox="$onesiBox" wire:key="bottom-bar-{{ $onesiBox->id }}" />
 
-    {{-- Controls (only for Full permission and online devices) --}}
-    @if($this->canControl)
-        <div class="space-y-6">
-            <flux:heading size="lg">Controlli</flux:heading>
+        @if($onesiBox->status === \App\Enums\OnesiBoxStatus::Error)
+            <flux:callout variant="danger" icon="exclamation-triangle" class="mb-4">
+                <flux:callout.heading>Dispositivo in stato di errore</flux:callout.heading>
+                <flux:callout.text>
+                    L'OnesiBox ha segnalato un errore. Controlla i log in fondo alla pagina.
+                </flux:callout.text>
+            </flux:callout>
+        @endif
 
-            @if($this->isOnline)
-                {{-- Stop All Playback Button - Prima di tutto --}}
-                <livewire:dashboard.controls.stop-all-playback :onesiBox="$onesiBox" wire:key="stop-all-{{ $onesiBox->id }}" />
+        {{-- Hero --}}
+        <livewire:dashboard.controls.hero-card
+            :onesiBox="$onesiBox"
+            :state="$this->heroState"
+            :isPaused="$this->isMediaPaused"
+            wire:key="hero-{{ $onesiBox->id }}" />
 
-                {{-- Volume Control --}}
-                <livewire:dashboard.controls.volume-control :onesiBox="$onesiBox" wire:key="volume-{{ $onesiBox->id }}" />
+        @if(! $this->recipient)
+            <flux:callout variant="warning" icon="exclamation-triangle" class="mt-4">
+                <flux:callout.heading>Nessun destinatario associato</flux:callout.heading>
+                <flux:callout.text>
+                    Questa OnesiBox non ha ancora un destinatario associato. Contatta l'amministratore.
+                </flux:callout.text>
+            </flux:callout>
+        @endif
 
-                {{-- Session Manager (Playlist Sessions) --}}
-                <livewire:dashboard.controls.session-manager :onesiBox="$onesiBox" wire:key="session-manager-{{ $onesiBox->id }}" />
+        {{-- Accordion body (native <details> via x-accordion-item component) --}}
+        <div class="mt-4 space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 detail-accordions">
+            @if($this->canControl && $this->isOnline)
+                @if($this->accordionDefaults['session'] ?? false)
+                    <x-accordion-item title="Sessione in corso" :open="true">
+                        <livewire:dashboard.controls.session-status :onesiBox="$onesiBox" wire:key="session-status-{{ $onesiBox->id }}" />
+                    </x-accordion-item>
+                @endif
 
-                {{-- Command Queue --}}
-                <livewire:dashboard.controls.command-queue :onesiBox="$onesiBox" wire:key="command-queue-{{ $onesiBox->id }}" />
+                <x-accordion-item title="Comandi in coda" :open="$this->accordionDefaults['commands'] ?? false">
+                    <livewire:dashboard.controls.command-queue :onesiBox="$onesiBox" wire:key="command-queue-{{ $onesiBox->id }}" />
+                </x-accordion-item>
 
-                {{-- Media & Communication Controls - Single column on mobile --}}
-                <div class="grid grid-cols-1 gap-4">
-                    <livewire:dashboard.controls.audio-player :onesiBox="$onesiBox" wire:key="audio-{{ $onesiBox->id }}" />
-                    <livewire:dashboard.controls.video-player :onesiBox="$onesiBox" wire:key="video-{{ $onesiBox->id }}" />
-                    <livewire:dashboard.controls.stream-player :onesiBox="$onesiBox" wire:key="stream-{{ $onesiBox->id }}" />
-                    <livewire:dashboard.controls.zoom-call :onesiBox="$onesiBox" wire:key="zoom-{{ $onesiBox->id }}" />
+                <x-accordion-item title="Meeting programmati">
                     <livewire:dashboard.controls.meeting-schedule :onesi-box="$onesiBox" wire:key="meeting-schedule-{{ $onesiBox->id }}" />
+                </x-accordion-item>
+
+            @endif
+
+            @if($this->recipient)
+                <x-accordion-item title="Contatti destinatario">
+                    @include('livewire.dashboard.partials.recipient-contacts', ['recipient' => $this->recipient])
+                </x-accordion-item>
+            @endif
+
+            @if($this->isAdmin)
+                <div class="md:col-span-2 mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                    <flux:heading size="sm" class="mb-2 flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+                        <flux:icon name="shield-check" class="h-4 w-4" />
+                        Amministrazione
+                    </flux:heading>
+
+                    <div class="space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 detail-accordions">
+                        <x-accordion-item title="Sistema">
+                            <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" />
+                        </x-accordion-item>
+
+                        <x-accordion-item title="Rete">
+                            <livewire:dashboard.controls.network-info :onesiBox="$onesiBox" wire:key="network-info-{{ $onesiBox->id }}" />
+                        </x-accordion-item>
+
+                        @if($this->isOnline)
+                            <x-accordion-item title="Controlli sistema">
+                                <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
+                            </x-accordion-item>
+
+                            <x-accordion-item title="Log">
+                                <livewire:dashboard.controls.log-viewer :onesiBox="$onesiBox" wire:key="logs-{{ $onesiBox->id }}" />
+                            </x-accordion-item>
+                        @endif
+                    </div>
                 </div>
-            @else
-                <flux:callout icon="wifi" class="mb-4">
-                    <flux:callout.heading>Dispositivo offline</flux:callout.heading>
-                    <flux:callout.text>
-                        I controlli saranno disponibili quando l'OnesiBox tornerà online.
-                    </flux:callout.text>
-                </flux:callout>
             @endif
         </div>
-    @endif
+    </div>
 
-    {{-- Admin Section (visible only to admin and super-admin) --}}
-    @if($this->isAdmin)
-        <div class="mt-8 pt-6 border-t border-zinc-300 dark:border-zinc-600">
-            <flux:heading size="lg" class="mb-4">
-                <flux:icon name="shield-check" class="w-5 h-5 inline-block mr-2" />
-                Amministrazione
-            </flux:heading>
-
-            <div class="space-y-4">
-                {{-- System Information --}}
-                <livewire:dashboard.controls.system-info :onesiBox="$onesiBox" wire:key="system-info-{{ $onesiBox->id }}" />
-
-                {{-- Network Information --}}
-                <livewire:dashboard.controls.network-info :onesiBox="$onesiBox" wire:key="network-info-{{ $onesiBox->id }}" />
-
-                @if($this->isOnline)
-                    {{-- System Controls --}}
-                    <livewire:dashboard.controls.system-controls :onesiBox="$onesiBox" wire:key="system-{{ $onesiBox->id }}" />
-
-                    {{-- Log Viewer --}}
-                    <livewire:dashboard.controls.log-viewer :onesiBox="$onesiBox" wire:key="logs-{{ $onesiBox->id }}" />
-                @endif
-            </div>
-        </div>
+    @if($this->canControl)
+        <livewire:dashboard.controls.quick-play-sheet :onesiBox="$onesiBox" wire:key="quick-play-sheet-{{ $onesiBox->id }}" />
     @endif
 </div>

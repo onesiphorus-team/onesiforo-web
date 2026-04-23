@@ -12,6 +12,8 @@ use App\Models\Command;
 use App\Models\OnesiBox;
 use App\Models\User;
 use App\Services\OnesiBoxCommandService;
+use App\Services\OnesiBoxCommandServiceInterface;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
@@ -221,3 +223,49 @@ it('sendStreamItemCommand throws if box is offline', function (): void {
     $service = new OnesiBoxCommandService;
     $service->sendStreamItemCommand($onesiBox, 'https://stream.jw.org/x', 1);
 })->throws(OnesiBoxOfflineException::class);
+
+describe('sendPauseCommand', function (): void {
+    uses(RefreshDatabase::class);
+
+    it('sendPauseCommand enqueues a PauseMedia command', function (): void {
+        $onesiBox = OnesiBox::factory()->online()->create();
+
+        /** @var OnesiBoxCommandServiceInterface $service */
+        $service = app(OnesiBoxCommandServiceInterface::class);
+
+        $service->sendPauseCommand($onesiBox);
+
+        expect(Command::query()->where('onesi_box_id', $onesiBox->id)->count())->toBe(1);
+        expect(Command::query()->latest('id')->first()->type)->toBe(CommandType::PauseMedia);
+    });
+
+    it('throws if the box is offline', function (): void {
+        $onesiBox = OnesiBox::factory()->offline()->create();
+        $service = app(OnesiBoxCommandServiceInterface::class);
+
+        $service->sendPauseCommand($onesiBox);
+    })->throws(OnesiBoxOfflineException::class);
+});
+
+describe('sendResumeCommand', function (): void {
+    uses(RefreshDatabase::class);
+
+    it('enqueues a ResumeMedia command', function () {
+        $onesiBox = OnesiBox::factory()->online()->create();
+
+        /** @var OnesiBoxCommandServiceInterface $service */
+        $service = app(OnesiBoxCommandServiceInterface::class);
+
+        $service->sendResumeCommand($onesiBox);
+
+        expect(Command::query()->where('onesi_box_id', $onesiBox->id)->count())->toBe(1);
+        expect(Command::query()->latest('id')->first()->type)->toBe(CommandType::ResumeMedia);
+    });
+
+    it('throws if the box is offline', function (): void {
+        $onesiBox = OnesiBox::factory()->offline()->create();
+        $service = app(OnesiBoxCommandServiceInterface::class);
+
+        $service->sendResumeCommand($onesiBox);
+    })->throws(OnesiBoxOfflineException::class);
+});

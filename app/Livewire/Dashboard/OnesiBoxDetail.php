@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Livewire\Dashboard;
 
 use App\Concerns\ChecksOnesiBoxPermission;
+use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
+use App\Enums\PlaybackEventType;
+use App\Enums\PlaybackSessionStatus;
 use App\Enums\Roles;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
@@ -133,6 +136,75 @@ class OnesiBoxDetail extends Component
             'meeting_id' => $this->onesiBox->current_meeting_id,
             'meeting_url' => $this->onesiBox->current_meeting_url,
             'joined_at' => $this->onesiBox->current_meeting_joined_at?->toISOString(),
+        ];
+    }
+
+    /**
+     * Get the current hero card variant.
+     *
+     * @return 'offline'|'call'|'media'|'idle'
+     */
+    #[Computed]
+    public function heroState(): string
+    {
+        if (! $this->isOnline()) {
+            return 'offline';
+        }
+
+        if ($this->onesiBox->status === OnesiBoxStatus::Calling
+            && $this->onesiBox->current_meeting_id !== null) {
+            return 'call';
+        }
+
+        if ($this->onesiBox->current_media_url !== null) {
+            return 'media';
+        }
+
+        return 'idle';
+    }
+
+    /**
+     * Check if the OnesiBox is currently in a Zoom call.
+     */
+    #[Computed]
+    public function isInCall(): bool
+    {
+        return $this->onesiBox->status === OnesiBoxStatus::Calling;
+    }
+
+    /**
+     * Determine whether the current media is paused
+     * by inspecting the latest PlaybackEvent for this OnesiBox.
+     */
+    #[Computed]
+    public function isMediaPaused(): bool
+    {
+        $latest = $this->onesiBox
+            ->playbackEvents()
+            ->latest('id')
+            ->first();
+
+        return $latest?->event === PlaybackEventType::Paused;
+    }
+
+    /**
+     * Default open/closed state for each accordion in the body.
+     *
+     * @return array<string,bool>
+     */
+    #[Computed]
+    public function accordionDefaults(): array
+    {
+        return [
+            'session' => $this->onesiBox->playbackSessions()
+                ->where('status', PlaybackSessionStatus::Active)
+                ->exists(),
+            'commands' => $this->onesiBox->commands()
+                ->where('status', CommandStatus::Pending)
+                ->exists(),
+            'playlists' => false,
+            'contacts' => false,
+            'meetings' => false,
         ];
     }
 

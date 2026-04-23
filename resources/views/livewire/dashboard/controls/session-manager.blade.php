@@ -1,9 +1,4 @@
-<div class="p-4 sm:p-6 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700" wire:poll.10s>
-    <flux:heading size="sm" class="mb-4">
-        <flux:icon name="play-circle" class="w-5 h-5 inline-block mr-2" />
-        Sessione Playlist
-    </flux:heading>
-
+<div wire:poll.10s>
     @if($this->activeSession)
         {{-- Active session display --}}
         @php

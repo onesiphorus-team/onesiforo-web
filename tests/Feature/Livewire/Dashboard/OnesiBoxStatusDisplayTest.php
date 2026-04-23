@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
+use App\Livewire\Dashboard\Controls\HeroCard;
 use App\Livewire\Dashboard\OnesiBoxDetail;
 use App\Models\OnesiBox;
 use App\Models\User;
@@ -18,13 +19,13 @@ test('onesibox detail shows idle status with label', function (): void {
 
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
-        ->assertSee('Inattivo')
+        ->assertSeeLivewire(HeroCard::class)
         ->assertStatus(200);
 });
 
 test('onesibox detail shows playing status with media info', function (): void {
     $user = User::factory()->create();
-    $onesiBox = OnesiBox::factory()->create([
+    $onesiBox = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
         'current_media_url' => 'https://example.com/video.mp4',
         'current_media_type' => 'video',
@@ -34,14 +35,14 @@ test('onesibox detail shows playing status with media info', function (): void {
 
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
-        ->assertSee('In riproduzione')
-        ->assertSee('Test Video Title')
+        ->assertSeeLivewire(HeroCard::class)
+        ->assertSet('heroState', 'media')
         ->assertStatus(200);
 });
 
 test('onesibox detail shows calling status with meeting info', function (): void {
     $user = User::factory()->create();
-    $onesiBox = OnesiBox::factory()->create([
+    $onesiBox = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
         'current_meeting_id' => '123456789',
     ]);
@@ -49,8 +50,8 @@ test('onesibox detail shows calling status with meeting info', function (): void
 
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
-        ->assertSee('In chiamata')
-        ->assertSee('123456789')
+        ->assertSeeLivewire(HeroCard::class)
+        ->assertSet('heroState', 'call')
         ->assertStatus(200);
 });
 
@@ -63,7 +64,7 @@ test('onesibox detail shows error status', function (): void {
 
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
-        ->assertSee('Errore')
+        ->assertSee('Dispositivo in stato di errore')
         ->assertStatus(200);
 });
 
@@ -127,7 +128,7 @@ test('onesibox detail refreshes on StatusUpdated event', function (): void {
 
 test('readonly user can view onesibox status', function (): void {
     $user = User::factory()->create();
-    $onesiBox = OnesiBox::factory()->create([
+    $onesiBox = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
         'current_media_url' => 'https://example.com/video.mp4',
         'current_media_type' => 'video',
@@ -137,7 +138,8 @@ test('readonly user can view onesibox status', function (): void {
 
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
-        ->assertSee('Video for Readonly')
+        ->assertSeeLivewire(HeroCard::class)
+        ->assertSet('heroState', 'media')
         ->assertSet('canControl', false)
         ->assertStatus(200);
 });

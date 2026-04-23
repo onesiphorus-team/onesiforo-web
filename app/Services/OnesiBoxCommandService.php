@@ -98,6 +98,16 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         ], priority: 2);
     }
 
+    public function sendPauseCommand(OnesiBox $onesiBox): void
+    {
+        $this->sendCommand($onesiBox, CommandType::PauseMedia);
+    }
+
+    public function sendResumeCommand(OnesiBox $onesiBox): void
+    {
+        $this->sendCommand($onesiBox, CommandType::ResumeMedia);
+    }
+
     /**
      * Send a command to an OnesiBox appliance.
      *

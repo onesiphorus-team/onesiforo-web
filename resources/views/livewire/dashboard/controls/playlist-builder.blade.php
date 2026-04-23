@@ -1,12 +1,8 @@
 <div class="space-y-4">
-    <flux:heading size="sm">
-        <flux:icon name="queue-list" class="w-5 h-5 inline-block mr-2" />
-        Playlist Video
-    </flux:heading>
-
     {{-- Source type toggle --}}
-    <div class="flex gap-2">
+    <div class="flex w-full gap-2">
         <flux:button
+            class="flex-1"
             size="sm"
             :variant="$sourceType === 'manual' ? 'primary' : 'subtle'"
             wire:click="switchSourceType('manual')"
@@ -15,6 +11,7 @@
             URL Manuali
         </flux:button>
         <flux:button
+            class="flex-1"
             size="sm"
             :variant="$sourceType === 'jworg_section' ? 'primary' : 'subtle'"
             wire:click="switchSourceType('jworg_section')"
@@ -133,13 +130,5 @@
                 Svuota tutto
             </flux:button>
         </div>
-    @elseif(count($videoUrls) === 0)
-        <flux:text class="text-sm text-zinc-400 dark:text-zinc-500 text-center py-4">
-            @if($sourceType === 'manual')
-                Aggiungi URL di video da jw.org per creare la playlist.
-            @else
-                Inserisci l'URL di una sezione JW.org per estrarre i video.
-            @endif
-        </flux:text>
     @endif
 </div>

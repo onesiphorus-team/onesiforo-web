@@ -60,8 +60,7 @@ class StreamPlayer extends Component
         $lastEvent = PlaybackEvent::query()
             ->where('onesi_box_id', $onesiBox->id)
             ->where('media_url', $this->url)
-            ->where('created_at', '>=', $lastCommand->created_at)
-            ->orderByDesc('created_at')
+            ->where('created_at', '>=', $lastCommand->created_at)->latest()
             ->first();
 
         if ($lastEvent !== null && $lastEvent->event === PlaybackEventType::Error) {

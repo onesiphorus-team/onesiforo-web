@@ -14,7 +14,7 @@ use Mockery\MockInterface;
 
 uses(RefreshDatabase::class);
 
-it('renders the idle variant with "in attesa" copy when state is idle', function () {
+it('renders the idle variant with "in attesa" copy when state is idle', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
 
@@ -24,7 +24,7 @@ it('renders the idle variant with "in attesa" copy when state is idle', function
         ->assertSeeHtml('data-hero-state="idle"');
 });
 
-it('renders the media variant with title, type label and progress bar', function () {
+it('renders the media variant with title, type label and progress bar', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
@@ -43,7 +43,7 @@ it('renders the media variant with title, type label and progress bar', function
         ->assertSeeHtml('role="progressbar"');
 });
 
-it('does not render progress bar when position/duration are null', function () {
+it('does not render progress bar when position/duration are null', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
@@ -56,7 +56,7 @@ it('does not render progress bar when position/duration are null', function () {
         ->assertDontSeeHtml('role="progressbar"');
 });
 
-it('renders the call variant with meeting id', function () {
+it('renders the call variant with meeting id', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
@@ -71,7 +71,7 @@ it('renders the call variant with meeting id', function () {
         ->assertSeeHtml('data-hero-state="call"');
 });
 
-it('renders the offline variant with warning styling and last seen', function () {
+it('renders the offline variant with warning styling and last seen', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->offline()->create(['last_seen_at' => now()->subHours(2)]);
 
@@ -81,7 +81,7 @@ it('renders the offline variant with warning styling and last seen', function ()
         ->assertSeeHtml('data-hero-state="offline"');
 });
 
-it('pause() dispatches a Pause command when media is playing and not paused', function () {
+it('pause() dispatches a Pause command when media is playing and not paused', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
@@ -101,7 +101,7 @@ it('pause() dispatches a Pause command when media is playing and not paused', fu
         ->call('pause');
 });
 
-it('resume() dispatches a Resume command when media is paused', function () {
+it('resume() dispatches a Resume command when media is paused', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
@@ -119,7 +119,7 @@ it('resume() dispatches a Resume command when media is paused', function () {
         ->call('resume');
 });
 
-it('stop() dispatches a Stop command on the current media', function () {
+it('stop() dispatches a Stop command on the current media', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
@@ -137,7 +137,7 @@ it('stop() dispatches a Stop command on the current media', function () {
         ->call('stop');
 });
 
-it('leaveZoom() dispatches a LeaveZoom command while on a call', function () {
+it('leaveZoom() dispatches a LeaveZoom command while on a call', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
@@ -154,7 +154,7 @@ it('leaveZoom() dispatches a LeaveZoom command while on a call', function () {
         ->call('leaveZoom');
 });
 
-it('pause() is forbidden for a user without Full permission', function () {
+it('pause() is forbidden for a user without Full permission', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Playing]);
     // No caregivers attached at all
@@ -165,7 +165,7 @@ it('pause() is forbidden for a user without Full permission', function () {
         ->assertForbidden();
 });
 
-it('leaveZoom() is forbidden for a user without Full permission', function () {
+it('leaveZoom() is forbidden for a user without Full permission', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
@@ -178,7 +178,7 @@ it('leaveZoom() is forbidden for a user without Full permission', function () {
         ->assertForbidden();
 });
 
-it('openSession() dispatches open-quick-play with tab=session', function () {
+it('openSession() dispatches open-quick-play with tab=session', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
 
@@ -188,7 +188,7 @@ it('openSession() dispatches open-quick-play with tab=session', function () {
         ->assertDispatched('open-quick-play', tab: 'session');
 });
 
-it('openNew() dispatches open-quick-play without tab', function () {
+it('openNew() dispatches open-quick-play without tab', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
 
@@ -198,7 +198,7 @@ it('openNew() dispatches open-quick-play without tab', function () {
         ->assertDispatched('open-quick-play');
 });
 
-it('stop() is forbidden for a user without Full permission', function () {
+it('stop() is forbidden for a user without Full permission', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,
@@ -212,7 +212,7 @@ it('stop() is forbidden for a user without Full permission', function () {
         ->assertForbidden();
 });
 
-it('resume() is forbidden for a user without Full permission', function () {
+it('resume() is forbidden for a user without Full permission', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Playing,

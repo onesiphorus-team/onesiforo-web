@@ -17,12 +17,12 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
 });
 
-it('starts closed with no active tab', function () {
+it('starts closed with no active tab', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -31,7 +31,7 @@ it('starts closed with no active tab', function () {
         ->assertSet('tab', null);
 });
 
-it('opens and shows the initial menu when receiving open-quick-play', function () {
+it('opens and shows the initial menu when receiving open-quick-play', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -42,7 +42,7 @@ it('opens and shows the initial menu when receiving open-quick-play', function (
         ->assertSee('Cosa vuoi riprodurre?');
 });
 
-it('preselects a tab when open-quick-play carries a tab parameter', function () {
+it('preselects a tab when open-quick-play carries a tab parameter', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -52,7 +52,7 @@ it('preselects a tab when open-quick-play carries a tab parameter', function () 
         ->assertSet('tab', 'zoom');
 });
 
-it('close() resets state', function () {
+it('close() resets state', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -64,7 +64,7 @@ it('close() resets state', function () {
         ->assertSet('tab', null);
 });
 
-it('mounts AudioPlayer inside the sheet when tab=audio', function () {
+it('mounts AudioPlayer inside the sheet when tab=audio', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -73,7 +73,7 @@ it('mounts AudioPlayer inside the sheet when tab=audio', function () {
         ->assertSeeLivewire(AudioPlayer::class);
 });
 
-it('mounts VideoPlayer when tab=video', function () {
+it('mounts VideoPlayer when tab=video', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -82,7 +82,7 @@ it('mounts VideoPlayer when tab=video', function () {
         ->assertSeeLivewire(VideoPlayer::class);
 });
 
-it('mounts StreamPlayer when tab=stream', function () {
+it('mounts StreamPlayer when tab=stream', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -91,7 +91,7 @@ it('mounts StreamPlayer when tab=stream', function () {
         ->assertSeeLivewire(StreamPlayer::class);
 });
 
-it('mounts ZoomCall when tab=zoom', function () {
+it('mounts ZoomCall when tab=zoom', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -100,7 +100,7 @@ it('mounts ZoomCall when tab=zoom', function () {
         ->assertSeeLivewire(ZoomCall::class);
 });
 
-it('mounts SavedPlaylists when tab=playlists', function () {
+it('mounts SavedPlaylists when tab=playlists', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -109,7 +109,7 @@ it('mounts SavedPlaylists when tab=playlists', function () {
         ->assertSeeLivewire(SavedPlaylists::class);
 });
 
-it('back() clears the active tab', function () {
+it('back() clears the active tab', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -121,7 +121,7 @@ it('back() clears the active tab', function () {
         ->assertSet('open', true);
 });
 
-it('selectTab() ignores invalid tab names', function () {
+it('selectTab() ignores invalid tab names', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -130,7 +130,7 @@ it('selectTab() ignores invalid tab names', function () {
         ->assertSet('tab', null);
 });
 
-it('mounts SessionManager when tab=session', function () {
+it('mounts SessionManager when tab=session', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
@@ -139,7 +139,7 @@ it('mounts SessionManager when tab=session', function () {
         ->assertSeeLivewire(SessionManager::class);
 });
 
-it('openSheet() is forbidden for a user without Full permission', function () {
+it('openSheet() is forbidden for a user without Full permission', function (): void {
     $box = OnesiBox::factory()->online()->create();
     // No caregiver attach — user has no permission
 

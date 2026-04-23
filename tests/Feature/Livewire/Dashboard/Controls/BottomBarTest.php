@@ -14,7 +14,7 @@ use Mockery\MockInterface;
 
 uses(RefreshDatabase::class);
 
-it('renders the 4 slots when the user can control and the box is online', function () {
+it('renders the 4 slots when the user can control and the box is online', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
@@ -27,7 +27,7 @@ it('renders the 4 slots when the user can control and the box is online', functi
         ->assertSeeHtml('data-slot="call"');
 });
 
-it('renders nothing when the user has no caregiver relationship', function () {
+it('renders nothing when the user has no caregiver relationship', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
     // No caregivers attach — user has no permission
@@ -38,7 +38,7 @@ it('renders nothing when the user has no caregiver relationship', function () {
         ->assertDontSeeHtml('data-slot="volume"');
 });
 
-it('stopAll dispatches Stop when media is playing, and also LeaveZoom if in a call', function () {
+it('stopAll dispatches Stop when media is playing, and also LeaveZoom if in a call', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
@@ -57,7 +57,7 @@ it('stopAll dispatches Stop when media is playing, and also LeaveZoom if in a ca
         ->call('stopAll');
 });
 
-it('renders a modal trigger that mounts the VolumeControl component', function () {
+it('renders a modal trigger that mounts the VolumeControl component', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
@@ -69,7 +69,7 @@ it('renders a modal trigger that mounts the VolumeControl component', function (
         ->assertSet('showVolume', true);
 });
 
-it('openNew() dispatches open-quick-play without a preselected tab', function () {
+it('openNew() dispatches open-quick-play without a preselected tab', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
@@ -80,7 +80,7 @@ it('openNew() dispatches open-quick-play without a preselected tab', function ()
         ->assertDispatched('open-quick-play');
 });
 
-it('callAction() dispatches open-quick-play with tab=zoom when no active call', function () {
+it('callAction() dispatches open-quick-play with tab=zoom when no active call', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
     $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
@@ -91,7 +91,7 @@ it('callAction() dispatches open-quick-play with tab=zoom when no active call', 
         ->assertDispatched('open-quick-play', tab: 'zoom');
 });
 
-it('callAction() ends the current call when in a call', function () {
+it('callAction() ends the current call when in a call', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,
@@ -108,7 +108,7 @@ it('callAction() ends the current call when in a call', function () {
         ->call('callAction');
 });
 
-it('stopAll() is forbidden for a user without Full permission', function () {
+it('stopAll() is forbidden for a user without Full permission', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Playing]);
     // No caregivers attached
@@ -119,7 +119,7 @@ it('stopAll() is forbidden for a user without Full permission', function () {
         ->assertForbidden();
 });
 
-it('openNew() is forbidden for a user without Full permission', function () {
+it('openNew() is forbidden for a user without Full permission', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
     // No caregivers attached
@@ -130,7 +130,7 @@ it('openNew() is forbidden for a user without Full permission', function () {
         ->assertForbidden();
 });
 
-it('callAction() is forbidden for a user without Full permission', function () {
+it('callAction() is forbidden for a user without Full permission', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create([
         'status' => OnesiBoxStatus::Calling,

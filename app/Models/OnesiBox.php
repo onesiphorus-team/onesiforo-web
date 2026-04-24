@@ -363,6 +363,8 @@ class OnesiBox extends Model implements AuthenticatableContract
             'memory_available' => 'integer',
             'memory_buffers' => 'integer',
             'memory_cached' => 'integer',
+            'screenshot_enabled' => 'boolean',
+            'screenshot_interval_seconds' => 'integer',
         ];
     }
 }

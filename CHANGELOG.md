@@ -2,6 +2,39 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.10.0] - 2026-04-24
+
+### Bug Fixes
+
+- Align rollup historical records to startOfHour
+- Address critical and important review findings
+- Satisfy Pint, PHPStan level 7, and Arch rules
+
+### Features
+
+- Create appliance_screenshots table
+- Add screenshot_enabled and interval fields to onesi_boxes
+- Add ApplianceScreenshot with file cleanup on delete
+- Add screenshots and latestScreenshot relations to OnesiBox
+- Add StoreScreenshotRequest validation rules
+- Add ProcessScreenshotAction to persist and dispatch
+- Make ApplianceScreenshotReceived a broadcast event
+- Extend onesibox channel with admin role and use it for screenshot event
+- Add ApplianceScreenshotPolicy with admin/caregiver access
+- Register screenshot-upload rate limiter and screenshot policy
+- Add screenshot upload endpoint
+- Add signed route for screenshot download
+- Expose screenshot config in heartbeat response
+- Add prune-screenshots command with 24h+rollup retention
+- Run prune-screenshots every 5m + daily orphan sweep
+- Add screenshot diagnostic section to OnesiBox form
+- Register ManageScreenshots custom page
+- Add screenshot action to edit and list views
+- Add ScreenshotsViewer livewire component
+- Add ScreenshotCarousel component with compact and full variants
+- Embed compact screenshot carousel in box list cards
+- Embed full screenshot carousel in box detail view
+
 ## [0.9.4] - 2026-04-24
 
 ### Bug Fixes

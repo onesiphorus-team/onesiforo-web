@@ -16,3 +16,12 @@ Schedule::command('app:prune-playback-events')->daily()->at('03:00');
 Schedule::command('meetings:check-upcoming')->everyMinute()->withoutOverlapping(10);
 Schedule::command('meetings:auto-join')->everyMinute()->withoutOverlapping(10);
 Schedule::command('meetings:cleanup')->daily()->at('04:00')->withoutOverlapping(60);
+
+Schedule::command('onesibox:prune-screenshots')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(5)
+    ->runInBackground();
+
+Schedule::command('onesibox:prune-screenshots --sweep-orphans')
+    ->dailyAt('03:15')
+    ->withoutOverlapping();

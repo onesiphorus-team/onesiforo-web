@@ -73,4 +73,18 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
                 ->middleware('throttle:command-ack')
                 ->name('ack');
         });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Screenshot Download Route
+    |--------------------------------------------------------------------------
+    |
+    | Serves stored diagnostic screenshots. Uses signed URLs with short expiry
+    | so admin and caregiver dashboards can embed <img src> without exposing
+    | a permanent download link.
+    |
+    */
+    Route::get('/screenshots/{screenshot}', [ScreenshotController::class, 'show'])
+        ->middleware(['auth:sanctum', 'signed'])
+        ->name('screenshots.show');
 });

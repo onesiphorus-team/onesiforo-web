@@ -51,6 +51,11 @@
                         <flux:icon name="chevron-right" class="w-5 h-5 text-zinc-400" />
                     </div>
                 </div>
+
+                <livewire:onesi-box.screenshot-carousel
+                    :box="$box"
+                    variant="compact"
+                    :key="'carousel-compact-'.$box->id" />
             </div>
         </div>
     @empty

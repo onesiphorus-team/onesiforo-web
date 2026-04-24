@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.9.4] - 2026-04-24
+
+### Bug Fixes
+
+- Aggiorna coda comandi in tempo reale con wire:poll
+
 ## [0.9.3] - 2026-04-23
 
 ### Features

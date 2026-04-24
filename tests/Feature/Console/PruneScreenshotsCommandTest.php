@@ -50,11 +50,12 @@ test('rollup keeps one per hour bucket for records beyond top 10', function (): 
     for ($i = 0; $i < 10; $i++) {
         makeSs($box, now()->subSeconds($i * 5)->toDateTimeString(), "top{$i}");
     }
-    // 3 record nella stessa ora (2 ore fa) — dopo rollup deve restarne 1
-    $two_hours_ago = now()->subHours(2);
-    makeSs($box, $two_hours_ago->copy()->addMinutes(5)->toDateTimeString(), 'h2-a');
-    makeSs($box, $two_hours_ago->copy()->addMinutes(25)->toDateTimeString(), 'h2-b');
-    makeSs($box, $two_hours_ago->copy()->addMinutes(45)->toDateTimeString(), 'h2-c');
+    // 3 record tutti nella stessa ora (2 ore fa, aligned allo startOfHour per evitare
+    // di attraversare il confine di ora quando l'attuale minute-of-hour > 14).
+    $sameHour = now()->subHours(2)->startOfHour();
+    makeSs($box, $sameHour->copy()->addMinutes(5)->toDateTimeString(), 'h2-a');
+    makeSs($box, $sameHour->copy()->addMinutes(25)->toDateTimeString(), 'h2-b');
+    makeSs($box, $sameHour->copy()->addMinutes(45)->toDateTimeString(), 'h2-c');
 
     $this->artisan('onesibox:prune-screenshots')->assertSuccessful();
 

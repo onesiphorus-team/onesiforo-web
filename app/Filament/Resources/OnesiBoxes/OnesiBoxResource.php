@@ -7,6 +7,7 @@ namespace App\Filament\Resources\OnesiBoxes;
 use App\Filament\Resources\OnesiBoxes\Pages\CreateOnesiBox;
 use App\Filament\Resources\OnesiBoxes\Pages\EditOnesiBox;
 use App\Filament\Resources\OnesiBoxes\Pages\ListOnesiBoxes;
+use App\Filament\Resources\OnesiBoxes\Pages\ManageScreenshots;
 use App\Filament\Resources\OnesiBoxes\RelationManagers\CaregiversRelationManager;
 use App\Filament\Resources\OnesiBoxes\RelationManagers\TokensRelationManager;
 use App\Filament\Resources\OnesiBoxes\Schemas\OnesiBoxForm;
@@ -65,6 +66,7 @@ class OnesiBoxResource extends Resource
             'index' => ListOnesiBoxes::route('/'),
             'create' => CreateOnesiBox::route('/create'),
             'edit' => EditOnesiBox::route('/{record}/edit'),
+            'screenshots' => ManageScreenshots::route('/{record}/screenshots'),
         ];
     }
 

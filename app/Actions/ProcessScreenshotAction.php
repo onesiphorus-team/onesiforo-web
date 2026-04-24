@@ -33,14 +33,21 @@ class ProcessScreenshotAction
             ['visibility' => 'private']
         );
 
-        $screenshot = ApplianceScreenshot::create([
-            'onesi_box_id' => $box->id,
-            'captured_at'  => $capturedAt,
-            'width'        => $width,
-            'height'       => $height,
-            'bytes'        => $file->getSize(),
-            'storage_path' => $path,
-        ]);
+        try {
+            $screenshot = ApplianceScreenshot::create([
+                'onesi_box_id' => $box->id,
+                'captured_at'  => $capturedAt,
+                'width'        => $width,
+                'height'       => $height,
+                'bytes'        => $file->getSize(),
+                'storage_path' => $path,
+            ]);
+        } catch (\Throwable $e) {
+            // Record creation failed after file was persisted — clean up the orphan
+            // immediately rather than waiting for the daily sweep.
+            Storage::disk('local')->delete($path);
+            throw $e;
+        }
 
         event(new ApplianceScreenshotReceived($screenshot));
 

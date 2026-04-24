@@ -73,3 +73,26 @@ test('oversized file returns 422', function (): void {
         ['Authorization' => "Bearer {$token->plainTextToken}"]
     )->assertStatus(422);
 });
+
+test('rate limit enforces 12 per minute', function (): void {
+    Storage::fake('local');
+
+    $box = OnesiBox::factory()->create();
+    $token = $box->createToken('onesibox-api-token');
+
+    $make = fn () => $this->postJson(
+        route('api.v1.appliances.screenshot.store'),
+        [
+            'captured_at' => now()->subSeconds(1)->toIso8601String(),
+            'width' => 1920, 'height' => 1080,
+            'screenshot' => UploadedFile::fake()->create('s.webp', 50, 'image/webp'),
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    for ($i = 0; $i < 12; $i++) {
+        $make()->assertCreated();
+    }
+    // 13th request in the same minute must be throttled
+    $make()->assertStatus(429);
+});

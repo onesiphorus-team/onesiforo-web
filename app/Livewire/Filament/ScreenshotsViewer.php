@@ -6,6 +6,7 @@ namespace App\Livewire\Filament;
 
 use App\Models\OnesiBox;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
@@ -56,6 +57,8 @@ class ScreenshotsViewer extends Component
 
     public function toggle(): void
     {
+        Gate::authorize('update', $this->record);
+
         $this->record->update(['screenshot_enabled' => ! $this->record->screenshot_enabled]);
         $this->record->refresh();
         $this->enabled = $this->record->screenshot_enabled;
@@ -63,6 +66,8 @@ class ScreenshotsViewer extends Component
 
     public function saveInterval(): void
     {
+        Gate::authorize('update', $this->record);
+
         $this->validateOnly('intervalSeconds');
         $this->record->update(['screenshot_interval_seconds' => $this->intervalSeconds]);
         $this->record->refresh();

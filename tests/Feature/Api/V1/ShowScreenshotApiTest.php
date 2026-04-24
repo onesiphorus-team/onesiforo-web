@@ -84,6 +84,23 @@ test('unsigned url is rejected', function (): void {
         ->assertForbidden();
 });
 
+test('web-session caregiver can download via signed url (Sanctum SPA path)', function (): void {
+    $box = OnesiBox::factory()->create();
+    $s = createScreenshotWithFile($box);
+    $caregiver = User::factory()->create();
+    $caregiver->assignRole('caregiver');
+    $box->caregivers()->attach($caregiver->id, ['permission' => OnesiBoxPermission::ReadOnly->value]);
+
+    $url = URL::signedRoute('api.v1.screenshots.show',
+        ['screenshot' => $s->id],
+        now()->addMinutes(5));
+
+    $this->actingAs($caregiver, 'web')
+        ->get($url)
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/webp');
+});
+
 test('expired signed url is rejected', function (): void {
     $box = OnesiBox::factory()->create();
     $s = createScreenshotWithFile($box);

@@ -42,6 +42,19 @@
         </p>
     </div>
 
+    {{-- STALE CAPTURE WARNING --}}
+    @php
+        $latest = $this->screenshots->first();
+        $isStale = $this->enabled
+            && $latest !== null
+            && $latest->captured_at->lt(now()->subMinutes(5));
+    @endphp
+    @if ($isStale)
+        <div class="rounded border border-amber-400 bg-amber-50 dark:border-amber-600 dark:bg-amber-900/20 p-3 text-sm text-amber-800 dark:text-amber-200">
+            ⚠ Ultimo scatto {{ $latest->captured_at->diffForHumans() }} — la box potrebbe essere offline o grim in errore.
+        </div>
+    @endif
+
     {{-- PREVIEW GRANDE --}}
     @php
         $selected = $this->selectedId

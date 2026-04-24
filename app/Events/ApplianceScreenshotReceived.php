@@ -24,7 +24,7 @@ class ApplianceScreenshotReceived implements ShouldBroadcast
 
     public function broadcastOn(): Channel
     {
-        return new PrivateChannel("appliance.{$this->screenshot->onesi_box_id}");
+        return new PrivateChannel("onesibox.{$this->screenshot->onesi_box_id}");
     }
 
     public function broadcastAs(): string

@@ -64,3 +64,16 @@ test('rollup keeps one per hour bucket for records beyond top 10', function (): 
     expect($beyondTop10)->toBe(1);
     expect(ApplianceScreenshot::where('onesi_box_id', $box->id)->count())->toBe(11);
 });
+
+test('orphan sweep removes untracked files and keeps tracked ones', function (): void {
+    $box = OnesiBox::factory()->create();
+
+    $tracked = makeSs($box, now()->toDateTimeString(), 'tracked');
+    $orphanPath = "onesi-boxes/{$box->id}/screenshots/orphan.webp";
+    Storage::disk('local')->put($orphanPath, 'orphan');
+
+    $this->artisan('onesibox:prune-screenshots --sweep-orphans')->assertSuccessful();
+
+    expect(Storage::disk('local')->exists($tracked->storage_path))->toBeTrue();
+    expect(Storage::disk('local')->exists($orphanPath))->toBeFalse();
+});

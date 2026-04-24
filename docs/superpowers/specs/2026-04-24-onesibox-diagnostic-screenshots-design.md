@@ -452,8 +452,8 @@ Tre zone:
 1. **Header**: stato feature (enabled/disabled), intervallo corrente, timestamp ultimo scatto. Toggle + input intervallo per modifica inline.
 2. **Preview grande**: screenshot selezionato (default = più recente). Mostra `captured_at`, `width×height`, `bytes`. Pulsante "Scarica originale".
 3. **Timeline / griglia**: due sezioni raggruppate.
-   - "Ultimi 10 minuti (realtime)" — i 10 top ordinati desc.
-   - "24 ore (una per ora)" — i bucket orari residui dopo rollup.
+   - "Ultimi 10 (realtime)" — le 10 cattura più recenti in ordine `captured_at DESC`, indipendentemente dalla loro età. A regime con feature attiva coincide con circa gli ultimi 10 minuti; se la box è offline da più tempo mostra comunque le 10 cattura più recenti disponibili.
+   - "24 ore (una per ora)" — i bucket orari residui dopo il rollup (vedi §7.1).
 
 ### 8.4 Componente Livewire embedded `ScreenshotsViewer`
 
@@ -524,9 +524,16 @@ Nessun controllo visibile al caregiver (né toggle né intervallo).
 
 ### 9.2 Empty state
 
-- `screenshots->isNotEmpty()` → rendi il carosello.
-- `screenshots->isEmpty()` e `!$box->screenshot_enabled` → label discreto "Diagnostica non attiva".
-- `screenshots->isEmpty()` e `$box->screenshot_enabled` → nessun rendering (spazio vuoto).
+Policy in funzione della variante:
+
+- **Variante `compact` (list view):**
+  - `screenshots->isNotEmpty()` → rendi il carosello.
+  - `screenshots->isEmpty()` e `!$box->screenshot_enabled` → label discreto "Diagnostica non attiva".
+  - `screenshots->isEmpty()` e `$box->screenshot_enabled` → nessun rendering (spazio vuoto, assenza silenziosa).
+
+- **Variante `full` (detail view):**
+  - `screenshots->isNotEmpty()` → rendi la sezione "Diagnostica schermo" con carosello.
+  - `screenshots->isEmpty()` (qualunque sia lo stato `enabled`) → la sezione **non viene renderizzata affatto** (nessun titolo, nessun label). Se il caregiver è entrato nel dettaglio e non ci sono immagini, non vale la pena occupare spazio.
 
 ### 9.3 Inserimento
 
@@ -561,6 +568,18 @@ Query per carosello: `SELECT ... LIMIT 10`, indicizzata da `(onesi_box_id, captu
 - **Admin Filament**: protezione ereditata dal pannello `/admin`.
 - **Caregiver dashboard**: middleware `auth` + `verified`, `OnesiBox::userCanView($user, $box)` riusa la logica permessi esistente.
 - **Contenuto schermo**: considerato dato personale; committente ha esplicitamente confermato (2026-04-24) che non sussistono adempimenti GDPR aggiuntivi nel contesto d'uso. Da ridiscutere se il prodotto viene esteso a target diversi.
+
+### 10.1 Prerequisito: Sanctum SPA session auth
+
+La dashboard caregiver renderizza `<img src="{signed_url}">` dove `signed_url` punta a `GET /api/v1/screenshots/{id}`, protetta da `auth:sanctum`. Il browser del caregiver è autenticato via **sessione** (`auth:web`), non via token Bearer.
+
+Laravel Sanctum supporta automaticamente l'autenticazione via sessione per le route `auth:sanctum` solo se configurato in modalità SPA: richiesta partecipante come first-party, `EnsureFrontendRequestsAreStateful` middleware attivo per il gruppo `api`, e `SANCTUM_STATEFUL_DOMAINS` impostato correttamente.
+
+**Azione richiesta in fase di plan**: verificare che la configurazione Sanctum del repo onesiforo sia già in modalità SPA. Se non lo è, due alternative:
+1. Passare `api` in modalità stateful (preferibile, modifica puntuale).
+2. Modificare il middleware della route download in `['auth:sanctum,web', 'signed']` (soluzione di compromesso).
+
+Senza questa verifica le immagini del carosello caregiver restituiranno 401.
 
 ## 11. Testing strategy
 

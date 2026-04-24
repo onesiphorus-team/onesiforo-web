@@ -68,6 +68,25 @@ class OnesiBoxForm
                     ])
                     ->collapsed()
                     ->collapsible(),
+
+                Section::make(__('Diagnostica schermo'))
+                    ->schema([
+                        Toggle::make('screenshot_enabled')
+                            ->label(__('Attiva diagnostica'))
+                            ->default(true)
+                            ->helperText(__('La box applicherà il cambio al prossimo heartbeat (entro 30s).')),
+
+                        TextInput::make('screenshot_interval_seconds')
+                            ->label(__('Intervallo (secondi)'))
+                            ->numeric()
+                            ->minValue(10)
+                            ->maxValue(3600)
+                            ->default(60)
+                            ->suffix('s')
+                            ->helperText(__('Intervallo tra uno scatto e il successivo. Min 10s, max 3600s (1h).')),
+                    ])
+                    ->collapsed()
+                    ->collapsible(),
             ]);
     }
 }

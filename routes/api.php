@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V1\CommandController;
 use App\Http\Controllers\Api\V1\HeartbeatController;
 use App\Http\Controllers\Api\V1\PlaybackController;
+use App\Http\Controllers\Api\V1\ScreenshotController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             Route::post('/playback', [PlaybackController::class, 'store'])
                 ->middleware('throttle:playback')
                 ->name('playback');
+
+            Route::post('/screenshot', [ScreenshotController::class, 'store'])
+                ->middleware('throttle:screenshot-upload')
+                ->name('screenshot.store');
         });
 
     /*

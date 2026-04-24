@@ -10,9 +10,11 @@ beforeEach(function (): void {
     Storage::fake('local');
 });
 
-function makeSs(OnesiBox $box, string $capturedAt, string $suffix = ''): ApplianceScreenshot {
-    $path = "onesi-boxes/{$box->id}/screenshots/" . str_replace([':', ' '], '-', $capturedAt) . "_{$suffix}.webp";
+function makeSs(OnesiBox $box, string $capturedAt, string $suffix = ''): ApplianceScreenshot
+{
+    $path = "onesi-boxes/{$box->id}/screenshots/".str_replace([':', ' '], '-', $capturedAt)."_{$suffix}.webp";
     Storage::disk('local')->put($path, 'p');
+
     return ApplianceScreenshot::create([
         'onesi_box_id' => $box->id,
         'captured_at' => $capturedAt,

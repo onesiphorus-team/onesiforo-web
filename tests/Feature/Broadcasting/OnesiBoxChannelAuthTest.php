@@ -22,14 +22,14 @@ function invokeOnesiBoxChannelCallback(User $user, int $boxId): bool
     // returns the NullBroadcaster where routes/channels.php registrations live.
     $broadcaster = Broadcast::driver();
 
-    $reflection = new \ReflectionClass(Broadcaster::class);
+    $reflection = new ReflectionClass(Broadcaster::class);
     $channelsProperty = $reflection->getProperty('channels');
     $channelsProperty->setAccessible(true);
     /** @var array<string, callable> $channels */
     $channels = $channelsProperty->getValue($broadcaster);
 
     if (! isset($channels['onesibox.{id}'])) {
-        throw new \RuntimeException('Channel onesibox.{id} is not registered');
+        throw new RuntimeException('Channel onesibox.{id} is not registered');
     }
 
     $callback = $channels['onesibox.{id}'];

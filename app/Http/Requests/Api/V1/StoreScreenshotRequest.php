@@ -20,9 +20,9 @@ class StoreScreenshotRequest extends FormRequest
     {
         return [
             'captured_at' => ['required', 'date', 'before_or_equal:now', 'after:-5 minutes'],
-            'width'       => ['required', 'integer', 'between:320,4096'],
-            'height'      => ['required', 'integer', 'between:180,2160'],
-            'screenshot'  => ['required', 'file', 'mimes:webp', 'max:2048'],
+            'width' => ['required', 'integer', 'between:320,4096'],
+            'height' => ['required', 'integer', 'between:180,2160'],
+            'screenshot' => ['required', 'file', 'mimes:webp', 'max:2048'],
         ];
     }
 }

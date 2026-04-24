@@ -7,7 +7,8 @@ use App\Models\ApplianceScreenshot;
 use App\Models\OnesiBox;
 use App\Models\User;
 
-function makeScreenshot(OnesiBox $box): ApplianceScreenshot {
+function makeScreenshot(OnesiBox $box): ApplianceScreenshot
+{
     return ApplianceScreenshot::create([
         'onesi_box_id' => $box->id,
         'captured_at' => now(),

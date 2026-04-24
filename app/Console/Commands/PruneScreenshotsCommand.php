@@ -24,6 +24,7 @@ class PruneScreenshotsCommand extends Command
         if ($this->option('sweep-orphans')) {
             $orphans = $this->sweepOrphans();
             $this->info("Orphan sweep: {$orphans} files removed.");
+
             return self::SUCCESS;
         }
 
@@ -33,7 +34,7 @@ class PruneScreenshotsCommand extends Command
             foreach ($boxes as $box) {
                 $stats['boxes']++;
                 $stats['older_24h'] += $this->deleteOlderThan24h($box);
-                $stats['rollup']    += $this->rollupBeyondTop10($box);
+                $stats['rollup'] += $this->rollupBeyondTop10($box);
             }
         });
 
@@ -79,7 +80,7 @@ class PruneScreenshotsCommand extends Command
         }
 
         $top10 = $all->take(10);
-        $rest  = $all->slice(10);
+        $rest = $all->slice(10);
 
         $keepIds = $top10->pluck('id')->all();
 

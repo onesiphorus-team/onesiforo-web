@@ -6,8 +6,10 @@ use App\Http\Requests\Api\V1\StoreScreenshotRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Validator;
 
-function validateScreenshotPayload(array $data): \Illuminate\Contracts\Validation\Validator {
-    $request = new StoreScreenshotRequest();
+function validateScreenshotPayload(array $data): Illuminate\Contracts\Validation\Validator
+{
+    $request = new StoreScreenshotRequest;
+
     return Validator::make($data, $request->rules());
 }
 

@@ -18,9 +18,7 @@ class ApplianceScreenshotReceived implements ShouldBroadcast
     use InteractsWithSockets;
     use SerializesModels;
 
-    public function __construct(public readonly ApplianceScreenshot $screenshot)
-    {
-    }
+    public function __construct(public readonly ApplianceScreenshot $screenshot) {}
 
     public function broadcastOn(): Channel
     {

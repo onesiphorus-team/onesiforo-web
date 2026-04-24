@@ -13,7 +13,8 @@ beforeEach(function (): void {
     Storage::fake('local');
 });
 
-function createScreenshotWithFile(OnesiBox $box): ApplianceScreenshot {
+function createScreenshotWithFile(OnesiBox $box): ApplianceScreenshot
+{
     $path = "onesi-boxes/{$box->id}/screenshots/test.webp";
     Storage::disk('local')->put($path, 'binary-webp-placeholder');
 

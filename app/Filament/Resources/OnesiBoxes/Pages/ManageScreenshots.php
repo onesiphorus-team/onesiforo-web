@@ -10,11 +10,11 @@ use Filament\Resources\Pages\Page;
 
 class ManageScreenshots extends Page
 {
+    public OnesiBox $record;
+
     protected static string $resource = OnesiBoxResource::class;
 
     protected string $view = 'filament.onesi-boxes.screenshots';
-
-    public OnesiBox $record;
 
     public function mount(int|string $record): void
     {

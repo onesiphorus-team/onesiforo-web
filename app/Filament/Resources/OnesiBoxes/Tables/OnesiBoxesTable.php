@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources\OnesiBoxes\Tables;
 
 use App\Enums\MeetingJoinMode;
+use App\Filament\Resources\OnesiBoxes\OnesiBoxResource;
 use App\Models\OnesiBox;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -157,6 +159,10 @@ class OnesiBoxesTable
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
+                    Action::make('screenshots')
+                        ->label(__('Diagnostica schermo'))
+                        ->icon('heroicon-o-camera')
+                        ->url(fn (OnesiBox $record): string => OnesiBoxResource::getUrl('screenshots', ['record' => $record])),
                     DeleteAction::make(),
                     RestoreAction::make(),
                     ForceDeleteAction::make(),

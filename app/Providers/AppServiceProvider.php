@@ -7,8 +7,10 @@ namespace App\Providers;
 use App\Enums\Roles;
 use App\Listeners\NotifyAdminsOfNewRegistration;
 use App\Listeners\UpdateLastLogin;
+use App\Models\ApplianceScreenshot;
 use App\Models\OnesiBox;
 use App\Models\User;
+use App\Policies\ApplianceScreenshotPolicy;
 use App\Policies\OnesiBoxPolicy;
 use App\Policies\UserPolicy;
 use App\Services\OnesiBoxCommandService;
@@ -62,6 +64,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Register OnesiBoxPolicy for caregiver dashboard authorization
         Gate::policy(OnesiBox::class, OnesiBoxPolicy::class);
+
+        // Register ApplianceScreenshotPolicy for diagnostic screenshot access
+        Gate::policy(ApplianceScreenshot::class, ApplianceScreenshotPolicy::class);
 
         // Register Login event listener to update last_login_at
         Event::listen(Login::class, UpdateLastLogin::class);
@@ -173,6 +178,14 @@ class AppServiceProvider extends ServiceProvider
             $key = $user !== null ? (string) $user->id : $request->ip();
 
             return Limit::perMinute(60)->by('command-ack:'.$key);
+        });
+
+        // Screenshot upload: 12 requests per minute per appliance (minimum 10s interval floor)
+        RateLimiter::for('screenshot-upload', function (Request $request): Limit {
+            $user = $request->user();
+            $key = $user !== null ? (string) $user->id : $request->ip();
+
+            return Limit::perMinute(12)->by('screenshot-upload:'.$key);
         });
     }
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Roles;
 use App\Models\OnesiBox;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
@@ -20,7 +21,15 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('onesibox.{id}', function (User $user, int $id) {
     $onesiBox = OnesiBox::find($id);
 
-    return $onesiBox !== null && $onesiBox->userCanView($user);
+    if ($onesiBox === null) {
+        return false;
+    }
+
+    if ($user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin)) {
+        return true;
+    }
+
+    return $onesiBox->userCanView($user);
 });
 
 // Channel for appliances to receive real-time command notifications

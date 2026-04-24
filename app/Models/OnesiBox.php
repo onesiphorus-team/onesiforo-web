@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
@@ -275,6 +276,27 @@ class OnesiBox extends Model implements AuthenticatableContract
     }
 
     /**
+     * Get all diagnostic screenshots for this OnesiBox.
+     *
+     * @return HasMany<ApplianceScreenshot, $this>
+     */
+    public function screenshots(): HasMany
+    {
+        return $this->hasMany(ApplianceScreenshot::class, 'onesi_box_id');
+    }
+
+    /**
+     * Get the most recent diagnostic screenshot for this OnesiBox.
+     *
+     * @return HasOne<ApplianceScreenshot, $this>
+     */
+    public function latestScreenshot(): HasOne
+    {
+        return $this->hasOne(ApplianceScreenshot::class, 'onesi_box_id')
+            ->latestOfMany('captured_at');
+    }
+
+    /**
      * Get the currently active playback session, if any.
      */
     public function activeSession(): ?PlaybackSession
@@ -363,6 +385,8 @@ class OnesiBox extends Model implements AuthenticatableContract
             'memory_available' => 'integer',
             'memory_buffers' => 'integer',
             'memory_cached' => 'integer',
+            'screenshot_enabled' => 'boolean',
+            'screenshot_interval_seconds' => 'integer',
         ];
     }
 }

@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\OnesiBox;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Resource for heartbeat API responses.
- *
- * @property \Carbon\CarbonInterface $server_time
- * @property int $next_heartbeat
  */
 class HeartbeatResource extends JsonResource
 {
@@ -23,7 +21,7 @@ class HeartbeatResource extends JsonResource
     /**
      * Create a new resource instance.
      *
-     * @param  array{server_time: \Carbon\CarbonInterface, next_heartbeat: int}  $resource
+     * @param  array{server_time: \Carbon\CarbonInterface, next_heartbeat: int, screenshot_enabled: bool, screenshot_interval_seconds: int}  $resource
      */
     public function __construct(array $resource)
     {
@@ -31,13 +29,18 @@ class HeartbeatResource extends JsonResource
     }
 
     /**
-     * Create a successful heartbeat response.
+     * Create a successful heartbeat response for a given OnesiBox.
+     *
+     * Includes diagnostic screenshot config so the client can apply on-the-fly
+     * enable/disable and interval changes pushed from admin.
      */
-    public static function success(int $nextHeartbeat = self::DEFAULT_HEARTBEAT_INTERVAL): self
+    public static function success(OnesiBox $box, int $nextHeartbeat = self::DEFAULT_HEARTBEAT_INTERVAL): self
     {
         return new self([
             'server_time' => now(),
             'next_heartbeat' => $nextHeartbeat,
+            'screenshot_enabled' => $box->screenshot_enabled,
+            'screenshot_interval_seconds' => $box->screenshot_interval_seconds,
         ]);
     }
 
@@ -51,6 +54,8 @@ class HeartbeatResource extends JsonResource
         return [
             'server_time' => $this->resource['server_time']->toIso8601String(),
             'next_heartbeat' => $this->resource['next_heartbeat'],
+            'screenshot_enabled' => (bool) $this->resource['screenshot_enabled'],
+            'screenshot_interval_seconds' => (int) $this->resource['screenshot_interval_seconds'],
         ];
     }
 }

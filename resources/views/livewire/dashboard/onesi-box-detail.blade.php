@@ -62,6 +62,12 @@
             </flux:callout>
         @endif
 
+        {{-- Diagnostic screenshots carousel --}}
+        <livewire:onesi-box.screenshot-carousel
+            :box="$onesiBox"
+            variant="full"
+            :key="'carousel-full-'.$onesiBox->id" />
+
         {{-- Accordion body (native <details> via x-accordion-item component) --}}
         <div class="mt-4 space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 detail-accordions">
             @if($this->canControl && $this->isOnline)

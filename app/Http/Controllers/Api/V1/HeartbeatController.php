@@ -23,8 +23,9 @@ class HeartbeatController extends Controller
      */
     public function store(HeartbeatRequest $request, ProcessHeartbeatAction $action): HeartbeatResource
     {
-        $action($request->onesiBox(), $request->validated());
+        $box = $request->onesiBox();
+        $action($box, $request->validated());
 
-        return HeartbeatResource::success();
+        return HeartbeatResource::success($box->fresh());
     }
 }

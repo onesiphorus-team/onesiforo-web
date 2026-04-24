@@ -15,6 +15,7 @@ test('all models use trait LogsActivityAllDirty', function (): void {
     expect('App\Models')
         ->toUseTrait(LogsActivityAllDirty::class)
         ->ignoring(App\Models\PageVisit::class)
+        ->ignoring(App\Models\ApplianceScreenshot::class) // high-volume telemetry (~1/min per box), exempt for same reason as PageVisit
         ->ignoring('App\Models\Scopes');
 });
 

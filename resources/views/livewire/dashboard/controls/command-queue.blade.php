@@ -1,4 +1,4 @@
-<div class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 sm:p-6">
+<div wire:poll.10s class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 sm:p-6">
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
             <flux:icon name="queue-list" class="w-5 h-5 text-zinc-500 dark:text-zinc-400" />

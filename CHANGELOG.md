@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.10.5] - 2026-04-25
+
+### Bug Fixes
+
+- Include `resources/views/livewire/filament/**` in Filament theme @source so admin Livewire views ship Tailwind utilities (overflow-x-auto, etc.)
+
 ## [0.10.4] - 2026-04-25
 
 ### Bug Fixes

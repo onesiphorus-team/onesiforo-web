@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.10.1] - 2026-04-25
+
+### Bug Fixes
+
+- Allow web session guard on screenshot download route
+
 ## [0.10.0] - 2026-04-24
 
 ### Bug Fixes

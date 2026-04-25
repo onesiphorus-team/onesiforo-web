@@ -51,9 +51,11 @@ it('collapses screenshots beyond the top 10 to one per local hour', function ():
         ->test(ScreenshotsViewer::class, ['record' => $box])
         ->instance();
 
+    // Top10 spans Rome hours 19 (i=1..9) and 20 (i=0). Beyond top10, screenshots
+    // continue down through Rome hours 18 and 19, then into 18 only — but hour 19
+    // is excluded because it overlaps top10. So exactly one bucket survives: 18.
     expect($component->top10)->toHaveCount(10)
-        ->and($component->hourlyBeyondTop10->count())->toBeLessThanOrEqual(2)
-        ->and($component->hourlyBeyondTop10->count())->toBeGreaterThanOrEqual(1);
+        ->and($component->hourlyBeyondTop10)->toHaveCount(1);
 });
 
 it('returns one entry per distinct local hour for the hourly section', function (): void {
@@ -83,6 +85,46 @@ it('returns one entry per distinct local hour for the hourly section', function 
 
     expect($component->top10)->toHaveCount(10)
         ->and($component->hourlyBeyondTop10)->toHaveCount(4);
+});
+
+it('renders without errors when there are fewer than 10 screenshots', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->create([
+        'screenshot_enabled' => true,
+        'screenshot_interval_seconds' => 60,
+    ]);
+
+    for ($i = 0; $i < 3; $i++) {
+        makeScreenshotAt($box, Carbon::now()->subSeconds(30 * $i));
+    }
+
+    $component = Livewire::actingAs($user)
+        ->test(ScreenshotsViewer::class, ['record' => $box]);
+
+    $component->assertSuccessful();
+
+    expect($component->instance()->top10)->toHaveCount(3)
+        ->and($component->instance()->hourlyBeyondTop10)->toHaveCount(0);
+});
+
+it('returns an empty hourly section when nothing is older than the top 10', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->create([
+        'screenshot_enabled' => true,
+        'screenshot_interval_seconds' => 60,
+    ]);
+
+    // 10 screenshots all packed into the same minute — top10 only.
+    for ($i = 0; $i < 10; $i++) {
+        makeScreenshotAt($box, Carbon::now()->subSeconds(5 * $i));
+    }
+
+    $component = Livewire::actingAs($user)
+        ->test(ScreenshotsViewer::class, ['record' => $box])
+        ->instance();
+
+    expect($component->top10)->toHaveCount(10)
+        ->and($component->hourlyBeyondTop10)->toHaveCount(0);
 });
 
 it('renders the hourly bucket label using the Europe/Rome timezone, not UTC', function (): void {

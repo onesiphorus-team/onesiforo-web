@@ -16,13 +16,13 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 /**
- * @property-read Collection<int, ApplianceScreenshot> $screenshots
  * @property-read Collection<int, ApplianceScreenshot> $top10
+ * @property-read Collection<int, ApplianceScreenshot> $recent24h
  * @property-read SupportCollection<int, ApplianceScreenshot> $hourlyBeyondTop10
  */
 class ScreenshotsViewer extends Component
 {
-    public const DISPLAY_TIMEZONE = 'Europe/Rome';
+    public const DEFAULT_DISPLAY_TIMEZONE = 'Europe/Rome';
 
     public OnesiBox $record;
 
@@ -34,6 +34,11 @@ class ScreenshotsViewer extends Component
     #[Validate(['integer', 'between:10,3600'])]
     public int $intervalSeconds = 60;
 
+    public static function displayTimezone(): string
+    {
+        return config('app.display_timezone', self::DEFAULT_DISPLAY_TIMEZONE);
+    }
+
     public function mount(OnesiBox $record): void
     {
         $this->record = $record;
@@ -42,13 +47,17 @@ class ScreenshotsViewer extends Component
     }
 
     /**
+     * Most recent 10 screenshots regardless of age — supports the realtime strip
+     * even when the box has been offline for more than 24h.
+     *
      * @return Collection<int, ApplianceScreenshot>
      */
     #[Computed]
-    public function screenshots(): Collection
+    public function top10(): Collection
     {
         return $this->record->screenshots()
             ->orderByDesc('captured_at')
+            ->limit(10)
             ->get();
     }
 
@@ -56,12 +65,21 @@ class ScreenshotsViewer extends Component
      * @return Collection<int, ApplianceScreenshot>
      */
     #[Computed]
-    public function top10(): Collection
+    public function recent24h(): Collection
     {
-        return $this->screenshots->take(10)->values();
+        return $this->record->screenshots()
+            ->where('captured_at', '>=', now()->subDay())
+            ->orderByDesc('captured_at')
+            ->get();
     }
 
     /**
+     * One representative screenshot per local hour for the last 24h, excluding
+     * hours already covered by top10. The exclusion avoids visually duplicating
+     * the same hour in both strips; the trade-off is that a box producing 10
+     * captures inside a single minute will hide the rest of that hour from the
+     * hourly view.
+     *
      * @return SupportCollection<int, ApplianceScreenshot>
      */
     #[Computed]
@@ -74,10 +92,7 @@ class ScreenshotsViewer extends Component
             ->unique()
             ->all();
 
-        $cutoff = now()->subDay();
-
-        return $this->screenshots
-            ->filter(fn (ApplianceScreenshot $s): bool => $s->captured_at->gte($cutoff))
+        return $this->recent24h
             ->reject(fn (ApplianceScreenshot $s): bool => in_array($s->id, $top10Ids, true))
             ->reject(fn (ApplianceScreenshot $s): bool => in_array($this->localHourKey($s), $top10HourBuckets, true))
             ->groupBy(fn (ApplianceScreenshot $s): string => $this->localHourKey($s))
@@ -112,21 +127,23 @@ class ScreenshotsViewer extends Component
     #[On('echo-private:onesibox.{record.id},ApplianceScreenshotReceived')]
     public function onNewScreenshot(): void
     {
-        unset($this->screenshots);
         unset($this->top10);
+        unset($this->recent24h);
         unset($this->hourlyBeyondTop10);
     }
 
     public function render(): View
     {
-        return view('livewire.filament.screenshots-viewer');
+        return view('livewire.filament.screenshots-viewer', [
+            'displayTimezone' => self::displayTimezone(),
+        ]);
     }
 
     private function localHourKey(ApplianceScreenshot $screenshot): string
     {
         return $screenshot->captured_at
             ->copy()
-            ->setTimezone(self::DISPLAY_TIMEZONE)
+            ->setTimezone(self::displayTimezone())
             ->format('Y-m-d H');
     }
 }

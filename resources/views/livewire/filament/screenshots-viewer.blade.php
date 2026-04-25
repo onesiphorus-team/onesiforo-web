@@ -58,7 +58,7 @@
 
     {{-- STALE CAPTURE WARNING --}}
     @php
-        $latest = $this->screenshots->first();
+        $latest = $this->top10->first();
         $isStale = $this->enabled
             && $latest !== null
             && $latest->captured_at->lt(now()->subMinutes(5));
@@ -72,8 +72,9 @@
     {{-- PREVIEW GRANDE --}}
     @php
         $selected = $this->selectedId
-            ? $this->screenshots->firstWhere('id', $this->selectedId)
-            : $this->screenshots->first();
+            ? ($this->top10->firstWhere('id', $this->selectedId)
+                ?? $this->hourlyBeyondTop10->firstWhere('id', $this->selectedId))
+            : $this->top10->first();
     @endphp
 
     @if ($selected)
@@ -140,7 +141,7 @@
                              width="160" height="90"
                              class="rounded border border-gray-300 dark:border-gray-700" />
                         <div class="text-xs text-gray-500 text-center mt-1">
-                            {{ $s->captured_at->copy()->setTimezone(\App\Livewire\Filament\ScreenshotsViewer::DISPLAY_TIMEZONE)->format('H:00') }}
+                            {{ $s->captured_at->copy()->setTimezone($displayTimezone)->format('H:00') }}
                         </div>
                     </button>
                 @endforeach

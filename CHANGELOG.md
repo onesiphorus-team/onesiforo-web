@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.10.6] - 2026-04-25
+
+### Bug Fixes
+
+- Group hourly screenshots by local hour and label in Europe/Rome (#202)
+
 ## [0.10.5] - 2026-04-25
 
 ### Bug Fixes

@@ -4,10 +4,19 @@ Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
 ## [0.10.4] - 2026-04-25
 
-### Bug Fixes
+### Features
 
-- Open screenshots in inline lightbox instead of triggering download
-- Fix horizontal scrolling of timelines on admin diagnostics page
+- Inline lightbox + fix admin timeline scrolling (#200)
+
+### Build
+
+- Bump laravel/boost from 2.4.3 to 2.4.5
+- Bump laravel/pint from 1.29.0 to 1.29.1
+- Bump barryvdh/laravel-debugbar from 4.2.6 to 4.2.8
+- Bump filament/filament from 5.5.2 to 5.6.1
+- Bump livewire/flux from 2.13.2 to 2.14.1
+- Bump laravel/sail from 1.56.0 to 1.57.0
+- Bump pestphp/pest from 4.5.0 to 4.6.3
 
 ## [0.10.3] - 2026-04-25
 

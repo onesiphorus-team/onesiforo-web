@@ -84,7 +84,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     | a permanent download link.
     |
     */
+    // Multi-guard: 'web' covers caregiver/admin browser sessions loading <img src>,
+    // 'sanctum' covers API consumers with Bearer tokens (rare for this endpoint
+    // since boxes don't download their own screenshots, but keeps surface complete).
+    // 'signed' still mandatory — the URL must be signed regardless of guard.
     Route::get('/screenshots/{screenshot}', [ScreenshotController::class, 'show'])
-        ->middleware(['auth:sanctum', 'signed'])
+        ->middleware(['auth:sanctum,web', 'signed'])
         ->name('screenshots.show');
 });

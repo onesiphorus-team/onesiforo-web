@@ -8,6 +8,7 @@ use App\Models\ApplianceScreenshot;
 use App\Models\OnesiBox;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -17,10 +18,12 @@ use Livewire\Component;
 /**
  * @property-read Collection<int, ApplianceScreenshot> $screenshots
  * @property-read Collection<int, ApplianceScreenshot> $top10
- * @property-read Collection<int, ApplianceScreenshot> $hourlyBeyondTop10
+ * @property-read SupportCollection<int, ApplianceScreenshot> $hourlyBeyondTop10
  */
 class ScreenshotsViewer extends Component
 {
+    public const DISPLAY_TIMEZONE = 'Europe/Rome';
+
     public OnesiBox $record;
 
     public ?int $selectedId = null;
@@ -59,12 +62,28 @@ class ScreenshotsViewer extends Component
     }
 
     /**
-     * @return Collection<int, ApplianceScreenshot>
+     * @return SupportCollection<int, ApplianceScreenshot>
      */
     #[Computed]
-    public function hourlyBeyondTop10(): Collection
+    public function hourlyBeyondTop10(): SupportCollection
     {
-        return $this->screenshots->slice(10)->values();
+        $top10 = $this->top10;
+        $top10Ids = $top10->pluck('id')->all();
+        $top10HourBuckets = $top10
+            ->map(fn (ApplianceScreenshot $s): string => $this->localHourKey($s))
+            ->unique()
+            ->all();
+
+        $cutoff = now()->subDay();
+
+        return $this->screenshots
+            ->filter(fn (ApplianceScreenshot $s): bool => $s->captured_at->gte($cutoff))
+            ->reject(fn (ApplianceScreenshot $s): bool => in_array($s->id, $top10Ids, true))
+            ->reject(fn (ApplianceScreenshot $s): bool => in_array($this->localHourKey($s), $top10HourBuckets, true))
+            ->groupBy(fn (ApplianceScreenshot $s): string => $this->localHourKey($s))
+            ->map(fn (SupportCollection $bucket): ApplianceScreenshot => $bucket->first())
+            ->sortByDesc(fn (ApplianceScreenshot $s): int => $s->captured_at->getTimestamp())
+            ->values();
     }
 
     public function select(int $id): void
@@ -101,5 +120,13 @@ class ScreenshotsViewer extends Component
     public function render(): View
     {
         return view('livewire.filament.screenshots-viewer');
+    }
+
+    private function localHourKey(ApplianceScreenshot $screenshot): string
+    {
+        return $screenshot->captured_at
+            ->copy()
+            ->setTimezone(self::DISPLAY_TIMEZONE)
+            ->format('Y-m-d H');
     }
 }

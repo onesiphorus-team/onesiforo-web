@@ -140,7 +140,7 @@
                              width="160" height="90"
                              class="rounded border border-gray-300 dark:border-gray-700" />
                         <div class="text-xs text-gray-500 text-center mt-1">
-                            {{ $s->captured_at->format('H:00') }}
+                            {{ $s->captured_at->copy()->setTimezone(\App\Livewire\Filament\ScreenshotsViewer::DISPLAY_TIMEZONE)->format('H:00') }}
                         </div>
                     </button>
                 @endforeach

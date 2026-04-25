@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.10.4] - 2026-04-25
+
+### Bug Fixes
+
+- Open screenshots in inline lightbox instead of triggering download
+- Fix horizontal scrolling of timelines on admin diagnostics page
+
 ## [0.10.3] - 2026-04-25
 
 ### Bug Fixes

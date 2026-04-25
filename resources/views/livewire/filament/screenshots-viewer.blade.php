@@ -1,4 +1,18 @@
-<div class="space-y-6">
+<div class="space-y-6 min-w-0"
+     x-data="{
+        open: false,
+        src: '',
+        download: '',
+        captured: '',
+        show(src, download, captured) {
+            this.src = src;
+            this.download = download;
+            this.captured = captured;
+            this.open = true;
+        },
+        close() { this.open = false; },
+     }"
+     x-on:keydown.escape.window="close()">
     {{-- HEADER --}}
     <div class="rounded border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 p-4">
         <div class="flex flex-wrap items-center gap-4">
@@ -64,10 +78,15 @@
 
     @if ($selected)
         <div class="rounded border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 p-4">
-            <img src="{{ $selected->signedUrl() }}"
-                 alt="screenshot"
-                 loading="lazy"
-                 class="w-full max-w-full rounded" />
+            <button type="button"
+                    @click="show(@js($selected->signedUrl(10)), @js($selected->signedUrl(10)), @js($selected->captured_at->toDateTimeString()))"
+                    class="block w-full cursor-zoom-in"
+                    aria-label="Ingrandisci screenshot">
+                <img src="{{ $selected->signedUrl() }}"
+                     alt="screenshot"
+                     loading="lazy"
+                     class="w-full max-w-full rounded" />
+            </button>
             <div class="mt-2 text-sm text-gray-500">
                 {{ $selected->captured_at->toDateTimeString() }} —
                 {{ $selected->width }}×{{ $selected->height }}, {{ round($selected->bytes / 1024) }} KB
@@ -90,7 +109,7 @@
     @if ($this->top10->isNotEmpty())
         <div>
             <h3 class="font-semibold mb-2">Ultimi 10 (realtime)</h3>
-            <div class="flex gap-2 overflow-x-auto pb-2">
+            <div class="flex gap-2 overflow-x-auto pb-2 min-w-0">
                 @foreach ($this->top10 as $s)
                     <button type="button"
                             wire:click="select({{ $s->id }})"
@@ -111,7 +130,7 @@
     @if ($this->hourlyBeyondTop10->isNotEmpty())
         <div>
             <h3 class="font-semibold mb-2">24 ore (una per ora)</h3>
-            <div class="flex gap-2 overflow-x-auto pb-2">
+            <div class="flex gap-2 overflow-x-auto pb-2 min-w-0">
                 @foreach ($this->hourlyBeyondTop10 as $s)
                     <button type="button"
                             wire:click="select({{ $s->id }})"
@@ -128,4 +147,34 @@
             </div>
         </div>
     @endif
+
+    {{-- Lightbox modal --}}
+    <template x-teleport="body">
+        <div x-show="open"
+             x-cloak
+             x-transition.opacity
+             @click.self="close()"
+             role="dialog"
+             aria-modal="true"
+             aria-label="Anteprima screenshot"
+             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4">
+            <div class="relative max-h-full max-w-full">
+                <img :src="src"
+                     alt=""
+                     class="max-h-[90vh] max-w-[95vw] rounded shadow-2xl object-contain" />
+                <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-white">
+                    <span x-text="captured"></span>
+                    <div class="flex items-center gap-3">
+                        <a :href="download"
+                           download
+                           class="underline hover:text-gray-200">Scarica</a>
+                        <button type="button"
+                                @click="close()"
+                                class="rounded bg-white/10 px-3 py-1 hover:bg-white/20"
+                                aria-label="Chiudi anteprima">Chiudi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>

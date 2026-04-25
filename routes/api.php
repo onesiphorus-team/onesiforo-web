@@ -84,7 +84,14 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     | a permanent download link.
     |
     */
+    // The browser <img src> for the caregiver carousel uses a session cookie.
+    // routes/api.php doesn't include the 'web' middleware group, so StartSession
+    // is not loaded here by default — without it 'auth:web' can never see a
+    // session even when one is valid. Mounting the 'web' group on this single
+    // route loads StartSession + cookie encryption + auth driver wiring, then
+    // the multi-guard auth:sanctum,web resolves either Bearer tokens or
+    // session cookies. 'signed' still gates URL signature + expiry.
     Route::get('/screenshots/{screenshot}', [ScreenshotController::class, 'show'])
-        ->middleware(['auth:sanctum', 'signed'])
+        ->middleware(['web', 'auth:sanctum,web', 'signed'])
         ->name('screenshots.show');
 });

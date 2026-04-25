@@ -65,7 +65,7 @@ it('returns one entry per distinct local hour for the hourly section', function 
         'screenshot_interval_seconds' => 60,
     ]);
 
-    // Top10 noise: 10 recent screenshots in the current hour (Rome 20:00).
+    // Top10 noise: 10 screenshots spanning Rome hours 20:00 (i=0) and 19:55:30..19:59:30 (i=1..9).
     for ($i = 0; $i < 10; $i++) {
         makeScreenshotAt($box, Carbon::now()->subSeconds(30 * $i));
     }
@@ -125,6 +125,76 @@ it('returns an empty hourly section when nothing is older than the top 10', func
 
     expect($component->top10)->toHaveCount(10)
         ->and($component->hourlyBeyondTop10)->toHaveCount(0);
+});
+
+it('excludes screenshots older than 24 hours from recent24h and hourly', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->create([
+        'screenshot_enabled' => true,
+        'screenshot_interval_seconds' => 60,
+    ]);
+
+    // Top10 placeholder so the page renders.
+    makeScreenshotAt($box, Carbon::now());
+
+    // One screenshot inside the window, one beyond.
+    makeScreenshotAt($box, Carbon::now()->subHours(23));
+    $stale = makeScreenshotAt($box, Carbon::now()->subHours(25));
+
+    $component = Livewire::actingAs($user)
+        ->test(ScreenshotsViewer::class, ['record' => $box])
+        ->instance();
+
+    expect($component->recent24h->pluck('id')->all())->not->toContain($stale->id)
+        ->and($component->hourlyBeyondTop10->pluck('id')->all())->not->toContain($stale->id);
+});
+
+it('resolves selected from the DB when the id is no longer in top10 or hourly', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->create([
+        'screenshot_enabled' => true,
+        'screenshot_interval_seconds' => 60,
+    ]);
+
+    // Top10 fills with recent captures.
+    for ($i = 0; $i < 10; $i++) {
+        makeScreenshotAt($box, Carbon::now()->subSeconds(5 * $i));
+    }
+
+    // The user clicked an older screenshot. Then another, newer screenshot
+    // arrived in the same hour bucket and replaced it as the bucket
+    // representative — the orphan is now in the DB but in neither strip.
+    $orphan = makeScreenshotAt($box, Carbon::parse('2026-04-25 12:00:00', 'UTC'));
+    makeScreenshotAt($box, Carbon::parse('2026-04-25 12:30:00', 'UTC'));
+
+    $component = Livewire::actingAs($user)
+        ->test(ScreenshotsViewer::class, ['record' => $box])
+        ->set('selectedId', $orphan->id);
+
+    expect($component->instance()->top10->pluck('id')->all())->not->toContain($orphan->id)
+        ->and($component->instance()->hourlyBeyondTop10->pluck('id')->all())->not->toContain($orphan->id)
+        ->and($component->instance()->selected?->id)->toBe($orphan->id);
+});
+
+it('does not leak selected lookups across boxes', function (): void {
+    $user = User::factory()->create();
+    $boxA = OnesiBox::factory()->create([
+        'screenshot_enabled' => true,
+        'screenshot_interval_seconds' => 60,
+    ]);
+    $boxB = OnesiBox::factory()->create([
+        'screenshot_enabled' => true,
+        'screenshot_interval_seconds' => 60,
+    ]);
+
+    makeScreenshotAt($boxA, Carbon::now());
+    $foreign = makeScreenshotAt($boxB, Carbon::now());
+
+    $component = Livewire::actingAs($user)
+        ->test(ScreenshotsViewer::class, ['record' => $boxA])
+        ->set('selectedId', $foreign->id);
+
+    expect($component->instance()->selected)->toBeNull();
 });
 
 it('renders the hourly bucket label using the Europe/Rome timezone, not UTC', function (): void {

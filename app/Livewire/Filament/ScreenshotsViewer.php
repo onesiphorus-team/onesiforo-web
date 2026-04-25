@@ -19,6 +19,7 @@ use Livewire\Component;
  * @property-read Collection<int, ApplianceScreenshot> $top10
  * @property-read Collection<int, ApplianceScreenshot> $recent24h
  * @property-read SupportCollection<int, ApplianceScreenshot> $hourlyBeyondTop10
+ * @property-read ApplianceScreenshot|null $selected
  */
 class ScreenshotsViewer extends Component
 {
@@ -101,6 +102,24 @@ class ScreenshotsViewer extends Component
             ->values();
     }
 
+    /**
+     * Resolves the screenshot the lightbox / preview should show. Defaults to
+     * the most recent. When the user has clicked an entry, falls back to a
+     * scoped DB lookup if the id is no longer in top10/hourly (an Echo refresh
+     * may have rotated the hourly representative between click and render).
+     */
+    #[Computed]
+    public function selected(): ?ApplianceScreenshot
+    {
+        if ($this->selectedId === null) {
+            return $this->top10->first();
+        }
+
+        return $this->top10->firstWhere('id', $this->selectedId)
+            ?? $this->hourlyBeyondTop10->firstWhere('id', $this->selectedId)
+            ?? $this->record->screenshots()->whereKey($this->selectedId)->first();
+    }
+
     public function select(int $id): void
     {
         $this->selectedId = $id;
@@ -130,6 +149,7 @@ class ScreenshotsViewer extends Component
         unset($this->top10);
         unset($this->recent24h);
         unset($this->hourlyBeyondTop10);
+        unset($this->selected);
     }
 
     public function render(): View

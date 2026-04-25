@@ -71,10 +71,7 @@
 
     {{-- PREVIEW GRANDE --}}
     @php
-        $selected = $this->selectedId
-            ? ($this->top10->firstWhere('id', $this->selectedId)
-                ?? $this->hourlyBeyondTop10->firstWhere('id', $this->selectedId))
-            : $this->top10->first();
+        $selected = $this->selected;
     @endphp
 
     @if ($selected)

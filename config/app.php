@@ -71,6 +71,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display Timezone
+    |--------------------------------------------------------------------------
+    |
+    | Timezone used to render UTC-stored timestamps to caregivers in the UI.
+    | Storage stays in UTC; only presentation is shifted.
+    |
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Europe/Rome'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

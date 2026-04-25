@@ -6,11 +6,12 @@ namespace App\Filament\Resources\OnesiBoxes\Pages;
 
 use App\Filament\Resources\OnesiBoxes\OnesiBoxResource;
 use App\Models\OnesiBox;
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 
 class ManageScreenshots extends Page
 {
-    public OnesiBox $record;
+    use InteractsWithRecord;
 
     protected static string $resource = OnesiBoxResource::class;
 
@@ -18,16 +19,19 @@ class ManageScreenshots extends Page
 
     public function mount(int|string $record): void
     {
-        $this->record = OnesiBox::findOrFail($record);
+        $this->record = $this->resolveRecord($record);
     }
 
     public function getTitle(): string
     {
-        return "Diagnostica — {$this->record->name}";
+        /** @var OnesiBox $record */
+        $record = $this->getRecord();
+
+        return __('Diagnostica — :name', ['name' => $record->name]);
     }
 
     public function getHeading(): string
     {
-        return 'Screenshot diagnostici';
+        return __('Screenshot diagnostici');
     }
 }

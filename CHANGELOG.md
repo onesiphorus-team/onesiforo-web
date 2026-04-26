@@ -2,6 +2,33 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.10.9] - 2026-04-26
+
+### Security
+
+- Lock LogViewer pendingCommandId/logs/isLoading to prevent client-side injection of arbitrary command ids (#208)
+- Lock ScreenshotsViewer selectedId so only `select()` can rotate the lightbox target (#208)
+- StoreScreenshotRequest now uses AuthorizesAsOnesiBox trait — user-issued Sanctum tokens get a clean 403 (#208)
+
+### Bug Fixes
+
+- LogViewer: dedupe command-resolution logic into private helpers (#208)
+- HeroCard action buttons: add wire:loading.attr="disabled" to prevent double-fires (#208)
+- Screenshot loops in screenshots-viewer and screenshot-carousel now have wire:key for morphdom stability (#208)
+
+### Quality
+
+- Drop years-stale Gate::before TODO; per-policy SuperAdmin checks already enforce invariants (#208)
+- Define viewTelescope gate now that the dependency is installed (#208)
+- LogViewer poll interval 5s → 15s to reduce server load (#208)
+- PruneScreenshotsCommand::deleteOlderThan24h uses chunkById(500) to bound memory (#208)
+
+### Tests
+
+- 60+ new tests across 8 files covering OnesiBox, Command, User, PlaybackSession, Recipient, Playlist models, the UpdateLastLogin listener, and the PrunePlaybackEventsCommand (#208)
+- New Pest helpers freezeTestTime/releaseTestTime and OnesiBox factory withCaregiver state to reduce boilerplate (#208)
+- Rector cleanup across 14 files (Eloquent ::query() consistency) (#208)
+
 ## [0.10.8] - 2026-04-26
 
 ### Bug Fixes

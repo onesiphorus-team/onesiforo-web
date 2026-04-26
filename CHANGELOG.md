@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.10.7] - 2026-04-26
+
+### Bug Fixes
+
+- Make mobile sidebar backdrop visible in dark mode (#204)
+
 ## [0.10.6] - 2026-04-25
 
 ### Bug Fixes

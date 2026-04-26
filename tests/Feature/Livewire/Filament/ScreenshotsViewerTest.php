@@ -25,7 +25,7 @@ function makeScreenshotAt(OnesiBox $box, Carbon $capturedAt, ?int $seq = null): 
     $counter++;
     $token = $seq ?? $counter;
 
-    return ApplianceScreenshot::create([
+    return ApplianceScreenshot::query()->create([
         'onesi_box_id' => $box->id,
         'captured_at' => $capturedAt,
         'width' => 1920,
@@ -169,7 +169,7 @@ it('resolves selected from the DB when the id is no longer in top10 or hourly', 
 
     $component = Livewire::actingAs($user)
         ->test(ScreenshotsViewer::class, ['record' => $box])
-        ->set('selectedId', $orphan->id);
+        ->call('select', $orphan->id);
 
     expect($component->instance()->top10->pluck('id')->all())->not->toContain($orphan->id)
         ->and($component->instance()->hourlyBeyondTop10->pluck('id')->all())->not->toContain($orphan->id)
@@ -192,7 +192,7 @@ it('does not leak selected lookups across boxes', function (): void {
 
     $component = Livewire::actingAs($user)
         ->test(ScreenshotsViewer::class, ['record' => $boxA])
-        ->set('selectedId', $foreign->id);
+        ->call('select', $foreign->id);
 
     expect($component->instance()->selected)->toBeNull();
 });

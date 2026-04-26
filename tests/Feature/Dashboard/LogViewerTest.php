@@ -93,12 +93,12 @@ it('clears logs when clearLogs is called', function (): void {
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
-    Livewire::actingAs($user)
-        ->test(LogViewer::class, ['onesiBox' => $onesiBox])
-        ->set('logs', 'Some log content')
-        ->set('isLoading', true)
-        ->set('pendingCommandId', 123)
-        ->call('clearLogs')
+    $component = Livewire::actingAs($user)->test(LogViewer::class, ['onesiBox' => $onesiBox]);
+    $component->instance()->logs = 'Some log content';
+    $component->instance()->isLoading = true;
+    $component->instance()->pendingCommandId = 123;
+
+    $component->call('clearLogs')
         ->assertSet('logs', null)
         ->assertSet('isLoading', false)
         ->assertSet('pendingCommandId', null);
@@ -110,19 +110,24 @@ it('updates logs when command completes successfully', function (): void {
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
-    $command = Command::query()->create([
-        'onesi_box_id' => $onesiBox->id,
-        'type' => CommandType::GetLogs,
-        'payload' => ['lines' => 100],
+    // Run the full flow: requestLogs creates the pending command server-side,
+    // then we mark it Completed in DB, then poll completes the cycle.
+    $component = Livewire::actingAs($user)
+        ->test(LogViewer::class, ['onesiBox' => $onesiBox])
+        ->call('requestLogs');
+
+    $command = Command::query()
+        ->where('onesi_box_id', $onesiBox->id)
+        ->where('type', CommandType::GetLogs)
+        ->latest('id')
+        ->firstOrFail();
+
+    $command->update([
         'status' => CommandStatus::Completed,
         'result' => ['lines' => ['Log line 1', 'Log line 2'], 'total_lines' => 2, 'returned_lines' => 2],
     ]);
 
-    Livewire::actingAs($user)
-        ->test(LogViewer::class, ['onesiBox' => $onesiBox])
-        ->set('pendingCommandId', $command->id)
-        ->set('isLoading', true)
-        ->call('checkCommandStatus')
+    $component->call('checkCommandStatus')
         ->assertSet('isLoading', false)
         ->assertSet('logs', "Log line 1\nLog line 2")
         ->assertSet('pendingCommandId', null);
@@ -134,22 +139,54 @@ it('shows error message when command fails', function (): void {
     $onesiBox = OnesiBox::factory()->online()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
-    $command = Command::query()->create([
-        'onesi_box_id' => $onesiBox->id,
-        'type' => CommandType::GetLogs,
-        'payload' => ['lines' => 100],
+    $component = Livewire::actingAs($user)
+        ->test(LogViewer::class, ['onesiBox' => $onesiBox])
+        ->call('requestLogs');
+
+    $command = Command::query()
+        ->where('onesi_box_id', $onesiBox->id)
+        ->where('type', CommandType::GetLogs)
+        ->latest('id')
+        ->firstOrFail();
+
+    $command->update([
         'status' => CommandStatus::Failed,
         'error_message' => 'Permission denied',
     ]);
 
-    Livewire::actingAs($user)
-        ->test(LogViewer::class, ['onesiBox' => $onesiBox])
-        ->set('pendingCommandId', $command->id)
-        ->set('isLoading', true)
-        ->call('checkCommandStatus')
+    $component->call('checkCommandStatus')
         ->assertSet('isLoading', false)
         ->assertSee('Permission denied');
 });
+
+it('locks pendingCommandId so a malicious client cannot inject an arbitrary command id', function (): void {
+    $user = User::factory()->admin()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $foreignBox = OnesiBox::factory()->online()->create();
+    $foreignCommand = Command::query()->create([
+        'onesi_box_id' => $foreignBox->id,
+        'type' => CommandType::GetLogs,
+        'payload' => ['lines' => 50],
+        'status' => CommandStatus::Completed,
+        'result' => ['lines' => ['SECRET LOG LINE']],
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(LogViewer::class, ['onesiBox' => $onesiBox])
+        ->set('pendingCommandId', $foreignCommand->id);
+})->throws(Exception::class, 'Cannot update locked property');
+
+it('locks the logs property so a client cannot stuff content into the session display', function (): void {
+    $user = User::factory()->admin()->create();
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::actingAs($user)
+        ->test(LogViewer::class, ['onesiBox' => $onesiBox])
+        ->set('logs', 'INJECTED FAKE LOG OUTPUT');
+})->throws(Exception::class, 'Cannot update locked property');
 
 it('does not create command for non-admin user', function (): void {
     $user = User::factory()->role(Roles::Caregiver)->create();

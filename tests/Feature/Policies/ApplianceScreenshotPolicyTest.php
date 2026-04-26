@@ -9,7 +9,7 @@ use App\Models\User;
 
 function makeScreenshot(OnesiBox $box): ApplianceScreenshot
 {
-    return ApplianceScreenshot::create([
+    return ApplianceScreenshot::query()->create([
         'onesi_box_id' => $box->id,
         'captured_at' => now(),
         'width' => 1920, 'height' => 1080, 'bytes' => 100,

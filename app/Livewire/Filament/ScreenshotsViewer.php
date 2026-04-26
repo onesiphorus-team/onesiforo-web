@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -27,6 +28,7 @@ class ScreenshotsViewer extends Component
 
     public OnesiBox $record;
 
+    #[Locked]
     public ?int $selectedId = null;
 
     #[Validate('boolean')]
@@ -57,7 +59,7 @@ class ScreenshotsViewer extends Component
     public function top10(): Collection
     {
         return $this->record->screenshots()
-            ->orderByDesc('captured_at')
+            ->latest('captured_at')
             ->limit(10)
             ->get();
     }
@@ -70,7 +72,7 @@ class ScreenshotsViewer extends Component
     {
         return $this->record->screenshots()
             ->where('captured_at', '>=', now()->subDay())
-            ->orderByDesc('captured_at')
+            ->latest('captured_at')
             ->get();
     }
 

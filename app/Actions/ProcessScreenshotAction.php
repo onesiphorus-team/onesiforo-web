@@ -35,7 +35,7 @@ class ProcessScreenshotAction
         );
 
         try {
-            $screenshot = ApplianceScreenshot::create([
+            $screenshot = ApplianceScreenshot::query()->create([
                 'onesi_box_id' => $box->id,
                 'captured_at' => $capturedAt,
                 'width' => $width,

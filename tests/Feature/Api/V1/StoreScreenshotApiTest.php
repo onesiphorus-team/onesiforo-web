@@ -44,6 +44,30 @@ test('unauthenticated request is rejected', function (): void {
     )->assertUnauthorized();
 });
 
+test('a user-issued sanctum token cannot upload an appliance screenshot', function (): void {
+    Storage::fake('local');
+
+    $user = App\Models\User::factory()->create();
+    $token = $user->createToken('user-token');
+
+    $box = OnesiBox::factory()->create();
+
+    $response = $this->postJson(
+        route('api.v1.appliances.screenshot.store'),
+        [
+            'captured_at' => now()->subSeconds(5)->toIso8601String(),
+            'width' => 1920,
+            'height' => 1080,
+            'screenshot' => UploadedFile::fake()->create('s.webp', 120, 'image/webp'),
+        ],
+        ['Authorization' => "Bearer {$token->plainTextToken}"]
+    );
+
+    $response->assertForbidden();
+
+    $this->assertDatabaseMissing('appliance_screenshots', ['onesi_box_id' => $box->id]);
+});
+
 test('non-webp upload returns 422', function (): void {
     $box = OnesiBox::factory()->create();
     $token = $box->createToken('onesibox-api-token');

@@ -15,7 +15,7 @@ test('deleting a screenshot removes the file from disk', function (): void {
     $path = "onesi-boxes/{$box->id}/screenshots/test.webp";
     Storage::disk('local')->put($path, $file->getContent());
 
-    $screenshot = ApplianceScreenshot::create([
+    $screenshot = ApplianceScreenshot::query()->create([
         'onesi_box_id' => $box->id,
         'captured_at' => now(),
         'width' => 1920,
@@ -33,7 +33,7 @@ test('deleting a screenshot removes the file from disk', function (): void {
 
 test('screenshot belongs to onesiBox', function (): void {
     $box = OnesiBox::factory()->create();
-    $screenshot = ApplianceScreenshot::create([
+    $screenshot = ApplianceScreenshot::query()->create([
         'onesi_box_id' => $box->id,
         'captured_at' => now(),
         'width' => 1920,

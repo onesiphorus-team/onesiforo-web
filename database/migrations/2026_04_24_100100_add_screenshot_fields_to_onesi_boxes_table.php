@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('onesi_boxes', function (Blueprint $table) {
+        Schema::table('onesi_boxes', function (Blueprint $table): void {
             $table->boolean('screenshot_enabled')->default(true)->after('is_active');
             $table->unsignedSmallInteger('screenshot_interval_seconds')->default(60)->after('screenshot_enabled');
         });
@@ -18,7 +18,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('onesi_boxes', function (Blueprint $table) {
+        Schema::table('onesi_boxes', function (Blueprint $table): void {
             $table->dropColumn(['screenshot_enabled', 'screenshot_interval_seconds']);
         });
     }

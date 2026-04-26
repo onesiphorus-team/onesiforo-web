@@ -34,10 +34,13 @@ class LogViewer extends Component
     #[Validate('required|integer|min:10|max:500')]
     public int $lines = 100;
 
+    #[Locked]
     public ?string $logs = null;
 
+    #[Locked]
     public bool $isLoading = false;
 
+    #[Locked]
     public ?int $pendingCommandId = null;
 
     /**

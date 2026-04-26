@@ -53,11 +53,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Implicitly grant "Super Admin" role all permissions
-        // ---> Before to decomment this, add the right condition
-        // ---> otherwise all policies will be ignored and all user
-        // ---> will not be able to perform any action
-        // Gate::before(fn (User $user, string $ability): bool => false); // TODO implement logic here
+        // No Gate::before bypass: each policy explicitly checks SuperAdmin role
+        // where appropriate, AND enforces additional invariants (e.g. cannot
+        // delete the last SuperAdmin in UserPolicy::deleteAny). A blanket
+        // before-callback would silently override those invariants.
 
         // Register UserPolicy explicitly (also auto-discovered by convention)
         Gate::policy(User::class, UserPolicy::class);
@@ -80,8 +79,8 @@ class AppServiceProvider extends ServiceProvider
         // limit api docs access to admin and super-admin users
         Gate::define('viewApiDocs', fn (User $user): bool => $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin));
 
-        // limit telescope access to admin users
-        // Gate::define('viewTelescope', fn (User $user): bool => false); // TODO implement logic here
+        // limit telescope access to admin and super-admin users
+        Gate::define('viewTelescope', fn (User $user): bool => $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin));
 
         $this->configureCommands();
         $this->configureModels();

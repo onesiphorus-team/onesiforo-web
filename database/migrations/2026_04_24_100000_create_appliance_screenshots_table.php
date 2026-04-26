@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('appliance_screenshots', function (Blueprint $table) {
+        Schema::create('appliance_screenshots', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('onesi_box_id')
                 ->constrained('onesi_boxes')

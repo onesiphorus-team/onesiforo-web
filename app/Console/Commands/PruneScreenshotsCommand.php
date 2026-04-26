@@ -57,13 +57,17 @@ class PruneScreenshotsCommand extends Command
 
     private function deleteOlderThan24h(OnesiBox $box): int
     {
-        $toDelete = ApplianceScreenshot::query()
+        $count = 0;
+
+        ApplianceScreenshot::query()
             ->where('onesi_box_id', $box->id)
             ->where('captured_at', '<', now()->subHours(24))
-            ->get();
-
-        $count = $toDelete->count();
-        $toDelete->each->delete();
+            ->chunkById(500, function (Collection $stale) use (&$count): void {
+                foreach ($stale as $screenshot) {
+                    $screenshot->delete();
+                    $count++;
+                }
+            });
 
         return $count;
     }
@@ -72,7 +76,7 @@ class PruneScreenshotsCommand extends Command
     {
         $all = ApplianceScreenshot::query()
             ->where('onesi_box_id', $box->id)
-            ->orderByDesc('captured_at')
+            ->latest('captured_at')
             ->get(['id', 'captured_at', 'storage_path']);
 
         if ($all->count() <= 10) {

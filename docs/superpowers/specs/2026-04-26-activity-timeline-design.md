@@ -97,6 +97,8 @@ The Livewire component constructs `from = today_midnight_rome->utc()` and `to = 
 
 ### Aggregation algorithm — playback
 
+`PlaybackEventType` enum cases (verified): `Started`, `Paused`, `Resumed`, `Stopped`, `Completed`, `Error`. The `playback_events` table has no `media_title` column — the only string identifying media is `media_url`.
+
 Pull `playback_events` for the box with `created_at >= $from AND created_at < $to`, ordered by `created_at` ASC.
 
 Walk linearly:
@@ -105,14 +107,14 @@ Walk linearly:
 $open = null
 foreach ($events as $event):
     match ($event->event):
-        'started' => {
+        Started => {
             if ($open) emit($open);
-            $open = new PendingSession(start: $event->created_at, label: deriveLabel($event));
+            $open = new PendingSession(start: $event->created_at, label: deriveLabel($event), mediaType: $event->media_type);
         }
-        'paused', 'resumed' => {
+        Paused, Resumed => {
             if ($open) $open->pauseCount++;
         }
-        'stopped', 'ended' => {
+        Stopped, Completed, Error => {
             if ($open) {
                 $open->endedAt = $event->created_at;
                 emit($open);
@@ -120,15 +122,13 @@ foreach ($events as $event):
             }
             // else: orphan close (started before $from) — skip
         }
-        default => skip;
 end:
     if ($open) emit($open with endedAt = null);   // in-progress
 ```
 
-`deriveLabel($event)` precedence:
-1. `$event->media_title` if present.
-2. `parse_url($event->media_url, PHP_URL_HOST)` if present.
-3. fallback `Riproduzione`.
+`deriveLabel(PlaybackEvent $event): string` precedence:
+1. `parse_url($event->media_url, PHP_URL_HOST)` when `media_url` is set and parseable to a host.
+2. fallback `Riproduzione`.
 
 Pause count > 0 produces metadata `"1 pausa"` / `"N pause"`.
 
@@ -182,7 +182,8 @@ PHP-side aggregation is O(N) over a small set. No DB-side grouping needed. The t
 12. Mixed playback + meeting → ordered by `startedAt` DESC.
 13. Timezone boundary: events at `2026-04-26 23:30 UTC` (= 01:30 Rome del 27) **not** included when called for "today Rome = 26".
 14. Meeting label resolves the enum (`Adunanza fine settimana`, `Adunanza infrasettimanale`, `Adunanza ad-hoc`).
-15. Media label fallback chain: `media_title` > host > `Riproduzione`.
+15. Media label fallback chain: host (from `media_url`) > `Riproduzione`.
+16. `Error` event closes an open session like `Stopped`/`Completed` (in v1 we don't surface the error reason).
 
 ### `ActivityTimelineTest` (Feature, Livewire)
 

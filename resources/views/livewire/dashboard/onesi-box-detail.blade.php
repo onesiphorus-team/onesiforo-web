@@ -9,7 +9,7 @@
 
 <div class="mx-auto max-w-4xl md:max-w-6xl pb-24 md:pb-8" wire:poll.15s="refreshFromDatabase">
     {{-- Sticky header --}}
-    <header class="sticky top-0 z-30 -mx-4 mb-4 border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95 sm:-mx-6 sm:px-6">
+    <header class="sticky top-0 z-10 -mx-4 mb-4 border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95 sm:-mx-6 sm:px-6">
         <div class="flex items-center gap-3">
             <flux:button variant="subtle" wire:click="goBack" icon="arrow-left" size="sm" aria-label="Torna alla lista" />
 

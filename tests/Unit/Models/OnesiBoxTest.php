@@ -8,15 +8,9 @@ use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
 use App\Models\Playlist;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 
-beforeEach(function (): void {
-    Carbon::setTestNow(Carbon::parse('2026-04-26 12:00:00', 'UTC'));
-});
-
-afterEach(function (): void {
-    Carbon::setTestNow();
-});
+beforeEach(fn () => freezeTestTime('2026-04-26 12:00:00'));
+afterEach(fn () => releaseTestTime());
 
 describe('isOnline', function (): void {
     it('is false when last_seen_at is null', function (): void {
@@ -76,17 +70,15 @@ describe('userHasFullPermission', function (): void {
     });
 
     it('returns false when the caregiver pivot has read-only permission', function (): void {
-        $box = OnesiBox::factory()->create();
         $user = User::factory()->create();
-        $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::ReadOnly->value]);
+        $box = OnesiBox::factory()->withCaregiver($user, OnesiBoxPermission::ReadOnly)->create();
 
         expect($box->userHasFullPermission($user))->toBeFalse();
     });
 
     it('returns true when the caregiver pivot has full permission', function (): void {
-        $box = OnesiBox::factory()->create();
         $user = User::factory()->create();
-        $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+        $box = OnesiBox::factory()->withCaregiver($user)->create();
 
         expect($box->userHasFullPermission($user))->toBeTrue();
     });
@@ -101,17 +93,15 @@ describe('userCanView', function (): void {
     });
 
     it('returns true even for a read-only caregiver', function (): void {
-        $box = OnesiBox::factory()->create();
         $user = User::factory()->create();
-        $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::ReadOnly->value]);
+        $box = OnesiBox::factory()->withCaregiver($user, OnesiBoxPermission::ReadOnly)->create();
 
         expect($box->userCanView($user))->toBeTrue();
     });
 
     it('returns true for a full-permission caregiver', function (): void {
-        $box = OnesiBox::factory()->create();
         $user = User::factory()->create();
-        $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+        $box = OnesiBox::factory()->withCaregiver($user)->create();
 
         expect($box->userCanView($user))->toBeTrue();
     });

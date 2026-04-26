@@ -4,15 +4,9 @@ declare(strict_types=1);
 
 use App\Models\OnesiBox;
 use App\Models\PlaybackEvent;
-use Illuminate\Support\Carbon;
 
-beforeEach(function (): void {
-    Carbon::setTestNow(Carbon::parse('2026-04-26 10:00:00', 'UTC'));
-});
-
-afterEach(function (): void {
-    Carbon::setTestNow();
-});
+beforeEach(fn () => freezeTestTime('2026-04-26 10:00:00'));
+afterEach(fn () => releaseTestTime());
 
 function makePlaybackEventAt(string $createdAt): PlaybackEvent
 {

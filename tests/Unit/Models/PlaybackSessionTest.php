@@ -8,13 +8,8 @@ use App\Models\Playlist;
 use App\Models\PlaylistItem;
 use Illuminate\Support\Carbon;
 
-beforeEach(function (): void {
-    Carbon::setTestNow(Carbon::parse('2026-04-26 14:00:00', 'UTC'));
-});
-
-afterEach(function (): void {
-    Carbon::setTestNow();
-});
+beforeEach(fn () => freezeTestTime('2026-04-26 14:00:00'));
+afterEach(fn () => releaseTestTime());
 
 function makeSessionFor(int $startedMinutesAgo, int $durationMinutes, int $position = 0): PlaybackSession
 {

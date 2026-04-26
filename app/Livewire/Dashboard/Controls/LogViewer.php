@@ -107,31 +107,18 @@ class LogViewer extends Component
             return;
         }
 
-        // Check if this is our command
         if (($payload['command_id'] ?? null) !== $this->pendingCommandId) {
             return;
         }
 
         $command = Command::query()->find($this->pendingCommandId);
         if ($command === null) {
-            $this->isLoading = false;
-            $this->pendingCommandId = null;
+            $this->resetCommandState();
 
             return;
         }
 
-        $this->isLoading = false;
-
-        if ($command->status === CommandStatus::Completed) {
-            // Extract logs from the result
-            $result = $command->result;
-            $this->logs = isset($result['lines']) ? implode("\n", $result['lines']) : 'Nessun log disponibile';
-        } else {
-            $this->logs = 'Errore nel recupero dei log: '.($command->error_message ?? 'Errore sconosciuto');
-            Flux::toast('Errore nel recupero dei log', variant: 'danger');
-        }
-
-        $this->pendingCommandId = null;
+        $this->applyResolvedCommand($command, toastOnError: true);
     }
 
     /**
@@ -139,9 +126,8 @@ class LogViewer extends Component
      */
     public function clearLogs(): void
     {
+        $this->resetCommandState();
         $this->logs = null;
-        $this->pendingCommandId = null;
-        $this->isLoading = false;
     }
 
     /**
@@ -155,28 +141,57 @@ class LogViewer extends Component
 
         $command = Command::query()->find($this->pendingCommandId);
         if ($command === null) {
-            $this->isLoading = false;
-            $this->pendingCommandId = null;
+            $this->resetCommandState();
 
             return;
         }
 
-        if ($command->status !== CommandStatus::Pending) {
-            $this->isLoading = false;
-
-            if ($command->status === CommandStatus::Completed) {
-                $result = $command->result;
-                $this->logs = isset($result['lines']) ? implode("\n", $result['lines']) : 'Nessun log disponibile';
-            } else {
-                $this->logs = 'Errore nel recupero dei log: '.($command->error_message ?? 'Errore sconosciuto');
-            }
-
-            $this->pendingCommandId = null;
+        if ($command->status === CommandStatus::Pending) {
+            return;
         }
+
+        $this->applyResolvedCommand($command);
     }
 
     public function render(): View
     {
         return view('livewire.dashboard.controls.log-viewer');
+    }
+
+    private function applyResolvedCommand(Command $command, bool $toastOnError = false): void
+    {
+        if ($command->status === CommandStatus::Completed) {
+            $this->logs = $this->formatCompletedResult($command->result);
+        } else {
+            $this->logs = $this->formatErrorMessage($command->error_message);
+
+            if ($toastOnError) {
+                Flux::toast('Errore nel recupero dei log', variant: 'danger');
+            }
+        }
+
+        $this->isLoading = false;
+        $this->pendingCommandId = null;
+    }
+
+    private function resetCommandState(): void
+    {
+        $this->isLoading = false;
+        $this->pendingCommandId = null;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $result
+     */
+    private function formatCompletedResult(?array $result): string
+    {
+        return isset($result['lines']) && is_array($result['lines'])
+            ? implode("\n", $result['lines'])
+            : 'Nessun log disponibile';
+    }
+
+    private function formatErrorMessage(?string $errorMessage): string
+    {
+        return 'Errore nel recupero dei log: '.($errorMessage ?? 'Errore sconosciuto');
     }
 }

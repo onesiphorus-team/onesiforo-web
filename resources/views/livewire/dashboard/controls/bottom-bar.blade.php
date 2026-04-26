@@ -37,7 +37,7 @@
         </div>
 
         {{-- Mobile sticky bottom bar (hidden on desktop) --}}
-        <nav class="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95 pb-[env(safe-area-inset-bottom)]"
+        <nav class="md:hidden fixed inset-x-0 bottom-0 z-10 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95 pb-[env(safe-area-inset-bottom)]"
              aria-label="Azioni rapide">
             <div class="grid grid-cols-5 gap-1 px-2 py-2 {{ $this->isOnline ? '' : 'opacity-40 pointer-events-none' }}">
                 <button type="button"

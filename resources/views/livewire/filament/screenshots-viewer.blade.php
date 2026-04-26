@@ -110,6 +110,7 @@
             <div class="flex gap-2 overflow-x-auto pb-2 min-w-0">
                 @foreach ($this->top10 as $s)
                     <button type="button"
+                            wire:key="top10-{{ $s->id }}"
                             wire:click="select({{ $s->id }})"
                             class="shrink-0 {{ $this->selectedId === $s->id ? 'ring-2 ring-primary-500' : '' }}">
                         <img src="{{ $s->signedUrl() }}"
@@ -131,6 +132,7 @@
             <div class="flex gap-2 overflow-x-auto pb-2 min-w-0">
                 @foreach ($this->hourlyBeyondTop10 as $s)
                     <button type="button"
+                            wire:key="hourly-{{ $s->id }}"
                             wire:click="select({{ $s->id }})"
                             class="shrink-0 {{ $this->selectedId === $s->id ? 'ring-2 ring-primary-500' : '' }}">
                         <img src="{{ $s->signedUrl() }}"

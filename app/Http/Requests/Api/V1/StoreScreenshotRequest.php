@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Concerns\AuthorizesAsOnesiBox;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreScreenshotRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
+    use AuthorizesAsOnesiBox;
 
     /**
      * @return array<string, array<int, string>>

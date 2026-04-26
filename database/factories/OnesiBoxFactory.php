@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\OnesiBoxPermission;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -79,5 +81,17 @@ class OnesiBoxFactory extends Factory
         return $this->state(fn (array $attributes): array => [
             'is_active' => false,
         ]);
+    }
+
+    /**
+     * Attach the given user as a caregiver with the specified permission.
+     * Defaults to Full so callers exercising privileged paths can chain
+     * `->withCaregiver($user)` without repeating the pivot setup.
+     */
+    public function withCaregiver(User $user, OnesiBoxPermission $permission = OnesiBoxPermission::Full): static
+    {
+        return $this->afterCreating(function (OnesiBox $box) use ($user, $permission): void {
+            $box->caregivers()->attach($user, ['permission' => $permission->value]);
+        });
     }
 }

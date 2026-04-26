@@ -56,3 +56,18 @@ function something(): void
 {
     // ..
 }
+
+/**
+ * Pin Carbon::now() and the immutable Date facade to a UTC instant for the
+ * duration of the surrounding test. Pair with `releaseTestTime()` in afterEach,
+ * or rely on Pest's automatic teardown.
+ */
+function freezeTestTime(string $utcInstant): void
+{
+    Illuminate\Support\Carbon::setTestNow(Illuminate\Support\Carbon::parse($utcInstant, 'UTC'));
+}
+
+function releaseTestTime(): void
+{
+    Illuminate\Support\Carbon::setTestNow();
+}

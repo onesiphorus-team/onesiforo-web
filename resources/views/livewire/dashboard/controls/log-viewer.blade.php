@@ -1,5 +1,5 @@
 <div class="p-4 sm:p-6 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700"
-     wire:poll.5s="checkCommandStatus">
+     wire:poll.15s="checkCommandStatus">
     <flux:heading size="sm" class="mb-4">
         <flux:icon name="document-text" class="w-5 h-5 inline-block mr-2" />
         Log di Sistema

@@ -30,7 +30,7 @@ class ScreenshotCarousel extends Component
     public function screenshots(): Collection
     {
         return $this->box->screenshots()
-            ->orderByDesc('captured_at')
+            ->latest('captured_at')
             ->limit($this->limit)
             ->get();
     }

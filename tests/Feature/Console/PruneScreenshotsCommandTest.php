@@ -15,7 +15,7 @@ function makeSs(OnesiBox $box, string $capturedAt, string $suffix = ''): Applian
     $path = "onesi-boxes/{$box->id}/screenshots/".str_replace([':', ' '], '-', $capturedAt)."_{$suffix}.webp";
     Storage::disk('local')->put($path, 'p');
 
-    return ApplianceScreenshot::create([
+    return ApplianceScreenshot::query()->create([
         'onesi_box_id' => $box->id,
         'captured_at' => $capturedAt,
         'width' => 1920, 'height' => 1080, 'bytes' => 1,
@@ -30,8 +30,8 @@ test('records older than 24h are deleted (record + file)', function (): void {
 
     $this->artisan('onesibox:prune-screenshots')->assertSuccessful();
 
-    expect(ApplianceScreenshot::find($stale->id))->toBeNull();
-    expect(ApplianceScreenshot::find($fresh->id))->not->toBeNull();
+    expect(ApplianceScreenshot::query()->find($stale->id))->toBeNull();
+    expect(ApplianceScreenshot::query()->find($fresh->id))->not->toBeNull();
     expect(Storage::disk('local')->exists($stale->storage_path))->toBeFalse();
 });
 
@@ -43,7 +43,7 @@ test('keeps top 10 most recent verbatim', function (): void {
 
     $this->artisan('onesibox:prune-screenshots')->assertSuccessful();
 
-    expect(ApplianceScreenshot::where('onesi_box_id', $box->id)->count())->toBe(10);
+    expect(ApplianceScreenshot::query()->where('onesi_box_id', $box->id)->count())->toBe(10);
 });
 
 test('rollup keeps one per hour bucket for records beyond top 10', function (): void {
@@ -61,11 +61,11 @@ test('rollup keeps one per hour bucket for records beyond top 10', function (): 
 
     $this->artisan('onesibox:prune-screenshots')->assertSuccessful();
 
-    $beyondTop10 = ApplianceScreenshot::where('onesi_box_id', $box->id)
+    $beyondTop10 = ApplianceScreenshot::query()->where('onesi_box_id', $box->id)
         ->where('captured_at', '<', now()->subMinute())
         ->count();
     expect($beyondTop10)->toBe(1);
-    expect(ApplianceScreenshot::where('onesi_box_id', $box->id)->count())->toBe(11);
+    expect(ApplianceScreenshot::query()->where('onesi_box_id', $box->id)->count())->toBe(11);
 });
 
 test('orphan sweep removes untracked files and keeps tracked ones', function (): void {

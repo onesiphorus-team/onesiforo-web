@@ -20,6 +20,7 @@
             <div class="mt-3 flex gap-1 overflow-x-auto pb-1 min-w-0" role="region" aria-label="Diagnostica">
                 @foreach ($screenshots as $s)
                     <button type="button"
+                            wire:key="carousel-compact-{{ $s->id }}"
                             @click="show(@js($s->signedUrl(10)), @js($s->signedUrl(10)), @js($s->captured_at->toDateTimeString()))"
                             class="shrink-0 cursor-zoom-in"
                             aria-label="Ingrandisci screenshot {{ $s->captured_at->toDateTimeString() }}">
@@ -37,6 +38,7 @@
                 <div class="flex gap-2 overflow-x-auto pb-2 min-w-0">
                     @foreach ($screenshots as $s)
                         <button type="button"
+                                wire:key="carousel-full-{{ $s->id }}"
                                 @click="show(@js($s->signedUrl(10)), @js($s->signedUrl(10)), @js($s->captured_at->toDateTimeString()))"
                                 class="shrink-0 cursor-zoom-in"
                                 aria-label="Ingrandisci screenshot {{ $s->captured_at->toDateTimeString() }}">

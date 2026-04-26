@@ -17,7 +17,7 @@ test('action persists file and record and dispatches event', function (): void {
     $file = UploadedFile::fake()->create('s.webp', 120, 'image/webp');
     $capturedAt = now()->subSeconds(5);
 
-    $action = app(ProcessScreenshotAction::class);
+    $action = resolve(ProcessScreenshotAction::class);
     $screenshot = $action->execute($box, $capturedAt, 1920, 1080, $file);
 
     expect($screenshot->onesi_box_id)->toBe($box->id)

@@ -18,7 +18,7 @@ function createScreenshotWithFile(OnesiBox $box): ApplianceScreenshot
     $path = "onesi-boxes/{$box->id}/screenshots/test.webp";
     Storage::disk('local')->put($path, 'binary-webp-placeholder');
 
-    return ApplianceScreenshot::create([
+    return ApplianceScreenshot::query()->create([
         'onesi_box_id' => $box->id,
         'captured_at' => now(),
         'width' => 1920, 'height' => 1080, 'bytes' => 100,

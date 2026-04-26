@@ -2,6 +2,16 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.10.10] - 2026-04-26
+
+### Features
+
+- Caregiver activity timeline accordion in OnesiBoxDetail showing today's playback sessions and meeting attendances (#210)
+
+### Internal
+
+- Add @property docblocks to MeetingAttendance and MeetingInstance for stricter PHPStan typing (#210)
+
 ## [0.10.8] - 2026-04-26
 
 ### Bug Fixes

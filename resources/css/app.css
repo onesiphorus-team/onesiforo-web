@@ -61,6 +61,17 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
+/*
+ * Flux's default sidebar backdrop is `bg-black/10`, which is essentially
+ * invisible against the dark page background and makes the open mobile
+ * sidebar look like a layout glitch (page content stays fully visible to
+ * the right of the drawer). Increase opacity and add a slight blur so the
+ * backdrop reads as a proper modal overlay.
+ */
+[data-flux-sidebar-backdrop] {
+    @apply bg-black/50 backdrop-blur-sm;
+}
+
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */

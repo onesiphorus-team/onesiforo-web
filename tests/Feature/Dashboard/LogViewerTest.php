@@ -94,6 +94,8 @@ it('clears logs when clearLogs is called', function (): void {
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
     $component = Livewire::actingAs($user)->test(LogViewer::class, ['onesiBox' => $onesiBox]);
+    // Direct PHP property writes bypass #[Locked] (which only blocks client mutations)
+    // and let us simulate the server-side post-action state without going through requestLogs().
     $component->instance()->logs = 'Some log content';
     $component->instance()->isLoading = true;
     $component->instance()->pendingCommandId = 123;
@@ -176,7 +178,7 @@ it('locks pendingCommandId so a malicious client cannot inject an arbitrary comm
     Livewire::actingAs($user)
         ->test(LogViewer::class, ['onesiBox' => $onesiBox])
         ->set('pendingCommandId', $foreignCommand->id);
-})->throws(Exception::class, 'Cannot update locked property');
+})->throws(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
 
 it('locks the logs property so a client cannot stuff content into the session display', function (): void {
     $user = User::factory()->admin()->create();
@@ -186,7 +188,7 @@ it('locks the logs property so a client cannot stuff content into the session di
     Livewire::actingAs($user)
         ->test(LogViewer::class, ['onesiBox' => $onesiBox])
         ->set('logs', 'INJECTED FAKE LOG OUTPUT');
-})->throws(Exception::class, 'Cannot update locked property');
+})->throws(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
 
 it('does not create command for non-admin user', function (): void {
     $user = User::factory()->role(Roles::Caregiver)->create();

@@ -11,8 +11,22 @@
         </flux:text>
         @if($this->canControl)
             <div class="mt-4 flex flex-col gap-2 md:flex-row md:gap-3">
-                <flux:button wire:click="openSession" wire:loading.attr="disabled" wire:target="openSession" variant="primary" icon="queue-list" class="w-full md:w-auto">Avvia sessione playlist</flux:button>
-                <flux:button wire:click="openNew" wire:loading.attr="disabled" wire:target="openNew" variant="filled" icon="plus" class="w-full md:w-auto">Nuovo contenuto</flux:button>
+                <flux:button
+                    wire:click="openSession"
+                    wire:loading.attr="disabled"
+                    wire:target="openSession"
+                    variant="primary"
+                    icon="queue-list"
+                    class="w-full md:w-auto"
+                >Avvia sessione playlist</flux:button>
+                <flux:button
+                    wire:click="openNew"
+                    wire:loading.attr="disabled"
+                    wire:target="openNew"
+                    variant="filled"
+                    icon="plus"
+                    class="w-full md:w-auto"
+                >Nuovo contenuto</flux:button>
             </div>
         @endif
     @elseif($state === 'media')
@@ -51,11 +65,32 @@
         @if($this->canControl)
             <div class="mt-4 flex gap-2">
                 @if($isPaused)
-                    <flux:button wire:click="resume" wire:loading.attr="disabled" wire:target="resume" variant="primary" icon="play" class="flex-1">Riprendi</flux:button>
+                    <flux:button
+                        wire:click="resume"
+                        wire:loading.attr="disabled"
+                        wire:target="resume"
+                        variant="primary"
+                        icon="play"
+                        class="flex-1"
+                    >Riprendi</flux:button>
                 @else
-                    <flux:button wire:click="pause" wire:loading.attr="disabled" wire:target="pause" variant="primary" icon="pause" class="flex-1">Pausa</flux:button>
+                    <flux:button
+                        wire:click="pause"
+                        wire:loading.attr="disabled"
+                        wire:target="pause"
+                        variant="primary"
+                        icon="pause"
+                        class="flex-1"
+                    >Pausa</flux:button>
                 @endif
-                <flux:button wire:click="stop" wire:loading.attr="disabled" wire:target="stop" variant="danger" icon="stop-circle" class="flex-1">Stop</flux:button>
+                <flux:button
+                    wire:click="stop"
+                    wire:loading.attr="disabled"
+                    wire:target="stop"
+                    variant="danger"
+                    icon="stop-circle"
+                    class="flex-1"
+                >Stop</flux:button>
             </div>
         @endif
     @elseif($state === 'call')
@@ -72,7 +107,14 @@
 
         @if($this->canControl)
             <div class="mt-4">
-                <flux:button wire:click="leaveZoom" wire:loading.attr="disabled" wire:target="leaveZoom" variant="danger" icon="phone-x-mark" class="w-full">Termina chiamata</flux:button>
+                <flux:button
+                    wire:click="leaveZoom"
+                    wire:loading.attr="disabled"
+                    wire:target="leaveZoom"
+                    variant="danger"
+                    icon="phone-x-mark"
+                    class="w-full"
+                >Termina chiamata</flux:button>
             </div>
         @endif
     @elseif($state === 'offline')

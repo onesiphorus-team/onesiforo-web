@@ -13,6 +13,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $congregation_id
+ * @property MeetingType $type
+ * @property MeetingInstanceStatus $status
+ * @property \Carbon\CarbonInterface $scheduled_at
+ * @property string|null $zoom_url
+ * @property string|null $cancelled_reason
+ * @property \Carbon\CarbonInterface|null $created_at
+ * @property \Carbon\CarbonInterface|null $updated_at
+ * @property-read Congregation $congregation
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, MeetingAttendance> $attendances
+ */
 class MeetingInstance extends Model
 {
     /** @use HasFactory<\Database\Factories\MeetingInstanceFactory> */

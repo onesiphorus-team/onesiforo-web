@@ -13,8 +13,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property int $id
+ * @property int $meeting_instance_id
+ * @property int $onesi_box_id
  * @property MeetingAttendanceStatus $status
  * @property MeetingJoinMode $join_mode
+ * @property \Carbon\CarbonInterface|null $joined_at
+ * @property \Carbon\CarbonInterface|null $left_at
+ * @property \Carbon\CarbonInterface|null $created_at
+ * @property \Carbon\CarbonInterface|null $updated_at
+ * @property-read MeetingInstance $meetingInstance
+ * @property-read OnesiBox $onesiBox
  */
 class MeetingAttendance extends Model
 {

@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.11.1] - 2026-05-24
+
+### Bug Fixes
+
+- Shorten index name + idempotent up()
+
 ## [0.11.0] - 2026-05-24
 
 ### Features

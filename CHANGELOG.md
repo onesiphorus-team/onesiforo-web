@@ -2,6 +2,16 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.11.0] - 2026-05-24
+
+### Features
+
+- Per-box shell command runner
+
+### Build
+
+- Bump laravel/fortify from 1.36.2 to 1.37.0
+
 ## [0.10.10] - 2026-04-26
 
 ### Features

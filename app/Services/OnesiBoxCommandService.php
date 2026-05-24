@@ -10,6 +10,7 @@ use App\Events\OnesiBoxCommandSent;
 use App\Exceptions\OnesiBoxOfflineException;
 use App\Jobs\SendOnesiBoxCommand;
 use App\Models\Command;
+use App\Models\CustomCommand;
 use App\Models\OnesiBox;
 use App\Models\User;
 
@@ -106,6 +107,15 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
     public function sendResumeCommand(OnesiBox $onesiBox): void
     {
         $this->sendCommand($onesiBox, CommandType::ResumeMedia);
+    }
+
+    public function sendCustomScriptCommand(OnesiBox $onesiBox, CustomCommand $customCommand): void
+    {
+        $this->sendCommand($onesiBox, CommandType::CustomScript, [
+            'custom_command_id' => $customCommand->id,
+            'script_name' => $customCommand->script_name,
+            'static_args' => $customCommand->static_args ?? [],
+        ]);
     }
 
     /**

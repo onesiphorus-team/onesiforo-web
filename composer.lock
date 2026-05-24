@@ -8094,16 +8094,16 @@
         },
         {
             "name": "spatie/laravel-ray",
-            "version": "1.43.8",
+            "version": "1.43.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-ray.git",
-                "reference": "0de5b861cce7c17276bb649b4b34964b822e32b9"
+                "reference": "85137a6ea1d3ecd5ad3adcb43512fff9a5529e72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-ray/zipball/0de5b861cce7c17276bb649b4b34964b822e32b9",
-                "reference": "0de5b861cce7c17276bb649b4b34964b822e32b9",
+                "url": "https://api.github.com/repos/spatie/laravel-ray/zipball/85137a6ea1d3ecd5ad3adcb43512fff9a5529e72",
+                "reference": "85137a6ea1d3ecd5ad3adcb43512fff9a5529e72",
                 "shasum": ""
             },
             "require": {
@@ -8167,7 +8167,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-ray/issues",
-                "source": "https://github.com/spatie/laravel-ray/tree/1.43.8"
+                "source": "https://github.com/spatie/laravel-ray/tree/1.43.9"
             },
             "funding": [
                 {
@@ -8179,7 +8179,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-04-16T11:52:31+00:00"
+            "time": "2026-04-28T06:07:04+00:00"
         },
         {
             "name": "spatie/macroable",
@@ -9796,7 +9796,7 @@
         },
         {
             "name": "symfony/polyfill-iconv",
-            "version": "v1.36.0",
+            "version": "v1.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-iconv.git",
@@ -9856,7 +9856,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-iconv/tree/v1.36.0"
+                "source": "https://github.com/symfony/polyfill-iconv/tree/v1.37.0"
             },
             "funding": [
                 {

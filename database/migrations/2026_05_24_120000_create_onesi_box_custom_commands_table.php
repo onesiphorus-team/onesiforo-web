@@ -10,6 +10,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // dropIfExists is intentional: a previous run of this migration failed
+        // mid-way on MySQL (auto-generated index name >64 chars) leaving an
+        // orphan table without the index. Wipe and recreate cleanly.
+        Schema::dropIfExists('onesi_box_custom_commands');
+
         Schema::create('onesi_box_custom_commands', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('onesi_box_id')->constrained('onesi_boxes')->cascadeOnDelete();
@@ -23,7 +28,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['onesi_box_id', 'is_enabled', 'sort_order']);
+            // Explicit short index name to stay within MySQL's 64-char limit.
+            $table->index(['onesi_box_id', 'is_enabled', 'sort_order'], 'oboxcc_box_enabled_sort_idx');
         });
     }
 

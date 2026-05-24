@@ -76,6 +76,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read Recipient|null $recipient
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $caregivers
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Command> $commands
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, CustomCommand> $customCommands
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackEvent> $playbackEvents
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Playlist> $playlists
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackSession> $playbackSessions
@@ -243,6 +244,16 @@ class OnesiBox extends Model implements AuthenticatableContract
             ->where('status', CommandStatus::Pending)
             ->where('expires_at', '>', now())
             ->orderBy('priority')->oldest();
+    }
+
+    /**
+     * Get the per-box custom shell commands.
+     *
+     * @return HasMany<CustomCommand, $this>
+     */
+    public function customCommands(): HasMany
+    {
+        return $this->hasMany(CustomCommand::class);
     }
 
     /**

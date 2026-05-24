@@ -6,10 +6,19 @@ namespace App\Services;
 
 use App\Exceptions\OnesiBoxCommandException;
 use App\Exceptions\OnesiBoxOfflineException;
+use App\Models\CustomCommand;
 use App\Models\OnesiBox;
 
 interface OnesiBoxCommandServiceInterface
 {
+    /**
+     * Invia un comando custom (script .sh sulla OnesiBox).
+     *
+     * @throws OnesiBoxOfflineException
+     * @throws OnesiBoxCommandException
+     */
+    public function sendCustomScriptCommand(OnesiBox $onesiBox, CustomCommand $customCommand): void;
+
     /**
      * Invia comando di riproduzione audio.
      *

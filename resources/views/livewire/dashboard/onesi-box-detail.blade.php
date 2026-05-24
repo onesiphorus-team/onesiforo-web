@@ -81,6 +81,9 @@
                     <livewire:dashboard.controls.command-queue :onesiBox="$onesiBox" wire:key="command-queue-{{ $onesiBox->id }}" />
                 </x-accordion-item>
 
+                <livewire:dashboard.controls.custom-commands-list :onesiBox="$onesiBox" wire:key="custom-commands-{{ $onesiBox->id }}" />
+
+
                 <x-accordion-item title="Attività oggi">
                     <livewire:dashboard.controls.activity-timeline :onesiBox="$onesiBox" wire:key="activity-timeline-{{ $onesiBox->id }}" />
                 </x-accordion-item>

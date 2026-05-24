@@ -44,6 +44,9 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
     case GetSystemInfo = 'get_system_info';
     case GetLogs = 'get_logs';
 
+    // Custom per-box shell scripts
+    case CustomScript = 'custom_script';
+
     /**
      * Get the default expiration time in minutes for this command type.
      *
@@ -63,7 +66,8 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::UpdateConfig => 1440,
 
             self::GetSystemInfo,
-            self::GetLogs => 5,
+            self::GetLogs,
+            self::CustomScript => 5,
 
             default => 60,
         };
@@ -92,6 +96,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::UpdateConfig => __('Aggiorna configurazione'),
             self::GetSystemInfo => __('Info sistema'),
             self::GetLogs => __('Recupera log'),
+            self::CustomScript => __('Comando personalizzato'),
         };
     }
 
@@ -116,6 +121,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::UpdateConfig => 'heroicon-o-cog-6-tooth',
             self::GetSystemInfo => 'heroicon-o-cpu-chip',
             self::GetLogs => 'heroicon-o-document-text',
+            self::CustomScript => 'heroicon-o-command-line',
         };
     }
 
@@ -134,6 +140,7 @@ enum CommandType: string implements HasColor, HasIcon, HasLabel
             self::UpdateConfig => 'info',
             self::GetSystemInfo => 'info',
             self::GetLogs => 'info',
+            self::CustomScript => 'primary',
         };
     }
 }

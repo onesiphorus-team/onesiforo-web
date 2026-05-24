@@ -32,8 +32,12 @@ Broadcast::channel('onesibox.{id}', function (User $user, int $id) {
     return $onesiBox->userCanView($user);
 });
 
-// Channel for appliances to receive real-time command notifications
-// The appliance authenticates via Sanctum token and can only listen to its own channel
-Broadcast::channel('appliance.{serialNumber}', function (OnesiBox $onesiBox, string $serialNumber) {
-    return $onesiBox->serial_number === $serialNumber;
+// Channel for appliances to receive real-time command notifications.
+// The appliance authenticates via Sanctum token; the `{identifier}` placeholder
+// accepts either the appliance's serial_number or its numeric id. This lets the
+// client subscribe with whichever identifier its config exposes (legacy installs
+// carry an opaque appliance_id UUID; newer installs use serial_number).
+Broadcast::channel('appliance.{identifier}', function (OnesiBox $onesiBox, string $identifier) {
+    return $identifier === $onesiBox->serial_number
+        || $identifier === (string) $onesiBox->id;
 });

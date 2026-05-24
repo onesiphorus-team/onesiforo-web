@@ -2,6 +2,17 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.11.3] - 2026-05-24
+
+### Build
+
+- Bump softprops/action-gh-release from 2 to 3
+- Bump laravel-notification-channels/telegram
+- Bump livewire/livewire from 4.2.4 to 4.3.0
+- Bump spatie/laravel-ray from 1.43.8 to 1.43.9
+- Bump laravel/sail from 1.57.0 to 1.60.0
+- Bump filament/filament from 5.6.1 to 5.6.5
+
 ## [0.11.2] - 2026-05-24
 
 ### Bug Fixes

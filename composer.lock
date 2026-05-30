@@ -789,16 +789,16 @@
         },
         {
             "name": "dedoc/scramble",
-            "version": "v0.13.20",
+            "version": "v0.13.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dedoc/scramble.git",
-                "reference": "55545987558fdd44d676831a41bf0a41365c5ab6"
+                "reference": "a5a82b30c59e0b2734cdb024af3a8c32f8b1bb6c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dedoc/scramble/zipball/55545987558fdd44d676831a41bf0a41365c5ab6",
-                "reference": "55545987558fdd44d676831a41bf0a41365c5ab6",
+                "url": "https://api.github.com/repos/dedoc/scramble/zipball/a5a82b30c59e0b2734cdb024af3a8c32f8b1bb6c",
+                "reference": "a5a82b30c59e0b2734cdb024af3a8c32f8b1bb6c",
                 "shasum": ""
             },
             "require": {
@@ -857,7 +857,7 @@
             ],
             "support": {
                 "issues": "https://github.com/dedoc/scramble/issues",
-                "source": "https://github.com/dedoc/scramble/tree/v0.13.20"
+                "source": "https://github.com/dedoc/scramble/tree/v0.13.24"
             },
             "funding": [
                 {
@@ -865,7 +865,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-16T14:13:35+00:00"
+            "time": "2026-05-29T18:39:09+00:00"
         },
         {
             "name": "dev-to-geek/laravel-init",

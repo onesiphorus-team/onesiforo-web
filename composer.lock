@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "14b361e679c1a99232fb3feb14df7776",
+    "content-hash": "16639c39911fac6728688ab1577b9144",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -14563,16 +14563,16 @@
         },
         {
             "name": "laravel/boost",
-            "version": "v2.4.10",
+            "version": "v2.4.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/boost.git",
-                "reference": "080189f51c8d27c0792a03483a70adc7770f6eeb"
+                "reference": "c98fc9d151de97a1864b51fc7c710fc03023ba17"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/boost/zipball/080189f51c8d27c0792a03483a70adc7770f6eeb",
-                "reference": "080189f51c8d27c0792a03483a70adc7770f6eeb",
+                "url": "https://api.github.com/repos/laravel/boost/zipball/c98fc9d151de97a1864b51fc7c710fc03023ba17",
+                "reference": "c98fc9d151de97a1864b51fc7c710fc03023ba17",
                 "shasum": ""
             },
             "require": {
@@ -14625,20 +14625,20 @@
                 "issues": "https://github.com/laravel/boost/issues",
                 "source": "https://github.com/laravel/boost"
             },
-            "time": "2026-06-09T10:21:08+00:00"
+            "time": "2026-06-26T08:21:49+00:00"
         },
         {
             "name": "laravel/mcp",
-            "version": "v0.8.1",
+            "version": "v0.8.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/mcp.git",
-                "reference": "fdc39c9e21048801508765cb4d72bd9e8501b51f"
+                "reference": "0c32bf369c6432cab21458f9f4479da33a49ba37"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/mcp/zipball/fdc39c9e21048801508765cb4d72bd9e8501b51f",
-                "reference": "fdc39c9e21048801508765cb4d72bd9e8501b51f",
+                "url": "https://api.github.com/repos/laravel/mcp/zipball/0c32bf369c6432cab21458f9f4479da33a49ba37",
+                "reference": "0c32bf369c6432cab21458f9f4479da33a49ba37",
                 "shasum": ""
             },
             "require": {
@@ -14699,7 +14699,7 @@
                 "issues": "https://github.com/laravel/mcp/issues",
                 "source": "https://github.com/laravel/mcp"
             },
-            "time": "2026-06-11T13:59:49+00:00"
+            "time": "2026-06-25T14:00:45+00:00"
         },
         {
             "name": "laravel/pint",

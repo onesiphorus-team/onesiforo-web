@@ -13,22 +13,10 @@ use Illuminate\Support\Facades\Validator;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
 
+#[\Illuminate\Console\Attributes\Description('Crea un nuovo utente super-admin')]
+#[\Illuminate\Console\Attributes\Signature('app:create-super-admin')]
 class CreateSuperAdminCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:create-super-admin';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Crea un nuovo utente super-admin';
-
     /**
      * Execute the console command.
      */

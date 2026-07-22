@@ -34,6 +34,18 @@ use Illuminate\Support\Carbon;
  * @property-read string $full_name
  * @property-read string|null $full_address
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'first_name',
+    'last_name',
+    'phone',
+    'street',
+    'city',
+    'postal_code',
+    'province',
+    'emergency_contacts',
+    'notes',
+    'congregation_id',
+])]
 class Recipient extends Model
 {
     /** @use HasFactory<\Database\Factories\RecipientFactory> */
@@ -41,24 +53,6 @@ class Recipient extends Model
 
     use LogsActivityAllDirty;
     use SoftDeletes;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'first_name',
-        'last_name',
-        'phone',
-        'street',
-        'city',
-        'postal_code',
-        'province',
-        'emergency_contacts',
-        'notes',
-        'congregation_id',
-    ];
 
     /**
      * Get the OnesiBox associated with this recipient.

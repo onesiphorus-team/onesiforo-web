@@ -14,22 +14,10 @@ use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
 
+#[\Illuminate\Console\Attributes\Description('Crea un nuovo utente')]
+#[\Illuminate\Console\Attributes\Signature('app:create-user')]
 class CreateUserCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:create-user';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Crea un nuovo utente';
-
     /**
      * Execute the console command.
      */

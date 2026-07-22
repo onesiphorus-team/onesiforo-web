@@ -21,18 +21,17 @@ use Illuminate\Support\Facades\URL;
  * @property CarbonInterface|null $created_at
  * @property-read OnesiBox $onesiBox
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'onesi_box_id',
+    'captured_at',
+    'width',
+    'height',
+    'bytes',
+    'storage_path',
+])]
 class ApplianceScreenshot extends Model
 {
     public const UPDATED_AT = null;
-
-    protected $fillable = [
-        'onesi_box_id',
-        'captured_at',
-        'width',
-        'height',
-        'bytes',
-        'storage_path',
-    ];
 
     /**
      * @return BelongsTo<OnesiBox, $this>

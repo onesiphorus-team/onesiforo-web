@@ -25,21 +25,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read MeetingInstance $meetingInstance
  * @property-read OnesiBox $onesiBox
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'meeting_instance_id',
+    'onesi_box_id',
+    'join_mode',
+    'joined_at',
+    'left_at',
+    'status',
+])]
 class MeetingAttendance extends Model
 {
     /** @use HasFactory<\Database\Factories\MeetingAttendanceFactory> */
     use HasFactory;
 
     use LogsActivityAllDirty;
-
-    protected $fillable = [
-        'meeting_instance_id',
-        'onesi_box_id',
-        'join_mode',
-        'joined_at',
-        'left_at',
-        'status',
-    ];
 
     /** @return BelongsTo<MeetingInstance, $this> */
     public function meetingInstance(): BelongsTo

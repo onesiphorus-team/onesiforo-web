@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\ClassMethod\RemoveReturnTagIncompatibleWithNativeTypeRector;
+use Rector\DeadCode\Rector\ClassMethod\RemoveUselessReturnTagRector;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use RectorLaravel\Rector\StaticCall\CarbonToDateFacadeRector;
 use RectorLaravel\Set\LaravelSetList;
@@ -21,6 +23,14 @@ return RectorConfig::configure()
     ->withSkip([
         AddOverrideAttributeToOverriddenMethodsRector::class,
         CarbonToDateFacadeRector::class,
+        // Both rules strip `@return view-string`, a PHPStan-only narrowing of
+        // the native `string` return type that Larastan requires here.
+        RemoveUselessReturnTagRector::class => [
+            __DIR__.'/app/Livewire/Dashboard/Controls/MediaPlayer.php',
+        ],
+        RemoveReturnTagIncompatibleWithNativeTypeRector::class => [
+            __DIR__.'/app/Livewire/Dashboard/Controls/MediaPlayer.php',
+        ],
     ])
     ->withSets([
         LaravelSetList::LARAVEL_ELOQUENT_MAGIC_METHOD_TO_QUERY_BUILDER,

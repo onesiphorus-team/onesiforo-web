@@ -14,23 +14,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Facades\Validator;
 
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'name',
+    'zoom_url',
+    'midweek_day',
+    'midweek_time',
+    'weekend_day',
+    'weekend_time',
+    'timezone',
+    'is_active',
+])]
 class Congregation extends Model
 {
     /** @use HasFactory<\Database\Factories\CongregationFactory> */
     use HasFactory;
 
     use LogsActivityAllDirty;
-
-    protected $fillable = [
-        'name',
-        'zoom_url',
-        'midweek_day',
-        'midweek_time',
-        'weekend_day',
-        'weekend_time',
-        'timezone',
-        'is_active',
-    ];
 
     /** @return HasMany<Recipient, $this> */
     public function recipients(): HasMany

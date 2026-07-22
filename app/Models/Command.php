@@ -33,31 +33,25 @@ use Illuminate\Support\Str;
  * @property CarbonInterface|null $updated_at
  * @property-read OnesiBox $onesiBox
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'uuid',
+    'onesi_box_id',
+    'type',
+    'payload',
+    'priority',
+    'status',
+    'expires_at',
+    'executed_at',
+    'error_code',
+    'error_message',
+    'result',
+])]
 class Command extends Model
 {
     /** @use HasFactory<\Database\Factories\CommandFactory> */
     use HasFactory;
 
     use LogsActivityAllDirty;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'uuid',
-        'onesi_box_id',
-        'type',
-        'payload',
-        'priority',
-        'status',
-        'expires_at',
-        'executed_at',
-        'error_code',
-        'error_message',
-        'result',
-    ];
 
     /**
      * Get the route key for the model.

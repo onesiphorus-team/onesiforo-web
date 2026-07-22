@@ -22,6 +22,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property-read Playlist $playlist
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'playlist_id',
+    'media_url',
+    'title',
+    'duration_seconds',
+    'position',
+])]
 class PlaylistItem extends Model
 {
     /** @use HasFactory<\Database\Factories\PlaylistItemFactory> */
@@ -33,19 +40,6 @@ class PlaylistItem extends Model
      * Disable updated_at timestamp — this model only uses created_at.
      */
     public const UPDATED_AT = null;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'playlist_id',
-        'media_url',
-        'title',
-        'duration_seconds',
-        'position',
-    ];
 
     /**
      * Get the playlist that owns this item.

@@ -9,22 +9,10 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 
+#[\Illuminate\Console\Attributes\Description('Delete playback events older than the specified retention period')]
+#[\Illuminate\Console\Attributes\Signature('app:prune-playback-events {--days=30 : Number of days to retain}')]
 class PrunePlaybackEventsCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:prune-playback-events {--days=30 : Number of days to retain}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Delete playback events older than the specified retention period';
-
     /**
      * Execute the console command.
      */

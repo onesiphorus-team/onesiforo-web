@@ -21,22 +21,17 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property-read OnesiBox $onesiBox
  * @property-read User $user
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'onesi_box_id',
+    'user_id',
+    'permission',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'onesi_box_user')]
 class OnesiBoxUser extends Pivot
 {
     use LogsActivityAllDirty;
 
     public $incrementing = true;
-
-    protected $table = 'onesi_box_user';
-
-    /**
-     * @var list<string>
-     */
-    protected $fillable = [
-        'onesi_box_id',
-        'user_id',
-        'permission',
-    ];
 
     /**
      * Get the OnesiBox for this pivot record.

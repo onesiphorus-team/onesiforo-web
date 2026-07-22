@@ -81,6 +81,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Playlist> $playlists
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackSession> $playbackSessions
  */
+#[\Illuminate\Database\Eloquent\Attributes\Guarded(['id'])]
 class OnesiBox extends Model implements AuthenticatableContract
 {
     use HasApiTokens;
@@ -129,13 +130,6 @@ class OnesiBox extends Model implements AuthenticatableContract
         'memory_cached',
         'last_system_info_at',
     ];
-
-    /**
-     * The attributes that aren't mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $guarded = ['id'];
 
     /**
      * Override activity log options to exclude telemetry fields.

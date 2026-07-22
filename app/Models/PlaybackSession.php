@@ -33,30 +33,24 @@ use Illuminate\Support\Str;
  * @property-read OnesiBox $onesiBox
  * @property-read Playlist $playlist
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'uuid',
+    'onesi_box_id',
+    'playlist_id',
+    'status',
+    'duration_minutes',
+    'started_at',
+    'ended_at',
+    'current_position',
+    'items_played',
+    'items_skipped',
+])]
 class PlaybackSession extends Model
 {
     /** @use HasFactory<\Database\Factories\PlaybackSessionFactory> */
     use HasFactory;
 
     use LogsActivityAllDirty;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'uuid',
-        'onesi_box_id',
-        'playlist_id',
-        'status',
-        'duration_minutes',
-        'started_at',
-        'ended_at',
-        'current_position',
-        'items_played',
-        'items_skipped',
-    ];
 
     /**
      * Get the route key for the model.

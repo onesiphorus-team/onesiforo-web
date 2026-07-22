@@ -30,6 +30,17 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $deleted_at
  * @property-read OnesiBox $onesiBox
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'onesi_box_id',
+    'name',
+    'description',
+    'script_name',
+    'static_args',
+    'icon',
+    'sort_order',
+    'is_enabled',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'onesi_box_custom_commands')]
 class CustomCommand extends Model
 {
     /** @use HasFactory<CustomCommandFactory> */
@@ -39,22 +50,6 @@ class CustomCommand extends Model
     use SoftDeletes;
 
     public const SCRIPT_NAME_REGEX = '/^[a-zA-Z0-9_.\-]+\.sh$/';
-
-    protected $table = 'onesi_box_custom_commands';
-
-    /**
-     * @var list<string>
-     */
-    protected $fillable = [
-        'onesi_box_id',
-        'name',
-        'description',
-        'script_name',
-        'static_args',
-        'icon',
-        'sort_order',
-        'is_enabled',
-    ];
 
     /**
      * @return BelongsTo<OnesiBox, $this>

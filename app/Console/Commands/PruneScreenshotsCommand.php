@@ -11,12 +11,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
+#[\Illuminate\Console\Attributes\Description('Apply rollup retention (top 10 + 1 per hour within 24h) to appliance screenshots')]
+#[\Illuminate\Console\Attributes\Signature('onesibox:prune-screenshots {--sweep-orphans}')]
 class PruneScreenshotsCommand extends Command
 {
-    protected $signature = 'onesibox:prune-screenshots {--sweep-orphans}';
-
-    protected $description = 'Apply rollup retention (top 10 + 1 per hour within 24h) to appliance screenshots';
-
     public function handle(): int
     {
         $startedAt = microtime(true);

@@ -15,12 +15,10 @@ use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
+#[\Illuminate\Console\Attributes\Description('Check for upcoming meetings and create instances with notifications')]
+#[\Illuminate\Console\Attributes\Signature('meetings:check-upcoming')]
 class CheckUpcomingMeetingsCommand extends Command
 {
-    protected $signature = 'meetings:check-upcoming';
-
-    protected $description = 'Check for upcoming meetings and create instances with notifications';
-
     public function handle(): int
     {
         $congregations = Congregation::query()

@@ -26,21 +26,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Congregation $congregation
  * @property-read \Illuminate\Database\Eloquent\Collection<int, MeetingAttendance> $attendances
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'congregation_id',
+    'type',
+    'scheduled_at',
+    'zoom_url',
+    'status',
+    'cancelled_reason',
+])]
 class MeetingInstance extends Model
 {
     /** @use HasFactory<\Database\Factories\MeetingInstanceFactory> */
     use HasFactory;
 
     use LogsActivityAllDirty;
-
-    protected $fillable = [
-        'congregation_id',
-        'type',
-        'scheduled_at',
-        'zoom_url',
-        'status',
-        'cancelled_reason',
-    ];
 
     /** @return BelongsTo<Congregation, $this> */
     public function congregation(): BelongsTo

@@ -27,36 +27,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonInterface $created_at
  * @property-read OnesiBox $onesiBox
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'onesi_box_id',
+    'event',
+    'media_url',
+    'media_type',
+    'position',
+    'duration',
+    'error_message',
+    'error_code',
+    'session_id',
+    'created_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\WithoutTimestamps]
 class PlaybackEvent extends Model
 {
     /** @use HasFactory<\Database\Factories\PlaybackEventFactory> */
     use HasFactory;
 
     use LogsActivityAllDirty;
-
-    /**
-     * Indicates if the model should be timestamped.
-     * This model only has created_at, managed manually.
-     */
-    public $timestamps = false;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'onesi_box_id',
-        'event',
-        'media_url',
-        'media_type',
-        'position',
-        'duration',
-        'error_message',
-        'error_code',
-        'session_id',
-        'created_at',
-    ];
 
     /**
      * Get the OnesiBox that owns this playback event.

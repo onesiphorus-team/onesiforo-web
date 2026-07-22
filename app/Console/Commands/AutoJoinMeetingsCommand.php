@@ -13,12 +13,10 @@ use App\Services\OnesiBoxCommandService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
+#[\Illuminate\Console\Attributes\Description('Auto-join meetings for boxes configured with auto mode')]
+#[\Illuminate\Console\Attributes\Signature('meetings:auto-join')]
 class AutoJoinMeetingsCommand extends Command
 {
-    protected $signature = 'meetings:auto-join';
-
-    protected $description = 'Auto-join meetings for boxes configured with auto mode';
-
     public function handle(OnesiBoxCommandService $commandService): int
     {
         $attendances = MeetingAttendance::query()

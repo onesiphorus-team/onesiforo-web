@@ -10,12 +10,10 @@ use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use Illuminate\Console\Command;
 
+#[\Illuminate\Console\Attributes\Description('Close stale meeting instances and mark unresolved attendances')]
+#[\Illuminate\Console\Attributes\Signature('meetings:cleanup')]
 class CleanupMeetingsCommand extends Command
 {
-    protected $signature = 'meetings:cleanup';
-
-    protected $description = 'Close stale meeting instances and mark unresolved attendances';
-
     public function handle(): int
     {
         $staleInstances = MeetingInstance::query()

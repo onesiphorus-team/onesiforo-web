@@ -27,25 +27,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaylistItem> $items
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackSession> $playbackSessions
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'onesi_box_id',
+    'name',
+    'source_type',
+    'source_url',
+    'is_saved',
+])]
 class Playlist extends Model
 {
     /** @use HasFactory<\Database\Factories\PlaylistFactory> */
     use HasFactory;
 
     use LogsActivityAllDirty;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'onesi_box_id',
-        'name',
-        'source_type',
-        'source_url',
-        'is_saved',
-    ];
 
     /**
      * Get the OnesiBox that owns this playlist.

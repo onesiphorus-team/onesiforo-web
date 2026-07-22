@@ -2,6 +2,66 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.12.0] - 2026-07-22
+
+### Refactoring
+
+- Apply Laravel 13 breaking changes and Rector modernization
+
+### Build
+
+- Bump laravel/sanctum from 4.3.1 to 4.3.2
+- Bump filament/filament from 5.6.5 to 5.6.6
+- Bump sentry/sentry-laravel from 4.25.0 to 4.25.1
+- Bump dedoc/scramble from 0.13.20 to 0.13.24
+- Bump larastan/larastan from 3.9.6 to 3.10.0
+- Bump laravel/pail from 1.2.6 to 1.2.7
+- Bump pestphp/pest from 4.6.3 to 4.7.0
+- Bump laravel/fortify from 1.37.0 to 1.37.2
+- Bump laravel/sail from 1.60.0 to 1.61.0
+- Bump laravel/reverb from 1.10.0 to 1.10.2
+- Bump laravel/boost from 2.4.5 to 2.4.8
+- Bump rector/rector from 2.4.2 to 2.4.5
+- Bump driftingly/rector-laravel from 2.3.0 to 2.4.0
+- Bump dedoc/scramble from 0.13.24 to 0.13.26
+- Bump laravel/boost from 2.4.8 to 2.4.9
+- Bump laravel/sail from 1.61.0 to 1.62.0
+- Bump laravel/pulse from 1.7.3 to 1.7.4
+- Bump barryvdh/laravel-debugbar from 4.2.8 to 4.3.0
+- Bump pestphp/pest from 4.7.0 to 4.7.2
+- Bump livewire/livewire from 4.3.0 to 4.3.1
+- Bump filament/filament from 5.6.6 to 5.6.7
+- Bump dedoc/scramble from 0.13.26 to 0.13.27
+- Bump pestphp/pest from 4.7.2 to 4.7.3
+- Bump sentry/sentry-laravel from 4.25.1 to 4.26.0
+- Bump laravel/boost from 2.4.9 to 2.4.10
+- Bump driftingly/rector-laravel from 2.4.0 to 2.5.0
+- Bump laravel/pint from 1.29.1 to 1.29.3
+- Bump dedoc/scramble from 0.13.27 to 0.13.28
+- Bump livewire/flux from 2.14.1 to 2.15.0
+- Bump dedoc/scramble from 0.13.28 to 0.13.30
+- Bump laravel/sail from 1.62.0 to 1.63.0
+- Bump livewire/livewire from 4.3.1 to 4.3.3
+- Bump rector/rector from 2.4.5 to 2.5.2
+- Bump pestphp/pest from 4.7.3 to 4.7.4
+- Bump filament/filament from 5.6.7 to 5.6.8
+- Bump laravel/boost from 2.4.10 to 2.4.11
+- Bump barryvdh/laravel-debugbar from 4.3.0 to 4.4.0
+- Bump rector/rector from 2.5.2 to 2.5.5
+- Bump dedoc/scramble from 0.13.30 to 0.13.33
+- Bump pestphp/pest from 4.7.4 to 4.7.5
+- Bump laravel/boost from 2.4.11 to 2.4.12
+- Bump nunomaduro/collision from 8.9.4 to 8.9.5
+- Bump filament/filament from 5.6.8 to 5.7.1
+- Bump sentry/sentry-laravel from 4.26.0 to 4.27.0
+- Bump dedoc/scramble from 0.13.33 to 0.13.35
+- Bump laravel/boost from 2.4.12 to 2.4.13
+- Bump rector/rector from 2.5.5 to 2.5.7
+- Bump actions/checkout from 6 to 7
+- Bump actions/cache from 5 to 6
+- Bump actions/setup-node from 6 to 7
+- Upgrade to Laravel 13 and clear all security advisories
+
 ## [0.11.3] - 2026-05-24
 
 ### Build

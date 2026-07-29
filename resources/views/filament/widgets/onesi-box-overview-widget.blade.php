@@ -90,7 +90,8 @@
                     @endif
                 </div>
 
-                {{-- Link to Edit --}}
+                {{-- Link to Edit (overlay: must stay before the action row so the
+                     button below, raised with z-10, remains clickable) --}}
                 <a
                     href="{{ \App\Filament\Resources\OnesiBoxes\OnesiBoxResource::getUrl('edit', ['record' => $box]) }}"
                     class="absolute inset-0 rounded-xl"
@@ -98,6 +99,30 @@
                 >
                     <span class="sr-only">Gestisci {{ $box->name }}</span>
                 </a>
+
+                {{-- Diagnostica schermo --}}
+                <div class="relative z-10 mt-3 flex items-center justify-between gap-2">
+                    <x-filament::button
+                        tag="a"
+                        :href="\App\Filament\Resources\OnesiBoxes\OnesiBoxResource::getUrl('screenshots', ['record' => $box])"
+                        color="gray"
+                        icon="heroicon-o-camera"
+                        size="xs"
+                    >
+                        Ultima diagnostica schermo
+                    </x-filament::button>
+
+                    @if ($box->latestScreenshot)
+                        <span
+                            class="text-xs text-gray-500 dark:text-gray-400"
+                            title="{{ $box->latestScreenshot->captured_at->format('d/m/Y H:i:s') }}"
+                        >
+                            {{ $box->latestScreenshot->captured_at->diffForHumans() }}
+                        </span>
+                    @else
+                        <span class="text-xs text-gray-400 dark:text-gray-500">nessuno scatto</span>
+                    @endif
+                </div>
             </div>
         @empty
             <div class="col-span-full rounded-xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">

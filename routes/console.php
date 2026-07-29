@@ -25,3 +25,14 @@ Schedule::command('onesibox:prune-screenshots')
 Schedule::command('onesibox:prune-screenshots --sweep-orphans')
     ->dailyAt('03:15')
     ->withoutOverlapping();
+
+// Runs often on purpose: the per-box log_collection_interval_minutes decides
+// who is actually due, so boxes with different intervals share one cadence.
+Schedule::command('onesibox:collect-logs')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(5)
+    ->runInBackground();
+
+Schedule::command('onesibox:prune-log-snapshots')
+    ->dailyAt('03:30')
+    ->withoutOverlapping();

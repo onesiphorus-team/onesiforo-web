@@ -30,6 +30,10 @@ class OnesiBoxFactory extends Factory
             'last_seen_at' => null,
             'is_active' => true,
             'notes' => null,
+            'log_collection_enabled' => true,
+            'log_collection_interval_minutes' => 60,
+            'log_collection_lines' => 200,
+            'last_log_requested_at' => null,
         ];
     }
 

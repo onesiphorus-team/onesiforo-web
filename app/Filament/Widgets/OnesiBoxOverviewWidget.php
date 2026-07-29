@@ -20,7 +20,7 @@ class OnesiBoxOverviewWidget extends Widget
     protected function getBoxes(): Collection
     {
         return OnesiBox::query()
-            ->with('recipient')
+            ->with(['recipient', 'latestScreenshot'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get();

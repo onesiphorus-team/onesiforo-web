@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Filament\Resources\OnesiBoxes\OnesiBoxResource;
 use App\Filament\Widgets\OnesiBoxOverviewWidget;
+use App\Models\ApplianceScreenshot;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
 use App\Models\User;
@@ -88,4 +90,38 @@ it('shows recipient name when assigned', function (): void {
 it('shows empty state when no boxes exist', function (): void {
     livewire(OnesiBoxOverviewWidget::class)
         ->assertSee('Nessuna OnesiBox registrata');
+});
+
+it('links each card to the screen diagnostics page', function (): void {
+    $box = OnesiBox::factory()->create([
+        'name' => 'Box Con Diagnostica',
+        'is_active' => true,
+    ]);
+
+    livewire(OnesiBoxOverviewWidget::class)
+        ->assertSee('Ultima diagnostica schermo')
+        ->assertSee(OnesiBoxResource::getUrl('screenshots', ['record' => $box]));
+});
+
+it('shows when the last screen capture was taken', function (): void {
+    $box = OnesiBox::factory()->create(['is_active' => true]);
+
+    ApplianceScreenshot::query()->create([
+        'onesi_box_id' => $box->id,
+        'captured_at' => now()->subMinutes(3),
+        'width' => 1920,
+        'height' => 1080,
+        'bytes' => 2048,
+        'storage_path' => 'fake/widget-shot.webp',
+    ]);
+
+    livewire(OnesiBoxOverviewWidget::class)
+        ->assertSee('3 minuti fa');
+});
+
+it('says so when a box has never produced a capture', function (): void {
+    OnesiBox::factory()->create(['is_active' => true]);
+
+    livewire(OnesiBoxOverviewWidget::class)
+        ->assertSee('nessuno scatto');
 });

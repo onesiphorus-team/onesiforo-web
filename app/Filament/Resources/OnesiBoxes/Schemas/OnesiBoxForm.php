@@ -87,6 +87,35 @@ class OnesiBoxForm
                     ])
                     ->collapsed()
                     ->collapsible(),
+
+                Section::make(__('Raccolta log periodica'))
+                    ->description(__('Il server richiede periodicamente il log applicativo alla box e ne conserva lo storico.'))
+                    ->columns(3)
+                    ->schema([
+                        Toggle::make('log_collection_enabled')
+                            ->label(__('Attiva raccolta'))
+                            ->default(true)
+                            ->helperText(__('Se disattivata, i log arrivano solo su richiesta manuale.')),
+
+                        TextInput::make('log_collection_interval_minutes')
+                            ->label(__('Intervallo (minuti)'))
+                            ->numeric()
+                            ->minValue(5)
+                            ->maxValue(1440)
+                            ->default(60)
+                            ->suffix('min')
+                            ->helperText(__('Min 5 minuti, max 1440 (24h).')),
+
+                        TextInput::make('log_collection_lines')
+                            ->label(__('Righe per acquisizione'))
+                            ->numeric()
+                            ->minValue(10)
+                            ->maxValue(500)
+                            ->default(200)
+                            ->helperText(__('Numero di righe finali del log richieste alla box. Max 500.')),
+                    ])
+                    ->collapsed()
+                    ->collapsible(),
             ]);
     }
 }

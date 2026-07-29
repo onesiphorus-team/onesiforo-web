@@ -16,6 +16,7 @@ test('all models use trait LogsActivityAllDirty', function (): void {
         ->toUseTrait(LogsActivityAllDirty::class)
         ->ignoring(App\Models\PageVisit::class)
         ->ignoring(App\Models\ApplianceScreenshot::class) // high-volume telemetry (~1/min per box), exempt for same reason as PageVisit
+        ->ignoring(App\Models\OnesiBoxLogSnapshot::class) // append-only log capture; the payload would bloat activity_log properties
         ->ignoring('App\Models\Scopes');
 });
 

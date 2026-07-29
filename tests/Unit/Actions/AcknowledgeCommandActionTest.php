@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Date;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->action = new AcknowledgeCommandAction;
+    $this->action = app(AcknowledgeCommandAction::class);
     $this->onesiBox = OnesiBox::factory()->create();
 });
 

@@ -68,6 +68,12 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int|null $memory_buffers
  * @property int|null $memory_cached
  * @property string|null $app_version
+ * @property bool $screenshot_enabled
+ * @property int $screenshot_interval_seconds
+ * @property bool $log_collection_enabled
+ * @property int $log_collection_interval_minutes
+ * @property int $log_collection_lines
+ * @property CarbonInterface|null $last_log_requested_at
  * @property MeetingJoinMode $meeting_join_mode
  * @property bool $meeting_notifications_enabled
  * @property Carbon|null $created_at
@@ -80,6 +86,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackEvent> $playbackEvents
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Playlist> $playlists
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackSession> $playbackSessions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, OnesiBoxLogSnapshot> $logSnapshots
  */
 #[\Illuminate\Database\Eloquent\Attributes\Guarded(['id'])]
 class OnesiBox extends Model implements AuthenticatableContract
@@ -129,6 +136,7 @@ class OnesiBox extends Model implements AuthenticatableContract
         'memory_buffers',
         'memory_cached',
         'last_system_info_at',
+        'last_log_requested_at',
     ];
 
     /**
@@ -302,6 +310,48 @@ class OnesiBox extends Model implements AuthenticatableContract
     }
 
     /**
+     * Get the periodic log captures collected from this OnesiBox.
+     *
+     * @return HasMany<OnesiBoxLogSnapshot, $this>
+     */
+    public function logSnapshots(): HasMany
+    {
+        return $this->hasMany(OnesiBoxLogSnapshot::class, 'onesi_box_id');
+    }
+
+    /**
+     * Get the most recent log capture for this OnesiBox.
+     *
+     * @return HasOne<OnesiBoxLogSnapshot, $this>
+     */
+    public function latestLogSnapshot(): HasOne
+    {
+        return $this->hasOne(OnesiBoxLogSnapshot::class, 'onesi_box_id')
+            ->latestOfMany('captured_at');
+    }
+
+    /**
+     * Check whether a periodic log collection is due for this OnesiBox.
+     *
+     * The gate is based on when the last request was *sent*, not on when a
+     * snapshot was received: an unreachable box must not be asked again every
+     * scheduler tick just because it never answered.
+     */
+    public function isLogCollectionDue(): bool
+    {
+        if (! $this->log_collection_enabled) {
+            return false;
+        }
+
+        if ($this->last_log_requested_at === null) {
+            return true;
+        }
+
+        return $this->last_log_requested_at
+            ->isBefore(now()->subMinutes($this->log_collection_interval_minutes));
+    }
+
+    /**
      * Get the currently active playback session, if any.
      */
     public function activeSession(): ?PlaybackSession
@@ -392,6 +442,10 @@ class OnesiBox extends Model implements AuthenticatableContract
             'memory_cached' => 'integer',
             'screenshot_enabled' => 'boolean',
             'screenshot_interval_seconds' => 'integer',
+            'log_collection_enabled' => 'boolean',
+            'log_collection_interval_minutes' => 'integer',
+            'log_collection_lines' => 'integer',
+            'last_log_requested_at' => 'datetime',
         ];
     }
 }

@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\DB;
  */
 class AcknowledgeCommandAction
 {
+    public function __construct(
+        private readonly StoreOnesiBoxLogSnapshotAction $storeLogSnapshot,
+    ) {}
+
     /**
      * Acknowledge a command with the given status and metadata.
      *
@@ -86,6 +90,8 @@ class AcknowledgeCommandAction
     {
         $command->markAsCompleted($executedAt, $result);
 
+        $this->storeLogSnapshot->fromResult($command, $result);
+
         return true;
     }
 
@@ -99,6 +105,8 @@ class AcknowledgeCommandAction
         ?string $errorMessage
     ): bool {
         $command->markAsFailed($errorCode, $errorMessage, $executedAt);
+
+        $this->storeLogSnapshot->fromFailure($command, $errorMessage);
 
         return true;
     }

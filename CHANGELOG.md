@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.13.1] - 2026-07-29
+
+### Bug Fixes
+
+- Require full control permission for meeting actions
+
 ## [0.13.0] - 2026-07-29
 
 ### Features

@@ -13,9 +13,11 @@
                             </p>
                             <p class="text-sm text-zinc-400">{{ $this->onesiBox->recipient->congregation->name }}</p>
                         </div>
-                        <flux:button wire:click="joinNow" variant="primary" size="sm">
-                            Collega ora
-                        </flux:button>
+                        @if($this->canControl)
+                            <flux:button wire:click="joinNow" variant="primary" size="sm">
+                                Collega ora
+                            </flux:button>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -26,9 +28,11 @@
                     <p class="text-sm font-medium">Modalità collegamento</p>
                     <p class="text-sm text-zinc-400">{{ $this->onesiBox->meeting_join_mode->getLabel() }}</p>
                 </div>
-                <flux:button wire:click="toggleJoinMode" variant="subtle" size="sm">
-                    Cambia
-                </flux:button>
+                @if($this->canControl)
+                    <flux:button wire:click="toggleJoinMode" variant="subtle" size="sm">
+                        Cambia
+                    </flux:button>
+                @endif
             </div>
 
             {{-- Pending attendance actions --}}
@@ -37,14 +41,16 @@
                     <p class="font-medium text-yellow-400">
                         Adunanza {{ $this->pendingAttendance->meetingInstance->type->getLabel() }} in arrivo
                     </p>
-                    <div class="mt-2 flex gap-2">
-                        <flux:button wire:click="confirmJoin({{ $this->pendingAttendance->id }})" variant="primary" size="sm">
-                            Conferma
-                        </flux:button>
-                        <flux:button wire:click="skipMeeting({{ $this->pendingAttendance->id }})" variant="danger" size="sm">
-                            Salta
-                        </flux:button>
-                    </div>
+                    @if($this->canControl)
+                        <div class="mt-2 flex gap-2">
+                            <flux:button wire:click="confirmJoin({{ $this->pendingAttendance->id }})" variant="primary" size="sm">
+                                Conferma
+                            </flux:button>
+                            <flux:button wire:click="skipMeeting({{ $this->pendingAttendance->id }})" variant="danger" size="sm">
+                                Salta
+                            </flux:button>
+                        </div>
+                    @endif
                 </div>
             @endif
 

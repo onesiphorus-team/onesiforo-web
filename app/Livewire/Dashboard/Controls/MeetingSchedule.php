@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
+use App\Concerns\ChecksOnesiBoxPermission;
 use App\Concerns\HandlesOnesiBoxErrors;
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingInstanceStatus;
@@ -12,28 +13,30 @@ use App\Enums\MeetingType;
 use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
 use App\Models\OnesiBox;
-use App\Models\User;
 use App\Services\OnesiBoxCommandService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class MeetingSchedule extends Component
 {
     use AuthorizesRequests;
+    use ChecksOnesiBoxPermission;
     use HandlesOnesiBoxErrors;
 
     public OnesiBox $onesiBox;
 
     public function mount(OnesiBox $onesiBox): void
     {
-        $this->authorizeCaregiver();
+        Gate::authorize('view', $onesiBox);
+
         $this->onesiBox = $onesiBox->load('recipient.congregation');
     }
 
     public function toggleJoinMode(): void
     {
-        $this->authorizeCaregiver();
+        $this->authorize('control', $this->onesiBox);
 
         $newMode = $this->onesiBox->meeting_join_mode === MeetingJoinMode::Auto
             ? MeetingJoinMode::Manual
@@ -45,7 +48,7 @@ class MeetingSchedule extends Component
 
     public function confirmJoin(int $attendanceId): void
     {
-        $this->authorizeCaregiver();
+        $this->authorize('control', $this->onesiBox);
 
         $attendance = MeetingAttendance::query()
             ->where('onesi_box_id', $this->onesiBox->id)
@@ -71,7 +74,7 @@ class MeetingSchedule extends Component
 
     public function skipMeeting(int $attendanceId): void
     {
-        $this->authorizeCaregiver();
+        $this->authorize('control', $this->onesiBox);
 
         MeetingAttendance::query()
             ->where('onesi_box_id', $this->onesiBox->id)
@@ -81,7 +84,7 @@ class MeetingSchedule extends Component
 
     public function joinNow(): void
     {
-        $this->authorizeCaregiver();
+        $this->authorize('control', $this->onesiBox);
 
         $congregation = $this->onesiBox->recipient?->congregation;
         if (! $congregation) {
@@ -183,15 +186,5 @@ class MeetingSchedule extends Component
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
         return view('livewire.dashboard.controls.meeting-schedule');
-    }
-
-    private function authorizeCaregiver(): void
-    {
-        $user = auth()->user();
-
-        abort_unless(
-            $user instanceof User && $this->onesiBox->userCanView($user),
-            403,
-        );
     }
 }

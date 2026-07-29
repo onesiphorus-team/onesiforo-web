@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.13.0] - 2026-07-29
+
+### Features
+
+- Collect OnesiBox application logs periodically
+- Add a diagnostics tab to the OnesiBox detail
+
 ## [0.12.0] - 2026-07-22
 
 ### Refactoring

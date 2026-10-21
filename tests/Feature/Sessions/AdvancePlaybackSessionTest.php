@@ -6,10 +6,12 @@ use App\Actions\Sessions\AdvancePlaybackSessionAction;
 use App\Enums\CommandType;
 use App\Enums\PlaybackEventType;
 use App\Enums\PlaybackSessionStatus;
+use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
 use App\Models\Playlist;
 use App\Models\PlaylistItem;
+use App\Services\OnesiBoxCommandServiceInterface;
 
 beforeEach(function (): void {
     $this->onesiBox = OnesiBox::factory()->online()->create();
@@ -228,4 +230,38 @@ test('advance preserves existing playback api behavior', function (): void {
     $response
         ->assertOk()
         ->assertJsonPath('data.logged', true);
+});
+
+test('offline command failure does not mark a replacement session as errored', function (): void {
+    $playlist = Playlist::factory()->forOnesiBox($this->onesiBox)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(0)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(1)->create();
+    $session = PlaybackSession::factory()->forOnesiBox($this->onesiBox)->forPlaylist($playlist)->active()->create();
+    $replacement = null;
+    $commandService = Mockery::mock(OnesiBoxCommandServiceInterface::class);
+    $commandService->shouldReceive('sendSessionMediaCommand')->once()->andReturnUsing(function () use ($session, $playlist, &$replacement): never {
+        $session->update(['status' => PlaybackSessionStatus::Stopped, 'ended_at' => now()]);
+        $replacement = PlaybackSession::factory()->forOnesiBox($this->onesiBox)->forPlaylist($playlist)->active()->create();
+
+        throw new OnesiBoxOfflineException;
+    });
+
+    (new AdvancePlaybackSessionAction($commandService))->execute($this->onesiBox, PlaybackEventType::Completed);
+
+    expect($session->refresh()->status)->toBe(PlaybackSessionStatus::Stopped)
+        ->and($replacement->refresh()->status)->toBe(PlaybackSessionStatus::Active)
+        ->and($replacement->ended_at)->toBeNull();
+});
+
+test('offline command failure marks the advanced active session as errored', function (): void {
+    $playlist = Playlist::factory()->forOnesiBox($this->onesiBox)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(0)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(1)->create();
+    $session = PlaybackSession::factory()->forOnesiBox($this->onesiBox)->forPlaylist($playlist)->active()->create();
+    $this->onesiBox->update(['last_seen_at' => now()->subDay()]);
+
+    $this->advanceAction->execute($this->onesiBox, PlaybackEventType::Completed);
+
+    expect($session->refresh()->status)->toBe(PlaybackSessionStatus::Error)
+        ->and($session->ended_at)->not->toBeNull();
 });

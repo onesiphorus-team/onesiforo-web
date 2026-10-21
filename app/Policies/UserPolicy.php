@@ -38,11 +38,15 @@ class UserPolicy
 
     /**
      * Determine whether the user can update the model.
-     * Admin and super-admin can update users.
+     * Only super-admin can update super-admin accounts.
      */
     public function update(User $user, User $model): bool
     {
-        return $user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin);
+        if ($user->hasRole(Roles::SuperAdmin)) {
+            return true;
+        }
+
+        return $user->hasRole(Roles::Admin) && ! $model->hasRole(Roles::SuperAdmin);
     }
 
     /**

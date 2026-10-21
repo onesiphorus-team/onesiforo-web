@@ -4,19 +4,24 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Enums\Roles;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Oltrematica\RoleLite\Models\Role;
 
 class EditUser extends EditRecord
 {
     protected static string $resource = UserResource::class;
 
-    /** @var array<string> */
-    protected array $roles = [];
+    /** @var array<string>|null */
+    protected ?array $roles = null;
 
     protected function getHeaderActions(): array
     {
@@ -41,34 +46,49 @@ class EditUser extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         // Extract roles from data to handle separately
-        $this->roles = $data['roles'] ?? [];
+        $this->roles = $data['roles'] ?? null;
         unset($data['roles']);
 
         return $data;
     }
 
-    protected function afterSave(): void
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        /** @var User $record */
-        $record = $this->record;
+        return DB::transaction(function () use ($record, $data): Model {
+            Role::query()->where('name', Roles::SuperAdmin->value)->lockForUpdate()->first();
 
-        // Sync roles with the user
-        $currentRoles = $record->roles->pluck('name')->toArray();
-        $newRoles = $this->roles;
+            /** @var User $record */
+            $record->refresh();
+            auth()->user()?->unsetRelation('roles');
+            Gate::authorize('update', $record);
 
-        // Only sync if roles have changed
-        if (array_diff($currentRoles, $newRoles) || array_diff($newRoles, $currentRoles)) {
-            $record->syncRoles(...$newRoles);
+            $currentRoles = $record->roles->pluck('name')->all();
+            $newRoles = $this->roles ?? $currentRoles;
 
-            // Log role changes
-            activity()
-                ->performedOn($record)
-                ->causedBy(auth()->user())
-                ->withProperties([
-                    'old_roles' => $currentRoles,
-                    'new_roles' => $newRoles,
-                ])
-                ->log('Roles updated');
-        }
+            foreach (array_diff($newRoles, $currentRoles) as $role) {
+                Gate::authorize('assignRole', [$record, $role]);
+            }
+
+            foreach (array_diff($currentRoles, $newRoles) as $role) {
+                Gate::authorize('removeRole', [$record, $role]);
+            }
+
+            parent::handleRecordUpdate($record, $data);
+
+            if (array_diff($currentRoles, $newRoles) || array_diff($newRoles, $currentRoles)) {
+                $record->syncRoles(...$newRoles);
+
+                activity()
+                    ->performedOn($record)
+                    ->causedBy(auth()->user())
+                    ->withProperties([
+                        'old_roles' => $currentRoles,
+                        'new_roles' => $newRoles,
+                    ])
+                    ->log('Roles updated');
+            }
+
+            return $record;
+        });
     }
 }

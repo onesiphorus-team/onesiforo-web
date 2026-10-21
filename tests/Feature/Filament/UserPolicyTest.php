@@ -175,9 +175,8 @@ describe('role management by admin', function (): void {
         $superAdminUser = User::factory()->create();
         $superAdminUser->assignRole('super-admin');
 
-        // The roles field should be disabled for super-admin users when edited by admin
         livewire(EditUser::class, ['record' => $superAdminUser->id])
-            ->assertFormFieldIsDisabled('roles');
+            ->assertForbidden();
     });
 });
 

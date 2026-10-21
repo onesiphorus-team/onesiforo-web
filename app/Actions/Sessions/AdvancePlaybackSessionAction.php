@@ -31,15 +31,19 @@ class AdvancePlaybackSessionAction
      *
      * @param  string|null  $mediaUrl  The media_url from the event, used to validate against the current item
      */
-    public function execute(OnesiBox $onesiBox, PlaybackEventType $eventType, ?string $mediaUrl = null): void
+    public function execute(OnesiBox $onesiBox, PlaybackEventType $eventType, ?string $mediaUrl = null, ?string $sessionUuid = null): void
     {
         /**
          * @var array{nextItem: PlaylistItem, sessionUuid: string}|null $result
          */
-        $result = DB::transaction(function () use ($onesiBox, $eventType, $mediaUrl): ?array {
+        $result = DB::transaction(function () use ($onesiBox, $eventType, $mediaUrl, $sessionUuid): ?array {
             $session = $onesiBox->playbackSessions()->active()->lockForUpdate()->first();
 
             if (! $session instanceof PlaybackSession) {
+                return null;
+            }
+
+            if ($sessionUuid !== null && $session->uuid !== $sessionUuid) {
                 return null;
             }
 
@@ -92,14 +96,13 @@ class AdvancePlaybackSessionAction
                     $result['sessionUuid'],
                 );
             } catch (OnesiBoxOfflineException) {
-                $session = $onesiBox->playbackSessions()->active()->first();
-
-                if ($session instanceof PlaybackSession) {
-                    $session->update([
+                $onesiBox->playbackSessions()
+                    ->active()
+                    ->where('uuid', $result['sessionUuid'])
+                    ->update([
                         'status' => PlaybackSessionStatus::Error,
                         'ended_at' => now(),
                     ]);
-                }
             }
         }
     }

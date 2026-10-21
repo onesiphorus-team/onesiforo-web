@@ -276,3 +276,67 @@ test('non-session playback events still work correctly', function (): void {
 
     expect($this->onesiBox->commands()->count())->toBe($commandCountBefore);
 });
+
+test('stale session events cannot advance a replacement session playing the same media', function (string $event): void {
+    $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4'],
+        ['url' => 'https://www.jw.org/video/2.mp4'],
+    ]);
+    $previousSession = $this->startAction->execute($this->onesiBox, $playlist, 60);
+    resolve(StopPlaybackSessionAction::class)->execute($previousSession);
+    $currentSession = $this->startAction->execute($this->onesiBox, $playlist, 60);
+    $commandCount = $this->onesiBox->commands()->count();
+
+    $this->postJson(route('api.v1.appliances.playback'), [
+        'event' => $event,
+        'media_url' => 'https://www.jw.org/video/1.mp4',
+        'media_type' => 'video',
+        'session_id' => $previousSession->uuid,
+    ], ['Authorization' => "Bearer {$this->token->plainTextToken}"])
+        ->assertOk()
+        ->assertJsonPath('data.logged', true);
+
+    $currentSession->refresh();
+    expect($currentSession->current_position)->toBe(0)
+        ->and($currentSession->items_played)->toBe(0)
+        ->and($currentSession->items_skipped)->toBe(0)
+        ->and($currentSession->status)->toBe(PlaybackSessionStatus::Active)
+        ->and($this->onesiBox->commands()->count())->toBe($commandCount);
+
+    $this->assertDatabaseHas('playback_events', [
+        'onesi_box_id' => $this->onesiBox->id,
+        'event' => $event,
+        'session_id' => $previousSession->uuid,
+    ]);
+})->with(['completed', 'error']);
+
+test('session events advance with matching or legacy session identifiers', function (string $event, string $identifier): void {
+    $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4'],
+        ['url' => 'https://www.jw.org/video/2.mp4'],
+    ]);
+    $session = $this->startAction->execute($this->onesiBox, $playlist, 60);
+    $data = [
+        'event' => $event,
+        'media_url' => 'https://www.jw.org/video/1.mp4',
+        'media_type' => 'video',
+    ];
+
+    if ($identifier !== 'omitted') {
+        $data['session_id'] = $identifier === 'matching' ? $session->uuid : null;
+    }
+
+    $this->postJson(route('api.v1.appliances.playback'), $data, [
+        'Authorization' => "Bearer {$this->token->plainTextToken}",
+    ])->assertOk();
+
+    $session->refresh();
+    expect($session->current_position)->toBe(1)
+        ->and($session->items_played)->toBe($event === 'completed' ? 1 : 0)
+        ->and($session->items_skipped)->toBe($event === 'error' ? 1 : 0)
+        ->and($session->status)->toBe(PlaybackSessionStatus::Active);
+
+    $command = $this->onesiBox->commands()->where('type', CommandType::PlayMedia)->latest('id')->first();
+    expect($command->payload['url'])->toBe('https://www.jw.org/video/2.mp4')
+        ->and($command->payload['session_id'])->toBe($session->uuid);
+})->with(['completed', 'error'])->with(['matching', 'null', 'omitted']);

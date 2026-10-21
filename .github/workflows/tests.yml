@@ -37,6 +37,12 @@ jobs:
       - name: Install Node Dependencies
         run: npm ci
 
+      - name: Audit Node Dependencies
+        run: npm audit
+
+      - name: Test Vite Configuration
+        run: node --test tests/vite.config.test.js
+
       - name: Cache Playwright Browsers
         id: playwright-cache
         uses: actions/cache@v6
@@ -57,6 +63,9 @@ jobs:
 
       - name: Install Composer Dependencies
         uses: ramsey/composer-install@v4
+
+      - name: Audit Composer Dependencies
+        run: composer audit --abandoned=report
 
       - name: Copy Environment File
         run: cp .env.ci .env

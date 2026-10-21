@@ -2,6 +2,16 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.13.2] - 2026-10-21
+
+### Bug Fixes
+
+- Enforce role guards and isolate playback sessions
+
+### Build
+
+- Update PHP and Node packages and Filament assets
+
 ## [0.13.1] - 2026-07-29
 
 ### Bug Fixes

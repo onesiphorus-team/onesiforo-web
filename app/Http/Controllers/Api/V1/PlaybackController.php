@@ -48,7 +48,7 @@ class PlaybackController extends Controller
         $eventType = $playbackEvent->event;
 
         if ($eventType === PlaybackEventType::Completed || $eventType === PlaybackEventType::Error) {
-            $advanceAction->execute($onesiBox, $eventType, $data['media_url']);
+            $advanceAction->execute($onesiBox, $eventType, $data['media_url'], $data['session_id'] ?? null);
         }
 
         return new PlaybackEventResource([

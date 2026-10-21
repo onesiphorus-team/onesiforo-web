@@ -74,6 +74,7 @@ class UserForm
                             ->options(fn (): array => self::getAvailableRoleOptions())
                             ->descriptions(fn (): array => self::getAvailableRoleDescriptions())
                             ->disabled(fn (?User $record): bool => self::shouldDisableRoles($record))
+                            ->validatedWhenNotDehydrated(false)
                             ->in(fn (): array => array_keys(self::getAvailableRoleOptions()))
                             ->columns(3),
                     ]),

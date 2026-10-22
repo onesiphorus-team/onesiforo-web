@@ -14,7 +14,7 @@ use Throwable;
 
 #[\Illuminate\Console\Attributes\Description('Verify that an asynchronous worker processes a deployment probe')]
 #[\Illuminate\Console\Attributes\Signature('deployment:verify-queue {--timeout=60 : Maximum seconds to wait for the worker}')]
-class VerifyDeploymentQueue extends Command
+class VerifyDeploymentQueueCommand extends Command
 {
     public function handle(): int
     {

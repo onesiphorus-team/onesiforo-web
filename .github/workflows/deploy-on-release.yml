@@ -4,22 +4,70 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
 jobs:
   deploy:
     if: github.repository == 'onesiphorus-team/onesiforo-web'
     name: Deploy to Production
     runs-on: [self-hosted, production]
+    timeout-minutes: 20
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      RELEASE_SHA: ${{ github.sha }}
 
     steps:
-      - name: Deploy release
+      - name: Validate release reference
+        shell: bash
         run: |
-          echo "🚀 Deploying ${{ github.ref_name }} to production..."
-          sudo -u www-data /var/www/onesiforo-web/deploy.sh ${{ github.ref_name }}
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]]
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
 
-      - name: Verify deployment
+      - name: Deploy release
+        shell: bash
         run: |
-          echo "✅ Verifying deployment..."
-          curl -sf https://onesiforo.a80.it > /dev/null && echo "Site is up!" || exit 1
+          set -euo pipefail
+          sudo -u www-data /var/www/onesiforo-web/deploy.sh "$RELEASE_TAG"
+
+      - name: Verify deployed revision and services
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /var/www/onesiforo-web/current
+          deployed_sha=$(sudo -u www-data git rev-parse HEAD)
+          tag_sha=$(sudo -u www-data git rev-parse "refs/tags/$RELEASE_TAG^{commit}")
+          [[ "$deployed_sha" == "$RELEASE_SHA" && "$tag_sha" == "$RELEASE_SHA" ]]
+          systemctl is-active --quiet php8.4-fpm.service
+          systemctl is-active --quiet onesiforo-web-worker.service
+          systemctl is-active --quiet onesiforo-web-scheduler.timer
+          sudo -u www-data php artisan deployment:verify-queue --timeout=60 --no-interaction
+
+      - name: Verify HTTP readiness and release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          health_response=$(mktemp)
+          trap 'rm -f "$health_response"' EXIT
+          curl --fail --silent --show-error --connect-timeout 10 --max-time 20 \
+            --retry 5 --retry-delay 3 --retry-all-errors \
+            -H 'Accept: application/json' -H 'Cache-Control: no-cache' \
+            "https://onesiforo.a80.it/deployment-health?revision=$RELEASE_SHA" \
+            --output "$health_response"
+          php -r '
+            $health = json_decode(file_get_contents($argv[1]), true, flags: JSON_THROW_ON_ERROR);
+            if (($health["status"] ?? null) !== "ok"
+                || ($health["version"] ?? null) !== getenv("RELEASE_TAG")
+                || ($health["revision"] ?? null) !== getenv("RELEASE_SHA")) {
+                fwrite(STDERR, "HTTP release identity or readiness check failed.\n");
+                exit(1);
+            }
+          ' "$health_response"
 
       - name: Notify success
-        run: echo "🎉 Deployed ${{ github.ref_name }} successfully!"
+        run: printf 'Verified production release %s (%s)\n' "$RELEASE_TAG" "$RELEASE_SHA"

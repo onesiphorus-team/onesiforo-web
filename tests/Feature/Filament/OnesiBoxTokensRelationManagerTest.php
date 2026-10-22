@@ -95,7 +95,8 @@ describe('US2: Generate Authentication Token', function (): void {
 describe('US3: View Token Usage History', function (): void {
     it('displays token last_used_at timestamp', function (): void {
         $token = $this->onesiBox->createToken('test-token', ['*'], now()->addYear());
-        $token->accessToken->update(['last_used_at' => now()->subHour()]);
+        $token->accessToken->last_used_at = now()->subHour();
+        $token->accessToken->save();
 
         livewire(TokensRelationManager::class, [
             'ownerRecord' => $this->onesiBox,

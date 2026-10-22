@@ -50,12 +50,14 @@ class CreateSuperAdminCommand extends Command
             required: true,
         );
 
-        $user = User::query()->create([
+        $user = new User([
             'name' => $name,
             'email' => $email,
             'password' => Hash::make($passwordValue),
-            'email_verified_at' => now(),
         ]);
+
+        $user->setAttribute('email_verified_at', now());
+        $user->save();
 
         $user->assignRole(Roles::SuperAdmin);
 

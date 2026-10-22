@@ -51,7 +51,7 @@ class StopPlaybackSessionAction
                 ]);
 
             try {
-                $this->commandService->sendStopCommand($onesiBox);
+                $this->commandService->sendSessionStopCommand($onesiBox);
             } catch (OnesiBoxOfflineException) {
                 // The session remains stopped when the appliance is offline.
             }

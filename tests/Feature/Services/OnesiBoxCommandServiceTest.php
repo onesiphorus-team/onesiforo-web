@@ -269,3 +269,16 @@ describe('sendResumeCommand', function (): void {
         $service->sendResumeCommand($onesiBox);
     })->throws(OnesiBoxOfflineException::class);
 });
+
+it('preserves normal play then stop order for appliance polling', function (): void {
+    $onesiBox = OnesiBox::factory()->online()->create();
+    $service = resolve(OnesiBoxCommandServiceInterface::class);
+    $service->sendVideoCommand($onesiBox, 'https://example.com/video.mp4');
+    $this->travel(1)->seconds();
+    $service->sendStopCommand($onesiBox);
+
+    expect($onesiBox->pendingCommands()->pluck('type')->all())->toBe([
+        CommandType::PlayMedia,
+        CommandType::StopMedia,
+    ]);
+});

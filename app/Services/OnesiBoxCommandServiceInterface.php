@@ -52,6 +52,14 @@ interface OnesiBoxCommandServiceInterface
     public function sendStopCommand(OnesiBox $onesiBox): void;
 
     /**
+     * Stop session playback after its pending media commands have been cancelled.
+     * The stop is delivered before a replacement session's first media command.
+     *
+     * @throws OnesiBoxOfflineException
+     */
+    public function sendSessionStopCommand(OnesiBox $onesiBox): void;
+
+    /**
      * Invia comando di riavvio del dispositivo.
      *
      * @throws OnesiBoxOfflineException

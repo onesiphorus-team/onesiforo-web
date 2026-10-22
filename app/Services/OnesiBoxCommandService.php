@@ -49,6 +49,11 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
     public function sendStopCommand(OnesiBox $onesiBox): void
     {
+        $this->sendCommand($onesiBox, CommandType::StopMedia);
+    }
+
+    public function sendSessionStopCommand(OnesiBox $onesiBox): void
+    {
         $this->sendCommand($onesiBox, CommandType::StopMedia, priority: 1);
     }
 

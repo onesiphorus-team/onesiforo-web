@@ -8,6 +8,7 @@ use App\Enums\CommandStatus;
 use App\Enums\CommandType;
 use App\Enums\PlaybackSessionStatus;
 use App\Exceptions\OnesiBoxOfflineException;
+use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Support\Facades\DB;
@@ -26,18 +27,21 @@ class StopPlaybackSessionAction
      */
     public function execute(PlaybackSession $session): PlaybackSession
     {
-        if ($session->status->isEnded()) {
-            return $session;
-        }
+        return DB::transaction(function () use ($session): PlaybackSession {
+            $onesiBox = OnesiBox::query()->lockForUpdate()->findOrFail($session->onesi_box_id);
+            $session->refresh();
 
-        DB::transaction(function () use ($session): void {
+            if ($session->status->isEnded()) {
+                return $session;
+            }
+
             $session->update([
                 'status' => PlaybackSessionStatus::Stopped,
                 'ended_at' => now(),
             ]);
 
             // Cancel pending play_media commands for this session
-            $session->onesiBox->commands()
+            $onesiBox->commands()
                 ->where('type', CommandType::PlayMedia)
                 ->where('status', CommandStatus::Pending)
                 ->whereJsonContains('payload->session_id', $session->uuid)
@@ -45,15 +49,14 @@ class StopPlaybackSessionAction
                     'status' => CommandStatus::Cancelled,
                     'executed_at' => now(),
                 ]);
+
+            try {
+                $this->commandService->sendStopCommand($onesiBox);
+            } catch (OnesiBoxOfflineException) {
+                // The session remains stopped when the appliance is offline.
+            }
+
+            return $session;
         });
-
-        // Send stop_media command (fire-and-forget, outside transaction)
-        try {
-            $this->commandService->sendStopCommand($session->onesiBox);
-        } catch (OnesiBoxOfflineException) {
-            // OnesiBox is offline — session is still marked as stopped
-        }
-
-        return $session->refresh();
     }
 }

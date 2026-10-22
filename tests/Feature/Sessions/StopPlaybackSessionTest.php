@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actions\Sessions\StartPlaybackSessionAction;
 use App\Actions\Sessions\StopPlaybackSessionAction;
 use App\Enums\CommandStatus;
 use App\Enums\CommandType;
@@ -114,4 +115,18 @@ test('stopping session on offline onesibox still marks session as stopped', func
 
     expect($result->status)->toBe(PlaybackSessionStatus::Stopped);
     expect($result->ended_at)->not->toBeNull();
+});
+
+test('stale stop requests cannot stop a replacement session', function (): void {
+    $playlist = Playlist::factory()->forOnesiBox($this->onesiBox)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(0)->create();
+    $startAction = resolve(StartPlaybackSessionAction::class);
+    $previous = $startAction->execute($this->onesiBox, $playlist, 60);
+    $current = $startAction->execute($this->onesiBox, $playlist, 60);
+    $commandCount = $this->onesiBox->commands()->count();
+
+    $this->stopAction->execute($previous);
+
+    expect($current->refresh()->status)->toBe(PlaybackSessionStatus::Active)
+        ->and($this->onesiBox->commands()->count())->toBe($commandCount);
 });

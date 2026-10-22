@@ -33,18 +33,16 @@ class AdvancePlaybackSessionAction
      */
     public function execute(OnesiBox $onesiBox, PlaybackEventType $eventType, ?string $mediaUrl = null, ?string $sessionUuid = null): void
     {
-        /**
-         * @var array{nextItem: PlaylistItem, sessionUuid: string}|null $result
-         */
-        $result = DB::transaction(function () use ($onesiBox, $eventType, $mediaUrl, $sessionUuid): ?array {
+        DB::transaction(function () use ($onesiBox, $eventType, $mediaUrl, $sessionUuid): void {
+            $onesiBox = OnesiBox::query()->lockForUpdate()->findOrFail($onesiBox->id);
             $session = $onesiBox->playbackSessions()->active()->lockForUpdate()->first();
 
             if (! $session instanceof PlaybackSession) {
-                return null;
+                return;
             }
 
             if ($sessionUuid !== null && $session->uuid !== $sessionUuid) {
-                return null;
+                return;
             }
 
             if ($mediaUrl !== null) {
@@ -58,7 +56,7 @@ class AdvancePlaybackSessionAction
                         'current_position' => $session->current_position,
                     ]);
 
-                    return null;
+                    return;
                 }
             }
 
@@ -70,7 +68,7 @@ class AdvancePlaybackSessionAction
             if ($session->isExpired()) {
                 $this->endSession($session);
 
-                return null;
+                return;
             }
 
             $nextItem = $session->currentItem();
@@ -78,33 +76,26 @@ class AdvancePlaybackSessionAction
             if (! $nextItem instanceof PlaylistItem) {
                 $this->endSession($session);
 
-                return null;
+                return;
             }
 
-            return [
-                'nextItem' => $nextItem,
-                'sessionUuid' => $session->uuid,
-            ];
-        });
-
-        if ($result !== null) {
             try {
                 $this->commandService->sendSessionMediaCommand(
                     $onesiBox,
-                    $result['nextItem']->media_url,
+                    $nextItem->media_url,
                     'video',
-                    $result['sessionUuid'],
+                    $session->uuid,
                 );
             } catch (OnesiBoxOfflineException) {
                 $onesiBox->playbackSessions()
                     ->active()
-                    ->where('uuid', $result['sessionUuid'])
+                    ->where('uuid', $session->uuid)
                     ->update([
                         'status' => PlaybackSessionStatus::Error,
                         'ended_at' => now(),
                     ]);
             }
-        }
+        });
     }
 
     private function updateCounters(PlaybackSession $session, PlaybackEventType $eventType): void

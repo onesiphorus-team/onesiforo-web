@@ -37,8 +37,9 @@ test('records older than 24h are deleted (record + file)', function (): void {
 
 test('keeps top 10 most recent verbatim', function (): void {
     $box = OnesiBox::factory()->create();
+    $capturedAt = now()->subHour()->startOfHour()->addMinutes(30);
     for ($i = 0; $i < 15; $i++) {
-        makeSs($box, now()->subMinutes($i)->toDateTimeString(), (string) $i);
+        makeSs($box, $capturedAt->subMinutes($i)->toDateTimeString(), (string) $i);
     }
 
     $this->artisan('onesibox:prune-screenshots')->assertSuccessful();

@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.13.4] - 2026-10-22
+
+### Bug Fixes
+
+- Verify production using runner group access
+
 ## [0.13.3] - 2026-10-22
 
 ### Bug Fixes

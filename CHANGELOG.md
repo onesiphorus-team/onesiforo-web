@@ -2,6 +2,17 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.13.3] - 2026-10-22
+
+### Bug Fixes
+
+- Authorize and serialize user deletion actions
+- Accept all release tags on deployed revision
+- Follow command class naming convention
+- Restore model mass assignment protection
+- Serialize playback session lifecycle and command persistence
+- Scope priority stop commands to playback sessions
+
 ## [0.13.2] - 2026-10-21
 
 ### Bug Fixes

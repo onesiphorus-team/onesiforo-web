@@ -52,6 +52,11 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         $this->sendCommand($onesiBox, CommandType::StopMedia);
     }
 
+    public function sendSessionStopCommand(OnesiBox $onesiBox): void
+    {
+        $this->sendCommand($onesiBox, CommandType::StopMedia, priority: 1);
+    }
+
     public function sendRebootCommand(OnesiBox $onesiBox): void
     {
         $this->sendCommand($onesiBox, CommandType::Reboot);
@@ -137,7 +142,7 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
         $command = $this->createCommand($onesiBox, $type, $payload, $priority);
 
-        dispatch(new SendOnesiBoxCommand($command));
+        dispatch(new SendOnesiBoxCommand($command))->afterCommit();
 
         $this->dispatchCommandSentEvent($onesiBox, $command);
     }

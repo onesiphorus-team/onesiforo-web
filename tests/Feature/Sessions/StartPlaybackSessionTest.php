@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 use App\Actions\Playlists\CreatePlaylistAction;
 use App\Actions\Sessions\StartPlaybackSessionAction;
+use App\Actions\Sessions\StopPlaybackSessionAction;
+use App\Enums\CommandStatus;
 use App\Enums\CommandType;
 use App\Enums\PlaybackSessionStatus;
+use App\Events\NewCommandAvailable;
+use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\OnesiBox;
+use App\Services\OnesiBoxCommandServiceInterface;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 beforeEach(function (): void {
     $this->onesiBox = OnesiBox::factory()->online()->create();
@@ -82,7 +89,7 @@ test('cannot start session on offline onesibox', function (): void {
     ]);
 
     $this->startAction->execute($offlineBox, $playlist, 60);
-})->throws(App\Exceptions\OnesiBoxOfflineException::class);
+})->throws(OnesiBoxOfflineException::class);
 
 test('session is associated with correct onesibox and playlist', function (): void {
     $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
@@ -94,4 +101,85 @@ test('session is associated with correct onesibox and playlist', function (): vo
     expect($session->onesi_box_id)->toBe($this->onesiBox->id);
     expect($session->playlist_id)->toBe($playlist->id);
     expect($session->duration_minutes)->toBe(30);
+});
+
+test('failed first command rolls back the new session', function (): void {
+    $offlineBox = OnesiBox::factory()->offline()->create();
+    $playlist = $this->createPlaylistAction->execute($offlineBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4'],
+    ]);
+
+    expect(fn () => $this->startAction->execute($offlineBox, $playlist, 60))
+        ->toThrow(OnesiBoxOfflineException::class);
+
+    expect($offlineBox->playbackSessions()->count())->toBe(0)
+        ->and($offlineBox->commands()->count())->toBe(0);
+});
+
+test('failed replacement restores the existing session and pending command', function (): void {
+    $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4'],
+    ]);
+    $existingSession = $this->startAction->execute($this->onesiBox, $playlist, 60);
+    $existingCommand = $this->onesiBox->commands()->first();
+    $commandService = Mockery::mock(OnesiBoxCommandServiceInterface::class);
+    $commandService->shouldReceive('sendSessionMediaCommand')->andThrow(new RuntimeException('Command persistence failed'));
+    $action = new StartPlaybackSessionAction($commandService, resolve(StopPlaybackSessionAction::class));
+
+    expect(fn () => $action->execute($this->onesiBox, $playlist, 60))->toThrow(RuntimeException::class);
+
+    expect($existingSession->refresh()->status)->toBe(PlaybackSessionStatus::Active)
+        ->and($existingSession->ended_at)->toBeNull()
+        ->and($existingCommand->refresh()->status)->toBe(CommandStatus::Pending)
+        ->and($this->onesiBox->playbackSessions()->count())->toBe(1)
+        ->and($this->onesiBox->commands()->count())->toBe(1);
+});
+
+test('successive starts keep only the newest session active with stop ordered before play', function (): void {
+    $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4'],
+    ]);
+    $secondBoxInstance = OnesiBox::query()->findOrFail($this->onesiBox->id);
+    $first = $this->startAction->execute($this->onesiBox, $playlist, 60);
+    $second = $this->startAction->execute($secondBoxInstance, $playlist, 60);
+
+    expect($this->onesiBox->playbackSessions()->active()->pluck('id')->all())->toBe([$second->id])
+        ->and($first->refresh()->status)->toBe(PlaybackSessionStatus::Stopped);
+    $pendingCommands = $this->onesiBox->pendingCommands()->get();
+    expect($pendingCommands)->toHaveCount(2)
+        ->and($pendingCommands[0]->type)->toBe(CommandType::StopMedia)
+        ->and($pendingCommands[1]->payload['session_id'])->toBe($second->uuid);
+});
+
+test('session commands are broadcast only after the surrounding transaction commits', function (): void {
+    $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4'],
+    ]);
+    Event::fake([NewCommandAvailable::class]);
+
+    DB::transaction(function () use ($playlist): void {
+        $this->startAction->execute($this->onesiBox, $playlist, 60);
+
+        expect($this->onesiBox->commands()->count())->toBe(1);
+        Event::assertNotDispatched(NewCommandAvailable::class);
+    });
+
+    Event::assertDispatched(NewCommandAvailable::class);
+});
+
+test('rolled back session commands are never broadcast', function (): void {
+    $playlist = $this->createPlaylistAction->execute($this->onesiBox, [
+        ['url' => 'https://www.jw.org/video/1.mp4'],
+    ]);
+    Event::fake([NewCommandAvailable::class]);
+
+    expect(fn () => DB::transaction(function () use ($playlist): void {
+        $this->startAction->execute($this->onesiBox, $playlist, 60);
+
+        throw new RuntimeException('Abort session transaction');
+    }))->toThrow(RuntimeException::class);
+
+    expect($this->onesiBox->playbackSessions()->count())->toBe(0)
+        ->and($this->onesiBox->commands()->count())->toBe(0);
+    Event::assertNotDispatched(NewCommandAvailable::class);
 });

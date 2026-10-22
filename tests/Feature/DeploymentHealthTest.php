@@ -15,7 +15,7 @@ it('reports the exact live revision and tag without the cached display version',
 
     $this->getJson(route('deployment.health'))
         ->assertSuccessful()
-        ->assertExactJson(['status' => 'ok', 'version' => 'v1.2.3', 'revision' => str_repeat('a', 40)])
+        ->assertExactJson(['status' => 'ok', 'tags' => ['v1.2.3'], 'revision' => str_repeat('a', 40)])
         ->assertHeader('Cache-Control', 'no-store, private');
 });
 
@@ -34,4 +34,22 @@ it('fails readiness without exposing database errors', function (): void {
 
     $this->getJson(route('deployment.health'))->assertServiceUnavailable()
         ->assertExactJson(['status' => 'unavailable']);
+});
+
+it('reports every tag pointing to the served revision', function (): void {
+    Process::fake(fn (PendingProcess $process) => Process::result(
+        output: $process->command === ['git', 'rev-parse', 'HEAD'] ? str_repeat('a', 40) : "v1.2.3\nv1.2.4\n",
+    ));
+
+    $this->getJson(route('deployment.health'))
+        ->assertSuccessful()
+        ->assertJsonPath('tags', ['v1.2.3', 'v1.2.4']);
+});
+
+it('fails readiness when HEAD has no release tags', function (): void {
+    Process::fake(fn (PendingProcess $process) => Process::result(
+        output: $process->command === ['git', 'rev-parse', 'HEAD'] ? str_repeat('a', 40) : '',
+    ));
+
+    $this->getJson(route('deployment.health'))->assertServiceUnavailable();
 });

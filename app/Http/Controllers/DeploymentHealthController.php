@@ -16,15 +16,15 @@ class DeploymentHealthController extends Controller
         try {
             DB::select('SELECT 1');
             $revision = Process::path(base_path())->run(['git', 'rev-parse', 'HEAD']);
-            $tag = Process::path(base_path())->run(['git', 'describe', '--tags', '--exact-match', 'HEAD']);
+            $tag = Process::path(base_path())->run(['git', 'tag', '--points-at', 'HEAD']);
 
-            if (! $revision->successful() || ! $tag->successful()) {
+            if (! $revision->successful() || ! $tag->successful() || trim($tag->output()) === '') {
                 return response()->json(['status' => 'unavailable'], 503, ['Cache-Control' => 'no-store']);
             }
 
             return response()->json([
                 'status' => 'ok',
-                'version' => trim($tag->output()),
+                'tags' => explode("\n", trim($tag->output())),
                 'revision' => trim($revision->output()),
             ], headers: ['Cache-Control' => 'no-store']);
         } catch (Throwable $exception) {

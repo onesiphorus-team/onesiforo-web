@@ -62,7 +62,7 @@ jobs:
           php -r '
             $health = json_decode(file_get_contents($argv[1]), true, flags: JSON_THROW_ON_ERROR);
             if (($health["status"] ?? null) !== "ok"
-                || ($health["version"] ?? null) !== getenv("RELEASE_TAG")
+                || ! in_array(getenv("RELEASE_TAG"), $health["tags"] ?? [], true)
                 || ($health["revision"] ?? null) !== getenv("RELEASE_SHA")) {
                 fwrite(STDERR, "HTTP release identity or readiness check failed.\n");
                 exit(1);

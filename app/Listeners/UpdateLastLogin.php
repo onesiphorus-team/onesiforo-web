@@ -15,7 +15,8 @@ class UpdateLastLogin
     public function handle(Login $event): void
     {
         if ($event->user instanceof User) {
-            $event->user->update(['last_login_at' => now()]);
+            $event->user->setAttribute('last_login_at', now());
+            $event->user->save();
         }
     }
 }

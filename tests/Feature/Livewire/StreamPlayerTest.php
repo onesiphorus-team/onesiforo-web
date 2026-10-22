@@ -28,7 +28,7 @@ it('mounts with clean state when no recent stream item commands', function (): v
 });
 
 it('restores url and lastOrdinalSent from latest play_stream_item command in last 6 hours', function (): void {
-    Command::query()->create([
+    Command::factory()->create([
         'onesi_box_id' => $this->box->id,
         'type' => CommandType::PlayStreamItem,
         'payload' => ['url' => 'https://stream.jw.org/6311-4713-5379-2156', 'ordinal' => 3],
@@ -45,7 +45,7 @@ it('restores url and lastOrdinalSent from latest play_stream_item command in las
 });
 
 it('ignores stream item commands older than 6 hours', function (): void {
-    Command::query()->create([
+    Command::factory()->create([
         'onesi_box_id' => $this->box->id,
         'type' => CommandType::PlayStreamItem,
         'payload' => ['url' => 'https://stream.jw.org/x', 'ordinal' => 2],
@@ -62,7 +62,7 @@ it('ignores stream item commands older than 6 hours', function (): void {
 it('restores reachedEnd true if latest error event has code E112', function (): void {
     $url = 'https://stream.jw.org/6311-4713-5379-2156';
 
-    $command = Command::query()->create([
+    $command = Command::factory()->create([
         'onesi_box_id' => $this->box->id,
         'type' => CommandType::PlayStreamItem,
         'payload' => ['url' => $url, 'ordinal' => 4],
@@ -71,7 +71,7 @@ it('restores reachedEnd true if latest error event has code E112', function (): 
         'created_at' => now()->subHour(),
     ]);
 
-    PlaybackEvent::query()->create([
+    PlaybackEvent::factory()->create([
         'onesi_box_id' => $this->box->id,
         'event' => PlaybackEventType::Error,
         'media_url' => $url,
@@ -89,7 +89,7 @@ it('restores reachedEnd true if latest error event has code E112', function (): 
 it('restores errorCode from latest error event (E110/E111/E113) without setting reachedEnd', function (): void {
     $url = 'https://stream.jw.org/6311-4713-5379-2156';
 
-    $command = Command::query()->create([
+    $command = Command::factory()->create([
         'onesi_box_id' => $this->box->id,
         'type' => CommandType::PlayStreamItem,
         'payload' => ['url' => $url, 'ordinal' => 1],
@@ -98,7 +98,7 @@ it('restores errorCode from latest error event (E110/E111/E113) without setting 
         'created_at' => now()->subHour(),
     ]);
 
-    PlaybackEvent::query()->create([
+    PlaybackEvent::factory()->create([
         'onesi_box_id' => $this->box->id,
         'event' => PlaybackEventType::Error,
         'media_url' => $url,

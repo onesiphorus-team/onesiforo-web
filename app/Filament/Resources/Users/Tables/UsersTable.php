@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Actions\DeleteUserAction;
 use App\Enums\Roles;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -24,6 +25,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Password;
 
 class UsersTable
@@ -151,15 +153,33 @@ class UsersTable
                     EditAction::make(),
                     self::resendVerificationAction(),
                     self::sendPasswordResetAction(),
-                    DeleteAction::make(),
+                    DeleteAction::make()
+                        ->using(fn (User $record): bool => app(DeleteUserAction::class)($record)),
                     RestoreAction::make(),
-                    ForceDeleteAction::make(),
+                    ForceDeleteAction::make()
+                        ->using(fn (User $record): bool => app(DeleteUserAction::class)($record, force: true)),
                 ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->authorizeIndividualRecords()
+                        ->using(function (Collection $records, DeleteBulkAction $action): void {
+                            foreach ($records as $record) {
+                                if (! app(DeleteUserAction::class)($record)) {
+                                    $action->reportBulkProcessingFailure();
+                                }
+                            }
+                        }),
+                    ForceDeleteBulkAction::make()
+                        ->authorizeIndividualRecords()
+                        ->using(function (Collection $records, ForceDeleteBulkAction $action): void {
+                            foreach ($records as $record) {
+                                if (! app(DeleteUserAction::class)($record, force: true)) {
+                                    $action->reportBulkProcessingFailure();
+                                }
+                            }
+                        }),
                     RestoreBulkAction::make(),
                 ]),
             ])

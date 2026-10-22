@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Actions\DeleteUserAction;
 use App\Enums\Roles;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
@@ -26,8 +27,10 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
+            DeleteAction::make()
+                ->using(fn (User $record): bool => app(DeleteUserAction::class)($record)),
+            ForceDeleteAction::make()
+                ->using(fn (User $record): bool => app(DeleteUserAction::class)($record, force: true)),
             RestoreAction::make(),
         ];
     }
@@ -59,18 +62,20 @@ class EditUser extends EditRecord
 
             /** @var User $record */
             $record->refresh();
-            auth()->user()?->unsetRelation('roles');
-            Gate::authorize('update', $record);
+            $actor = User::query()->find(auth()->id());
+            abort_unless($actor instanceof User, 403);
+            $gate = Gate::forUser($actor);
+            $gate->authorize('update', $record);
 
             $currentRoles = $record->roles->pluck('name')->all();
             $newRoles = $this->roles ?? $currentRoles;
 
             foreach (array_diff($newRoles, $currentRoles) as $role) {
-                Gate::authorize('assignRole', [$record, $role]);
+                $gate->authorize('assignRole', [$record, $role]);
             }
 
             foreach (array_diff($currentRoles, $newRoles) as $role) {
-                Gate::authorize('removeRole', [$record, $role]);
+                $gate->authorize('removeRole', [$record, $role]);
             }
 
             parent::handleRecordUpdate($record, $data);

@@ -1,6 +1,7 @@
 name: Deploy on Release
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
@@ -13,7 +14,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.repository == 'onesiphorus-team/onesiforo-web'
+    if: github.event_name == 'release' && github.repository == 'onesiphorus-team/onesiforo-web'
     name: Deploy to Production
     runs-on: [self-hosted, production]
     timeout-minutes: 20
@@ -71,3 +72,33 @@ jobs:
 
       - name: Notify success
         run: printf 'Verified production release %s (%s)\n' "$RELEASE_TAG" "$RELEASE_SHA"
+
+  diagnose-verification:
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'onesiphorus-team/onesiforo-web'
+    name: Inspect verification permissions
+    runs-on: [self-hosted, production]
+    timeout-minutes: 2
+    steps:
+      - name: Inspect non-secret access prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          id
+          sudo -n -l || true
+          cd /var/www/onesiforo-web/current
+          git -c safe.directory="$(pwd -P)" rev-parse HEAD
+          for path in .env bootstrap/cache/config.php vendor/autoload.php; do
+            if test -r "$path"; then
+              printf 'Readable: %s\n' "$path"
+            else
+              printf 'Not readable: %s\n' "$path"
+            fi
+          done
+          for path in storage/logs storage/framework/cache storage/framework/views; do
+            if test -w "$path"; then
+              printf 'Writable: %s\n' "$path"
+            else
+              printf 'Not writable: %s\n' "$path"
+            fi
+          done
+          systemctl is-active php8.4-fpm.service onesiforo-web-worker.service onesiforo-web-scheduler.timer

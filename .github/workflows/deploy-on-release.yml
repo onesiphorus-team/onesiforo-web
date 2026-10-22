@@ -2,6 +2,15 @@ name: Deploy on Release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing deployed release tag to verify without redeploying
+        required: true
+        type: string
+      release_sha:
+        description: Expected deployed commit SHA
+        required: true
+        type: string
   release:
     types: [published]
 
@@ -14,13 +23,13 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name == 'release' && github.repository == 'onesiphorus-team/onesiforo-web'
-    name: Deploy to Production
+    if: github.repository == 'onesiphorus-team/onesiforo-web'
+    name: Production release
     runs-on: [self-hosted, production]
     timeout-minutes: 20
     env:
-      RELEASE_TAG: ${{ github.event.release.tag_name }}
-      RELEASE_SHA: ${{ github.sha }}
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+      RELEASE_SHA: ${{ inputs.release_sha || github.sha }}
 
     steps:
       - name: Validate release reference
@@ -31,6 +40,7 @@ jobs:
           [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
 
       - name: Deploy release
+        if: github.event_name == 'release'
         shell: bash
         run: |
           set -euo pipefail
@@ -41,13 +51,13 @@ jobs:
         run: |
           set -euo pipefail
           cd /var/www/onesiforo-web/current
-          deployed_sha=$(sudo -u www-data git rev-parse HEAD)
-          tag_sha=$(sudo -u www-data git rev-parse "refs/tags/$RELEASE_TAG^{commit}")
+          deployed_sha=$(git -c safe.directory="$(pwd -P)" rev-parse HEAD)
+          tag_sha=$(git -c safe.directory="$(pwd -P)" rev-parse "refs/tags/$RELEASE_TAG^{commit}")
           [[ "$deployed_sha" == "$RELEASE_SHA" && "$tag_sha" == "$RELEASE_SHA" ]]
           systemctl is-active --quiet php8.4-fpm.service
           systemctl is-active --quiet onesiforo-web-worker.service
           systemctl is-active --quiet onesiforo-web-scheduler.timer
-          sudo -u www-data php artisan deployment:verify-queue --timeout=60 --no-interaction
+          php artisan deployment:verify-queue --timeout=60 --no-interaction
 
       - name: Verify HTTP readiness and release identity
         shell: bash
@@ -72,33 +82,3 @@ jobs:
 
       - name: Notify success
         run: printf 'Verified production release %s (%s)\n' "$RELEASE_TAG" "$RELEASE_SHA"
-
-  diagnose-verification:
-    if: github.event_name == 'workflow_dispatch' && github.repository == 'onesiphorus-team/onesiforo-web'
-    name: Inspect verification permissions
-    runs-on: [self-hosted, production]
-    timeout-minutes: 2
-    steps:
-      - name: Inspect non-secret access prerequisites
-        shell: bash
-        run: |
-          set -euo pipefail
-          id
-          sudo -n -l || true
-          cd /var/www/onesiforo-web/current
-          git -c safe.directory="$(pwd -P)" rev-parse HEAD
-          for path in .env bootstrap/cache/config.php vendor/autoload.php; do
-            if test -r "$path"; then
-              printf 'Readable: %s\n' "$path"
-            else
-              printf 'Not readable: %s\n' "$path"
-            fi
-          done
-          for path in storage/logs storage/framework/cache storage/framework/views; do
-            if test -w "$path"; then
-              printf 'Writable: %s\n' "$path"
-            else
-              printf 'Not writable: %s\n' "$path"
-            fi
-          done
-          systemctl is-active php8.4-fpm.service onesiforo-web-worker.service onesiforo-web-scheduler.timer

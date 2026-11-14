@@ -106,10 +106,13 @@ interface OnesiBoxCommandServiceInterface
      *
      * Used by the session advance mechanism to link commands to a playback session.
      *
+     * @param  bool  $startsSession  True for the first item: the box is prepared for content (custom commands
+     *                               marked to run before content); later items are sent as they are
+     *
      * @throws OnesiBoxOfflineException
      * @throws OnesiBoxCommandException
      */
-    public function sendSessionMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType, string $sessionId): void;
+    public function sendSessionMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType, string $sessionId, bool $startsSession = false): void;
 
     /**
      * Invia comando di impostazione volume.

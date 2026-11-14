@@ -7,9 +7,6 @@ namespace App\Livewire\Dashboard;
 use App\Concerns\ChecksOnesiBoxPermission;
 use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
-use App\Enums\OnesiBoxStatus;
-use App\Enums\PlaybackEventType;
-use App\Enums\PlaybackSessionStatus;
 use App\Enums\Roles;
 use App\Models\OnesiBox;
 use App\Models\Recipient;
@@ -30,6 +27,8 @@ class OnesiBoxDetail extends Component
     use ChecksOnesiBoxPermission;
 
     public OnesiBox $onesiBox;
+
+    public bool $showTechnicalDetails = false;
 
     public function mount(OnesiBox $onesiBox): void
     {
@@ -92,129 +91,35 @@ class OnesiBoxDetail extends Component
     }
 
     /**
-     * Get current media information if playing.
+     * Whether "back to my boxes" leads anywhere: a family member with a single box is sent
+     * straight back here by the list.
+     */
+    #[Computed]
+    public function canGoBackToList(): bool
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        return $this->isAdmin() || $user->onesiBoxes()->limit(2)->count() > 1;
+    }
+
+    /**
+     * Commands sent to the box that it has not picked up yet (shown next to "Altro").
+     */
+    #[Computed]
+    public function pendingCommandCount(): int
+    {
+        return $this->onesiBox->commands()->where('status', CommandStatus::Pending)->count();
+    }
+
+    /**
+     * Show or hide the technical details (command queue, system, network, logs).
      *
-     * @return array{url: string|null, type: string|null, title: string|null, position: int|null, duration: int|null}|null
+     * They are only rendered while open, so their components do not poll in the background.
      */
-    #[Computed]
-    public function currentMediaInfo(): ?array
+    public function toggleTechnicalDetails(): void
     {
-        if ($this->onesiBox->status === OnesiBoxStatus::Idle) {
-            return null;
-        }
-
-        if ($this->onesiBox->current_media_url === null) {
-            return null;
-        }
-
-        return [
-            'url' => $this->onesiBox->current_media_url,
-            'type' => $this->onesiBox->current_media_type,
-            'title' => $this->onesiBox->current_media_title,
-            'position' => $this->onesiBox->current_media_position,
-            'duration' => $this->onesiBox->current_media_duration,
-        ];
-    }
-
-    /**
-     * Get current meeting information if in a call.
-     *
-     * @return array{meeting_id: string, meeting_url: string|null, joined_at: string|null}|null
-     */
-    #[Computed]
-    public function currentMeetingInfo(): ?array
-    {
-        if ($this->onesiBox->status !== OnesiBoxStatus::Calling) {
-            return null;
-        }
-
-        if ($this->onesiBox->current_meeting_id === null) {
-            return null;
-        }
-
-        return [
-            'meeting_id' => $this->onesiBox->current_meeting_id,
-            'meeting_url' => $this->onesiBox->current_meeting_url,
-            'joined_at' => $this->onesiBox->current_meeting_joined_at?->toISOString(),
-        ];
-    }
-
-    /**
-     * Get the current hero card variant.
-     *
-     * @return 'offline'|'call'|'media'|'idle'
-     */
-    #[Computed]
-    public function heroState(): string
-    {
-        if (! $this->isOnline()) {
-            return 'offline';
-        }
-
-        if ($this->onesiBox->status === OnesiBoxStatus::Calling
-            && $this->onesiBox->current_meeting_id !== null) {
-            return 'call';
-        }
-
-        if ($this->onesiBox->current_media_url !== null) {
-            return 'media';
-        }
-
-        return 'idle';
-    }
-
-    /**
-     * Check if the OnesiBox is currently in a Zoom call.
-     */
-    #[Computed]
-    public function isInCall(): bool
-    {
-        return $this->onesiBox->status === OnesiBoxStatus::Calling;
-    }
-
-    /**
-     * Determine whether the current media is paused
-     * by inspecting the latest PlaybackEvent for this OnesiBox.
-     */
-    #[Computed]
-    public function isMediaPaused(): bool
-    {
-        $latest = $this->onesiBox
-            ->playbackEvents()
-            ->latest('id')
-            ->first();
-
-        return $latest?->event === PlaybackEventType::Paused;
-    }
-
-    /**
-     * Default open/closed state for each accordion in the body.
-     *
-     * @return array<string,bool>
-     */
-    #[Computed]
-    public function accordionDefaults(): array
-    {
-        return [
-            'session' => $this->onesiBox->playbackSessions()
-                ->where('status', PlaybackSessionStatus::Active)
-                ->exists(),
-            'commands' => $this->onesiBox->commands()
-                ->where('status', CommandStatus::Pending)
-                ->exists(),
-            'playlists' => false,
-            'contacts' => false,
-            'meetings' => false,
-        ];
-    }
-
-    /**
-     * Get the current volume level.
-     */
-    #[Computed]
-    public function currentVolume(): int
-    {
-        return $this->onesiBox->volume ?? 80;
+        $this->showTechnicalDetails = ! $this->showTechnicalDetails;
     }
 
     /**

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Enums\CommandStatus;
+use App\Enums\CommandType;
 use App\Models\Command;
+use App\Services\BoxAlerts\BoxActivityMonitor;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +22,7 @@ class AcknowledgeCommandAction
 {
     public function __construct(
         private readonly StoreOnesiBoxLogSnapshotAction $storeLogSnapshot,
+        private readonly BoxActivityMonitor $activityMonitor,
     ) {}
 
     /**
@@ -107,6 +110,10 @@ class AcknowledgeCommandAction
         $command->markAsFailed($errorCode, $errorMessage, $executedAt);
 
         $this->storeLogSnapshot->fromFailure($command, $errorMessage);
+
+        if ($command->type === CommandType::CustomScript) {
+            $this->activityMonitor->customScriptFailed($command);
+        }
 
         return true;
     }

@@ -38,7 +38,7 @@
     @if (!$this->isOnline)
         <flux:callout icon="wifi">
             <flux:callout.text>
-                Il controllo volume è disponibile solo quando il dispositivo è online.
+                Il volume si può cambiare solo quando il box è acceso e connesso.
             </flux:callout.text>
         </flux:callout>
     @endif
@@ -46,7 +46,7 @@
     @if (!$this->canControl)
         <flux:callout icon="lock-closed">
             <flux:callout.text>
-                Non hai i permessi per controllare il volume di questo dispositivo.
+                Puoi solo guardare questo box: per cambiare il volume chiedi all'amministratore il permesso completo.
             </flux:callout.text>
         </flux:callout>
     @endif

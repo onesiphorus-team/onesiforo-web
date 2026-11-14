@@ -25,10 +25,11 @@ class StartPlaybackSessionAction
      * Execute the action to start a playback session.
      *
      * @param  int  $durationMinutes  Allowed values: 30, 60, 120, 180
+     * @param  'video'|'audio'  $mediaType  Media type sent to the OnesiBox for every item of the session
      */
-    public function execute(OnesiBox $onesiBox, Playlist $playlist, int $durationMinutes): PlaybackSession
+    public function execute(OnesiBox $onesiBox, Playlist $playlist, int $durationMinutes, string $mediaType = 'video'): PlaybackSession
     {
-        return DB::transaction(function () use ($onesiBox, $playlist, $durationMinutes): PlaybackSession {
+        return DB::transaction(function () use ($onesiBox, $playlist, $durationMinutes, $mediaType): PlaybackSession {
             $onesiBox = OnesiBox::query()->lockForUpdate()->findOrFail($onesiBox->id);
 
             $existingSession = $onesiBox->playbackSessions()->active()->lockForUpdate()->first();
@@ -39,6 +40,7 @@ class StartPlaybackSessionAction
             $session = PlaybackSession::query()->create([
                 'onesi_box_id' => $onesiBox->id,
                 'playlist_id' => $playlist->id,
+                'media_type' => $mediaType,
                 'status' => PlaybackSessionStatus::Active,
                 'duration_minutes' => $durationMinutes,
                 'started_at' => now(),
@@ -53,8 +55,9 @@ class StartPlaybackSessionAction
                 $this->commandService->sendSessionMediaCommand(
                     $onesiBox,
                     $firstItem->media_url,
-                    'video',
+                    $mediaType,
                     $session->uuid,
+                    startsSession: true,
                 );
             }
 

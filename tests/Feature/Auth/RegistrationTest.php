@@ -3,40 +3,30 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Support\Facades\Notification;
 
-test('registration screen can be rendered', function (): void {
-    $response = $this->get(route('register'));
+/*
+ * Accounts are created by administrators (invitations), so nobody can sign up on their own:
+ * a self-registered user would only land on an "awaiting activation" page.
+ */
 
-    $response->assertOk();
+test('the registration screen is not available', function (): void {
+    $this->get('/register')->assertNotFound();
 });
 
-test('new users can register', function (): void {
-    $response = $this->post(route('register.store'), [
+test('nobody can register an account on their own', function (): void {
+    $this->post('/register', [
         'name' => 'John Doe',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ]);
+    ])->assertNotFound();
 
-    $response->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
-
-    $this->assertAuthenticated();
+    $this->assertGuest();
+    expect(User::query()->where('email', 'test@example.com')->exists())->toBeFalse();
 });
 
-test('verification email is sent upon registration', function (): void {
-    Notification::fake();
-
-    $this->post(route('register.store'), [
-        'name' => 'John Doe',
-        'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-    ]);
-
-    $user = User::query()->where('email', 'test@example.com')->first();
-
-    Notification::assertSentTo($user, VerifyEmail::class);
+test('the login page does not offer to sign up', function (): void {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertDontSee('Registrati');
 });

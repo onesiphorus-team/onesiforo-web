@@ -2,11 +2,7 @@
     @php($commands = $this->commands)
 
     @if($this->canControl && $commands->isNotEmpty())
-        <div class="p-4 sm:p-6 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
-            <flux:heading size="sm" class="mb-4">
-                <flux:icon name="command-line" class="w-5 h-5 inline-block mr-2" />
-                {{ __('Comandi personalizzati') }}
-            </flux:heading>
+        <x-box-section :title="__('Comandi personalizzati')" subtitle="Azioni preparate apposta per questo box" icon="bolt">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 @foreach($commands as $command)
@@ -17,7 +13,7 @@
                         wire:loading.attr="disabled"
                         wire:target="run({{ $command->id }})"
                         :disabled="! $this->onesiBox->isOnline()"
-                        variant="primary"
+                        variant="outline"
                         icon="{{ $iconName }}"
                         class="justify-start text-left"
                     >
@@ -33,9 +29,9 @@
 
             @unless($this->onesiBox->isOnline())
                 <p class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                    {{ __('La OnesiBox è offline. I comandi non possono essere inviati.') }}
+                    Il box è spento o non connesso: per ora questi comandi non possono partire.
                 </p>
             @endunless
-        </div>
+        </x-box-section>
     @endif
 </div>

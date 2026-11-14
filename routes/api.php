@@ -24,6 +24,11 @@ use Illuminate\Support\Facades\Route;
 // Appliances POST to /api/broadcasting/auth to authorize private channel subscriptions.
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
+// Bot updates for "Collega Telegram" (verified by the secret header, see the controller).
+Route::post('telegram/webhook', App\Http\Controllers\TelegramWebhookController::class)
+    ->middleware('throttle:60,1')
+    ->name('telegram.webhook');
+
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
     /*
     |--------------------------------------------------------------------------

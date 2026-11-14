@@ -36,8 +36,12 @@ test('onesibox detail shows playing status with media info', function (): void {
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
         ->assertSeeLivewire(HeroCard::class)
-        ->assertSet('heroState', 'media')
         ->assertStatus(200);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $onesiBox])
+        ->assertSet('state', 'media')
+        ->assertSee('Test Video Title');
 });
 
 test('onesibox detail shows calling status with meeting info', function (): void {
@@ -51,8 +55,12 @@ test('onesibox detail shows calling status with meeting info', function (): void
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
         ->assertSeeLivewire(HeroCard::class)
-        ->assertSet('heroState', 'call')
         ->assertStatus(200);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $onesiBox])
+        ->assertSet('state', 'call')
+        ->assertSee('123456789');
 });
 
 test('onesibox detail shows error status', function (): void {
@@ -64,7 +72,7 @@ test('onesibox detail shows error status', function (): void {
 
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
-        ->assertSee('Dispositivo in stato di errore')
+        ->assertSee('Il box ha segnalato un errore')
         ->assertStatus(200);
 });
 
@@ -139,7 +147,11 @@ test('readonly user can view onesibox status', function (): void {
     Livewire::actingAs($user)
         ->test(OnesiBoxDetail::class, ['onesiBox' => $onesiBox])
         ->assertSeeLivewire(HeroCard::class)
-        ->assertSet('heroState', 'media')
         ->assertSet('canControl', false)
         ->assertStatus(200);
+
+    Livewire::actingAs($user)
+        ->test(HeroCard::class, ['onesiBox' => $onesiBox])
+        ->assertSet('state', 'media')
+        ->assertSee('Video for Readonly');
 });

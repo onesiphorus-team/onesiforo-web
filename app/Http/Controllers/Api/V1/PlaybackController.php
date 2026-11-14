@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\ApplyPlaybackEventToOnesiBoxAction;
 use App\Actions\Sessions\AdvancePlaybackSessionAction;
 use App\Actions\StorePlaybackEventAction;
 use App\Enums\PlaybackEventType;
@@ -11,6 +12,7 @@ use App\Events\PlaybackEventReceived;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\PlaybackEventRequest;
 use App\Http\Resources\Api\V1\PlaybackEventResource;
+use App\Services\BoxAlerts\BoxActivityMonitor;
 
 /**
  * Handles playback event operations for OnesiBox appliances.
@@ -36,12 +38,17 @@ class PlaybackController extends Controller
         PlaybackEventRequest $request,
         StorePlaybackEventAction $storeAction,
         AdvancePlaybackSessionAction $advanceAction,
+        ApplyPlaybackEventToOnesiBoxAction $applyToOnesiBox,
+        BoxActivityMonitor $activityMonitor,
     ): PlaybackEventResource {
         $onesiBox = $request->onesiBox();
 
         /** @var array{event: string, media_url: string, media_type: string, position?: int|null, duration?: int|null, error_message?: string|null, error_code?: string|null, session_id?: string|null} $data */
         $data = $request->validated();
         $playbackEvent = $storeAction->fromArray($onesiBox, $data);
+
+        $applyToOnesiBox->execute($onesiBox, $playbackEvent);
+        $activityMonitor->playbackEventReceived($onesiBox, $playbackEvent);
 
         broadcast(new PlaybackEventReceived($playbackEvent));
 

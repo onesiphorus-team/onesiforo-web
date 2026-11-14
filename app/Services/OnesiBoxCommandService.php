@@ -21,6 +21,17 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
      */
     private const int DEFAULT_PRIORITY = 3;
 
+    /**
+     * Commands that prepare the box for content (e.g. switching the TV input) go out first.
+     */
+    private const int BEFORE_CONTENT_PRIORITY = 2;
+
+    /**
+     * An automatic command already sent this recently is not sent again, e.g. when the
+     * caregiver taps several videos in a row.
+     */
+    private const int BEFORE_CONTENT_COOLDOWN_SECONDS = 60;
+
     public function sendAudioCommand(OnesiBox $onesiBox, string $audioUrl): void
     {
         $this->sendMediaCommand($onesiBox, $audioUrl, 'audio');
@@ -33,7 +44,7 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
     public function sendMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType): void
     {
-        $this->sendCommand($onesiBox, CommandType::PlayMedia, [
+        $this->sendContentCommand($onesiBox, CommandType::PlayMedia, [
             'url' => $mediaUrl,
             'media_type' => $mediaType,
         ]);
@@ -41,7 +52,7 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
     public function sendZoomCommand(OnesiBox $onesiBox, string $meetingId, ?string $password = null): void
     {
-        $this->sendCommand($onesiBox, CommandType::JoinZoom, [
+        $this->sendContentCommand($onesiBox, CommandType::JoinZoom, [
             'meeting_id' => $meetingId,
             'password' => $password,
         ]);
@@ -69,7 +80,7 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
     public function sendZoomUrlCommand(OnesiBox $onesiBox, string $zoomUrl, string $participantName): void
     {
-        $this->sendCommand($onesiBox, CommandType::JoinZoom, [
+        $this->sendContentCommand($onesiBox, CommandType::JoinZoom, [
             'meeting_url' => $zoomUrl,
             'participant_name' => $participantName,
         ]);
@@ -80,9 +91,13 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
         $this->sendCommand($onesiBox, CommandType::RestartService);
     }
 
-    public function sendSessionMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType, string $sessionId): void
+    public function sendSessionMediaCommand(OnesiBox $onesiBox, string $mediaUrl, string $mediaType, string $sessionId, bool $startsSession = false): void
     {
-        $this->sendCommand($onesiBox, CommandType::PlayMedia, [
+        // Only the first item of a session prepares the box: moving on to the next item must not,
+        // e.g., take the TV back to the box after someone switched it to normal TV on purpose.
+        $send = $startsSession ? $this->sendContentCommand(...) : $this->sendCommand(...);
+
+        $send($onesiBox, CommandType::PlayMedia, [
             'url' => $mediaUrl,
             'media_type' => $mediaType,
             'session_id' => $sessionId,
@@ -98,7 +113,7 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
 
     public function sendStreamItemCommand(OnesiBox $onesiBox, string $url, int $ordinal): void
     {
-        $this->sendCommand($onesiBox, CommandType::PlayStreamItem, [
+        $this->sendContentCommand($onesiBox, CommandType::PlayStreamItem, [
             'url' => $url,
             'ordinal' => $ordinal,
         ], priority: 2);
@@ -121,6 +136,56 @@ class OnesiBoxCommandService implements OnesiBoxCommandServiceInterface
             'script_name' => $customCommand->script_name,
             'static_args' => $customCommand->static_args ?? [],
         ]);
+    }
+
+    /**
+     * Send a command that makes the box show something (media or a meeting), preceded by the
+     * custom commands marked to run before content, e.g. switching the TV to the box input.
+     *
+     * Those commands are flagged to run in the background, so the box does not wait for them
+     * before starting the content. A box without such commands gets only the content command.
+     *
+     * @param  array<string, mixed>  $payload
+     *
+     * @throws OnesiBoxOfflineException
+     */
+    private function sendContentCommand(OnesiBox $onesiBox, CommandType $type, array $payload = [], int $priority = self::DEFAULT_PRIORITY): void
+    {
+        $this->ensureOnline($onesiBox);
+
+        $this->sendCommandsBeforeContent($onesiBox);
+
+        $this->sendCommand($onesiBox, $type, $payload, $priority);
+    }
+
+    private function sendCommandsBeforeContent(OnesiBox $onesiBox): void
+    {
+        $customCommands = $onesiBox->customCommands()->runningBeforeContent()->ordered()->get();
+
+        foreach ($customCommands as $customCommand) {
+            if ($this->wasSentRecently($onesiBox, $customCommand)) {
+                continue;
+            }
+
+            $command = $this->createCommand($onesiBox, CommandType::CustomScript, [
+                'custom_command_id' => $customCommand->id,
+                'script_name' => $customCommand->script_name,
+                'static_args' => $customCommand->static_args ?? [],
+                'run_in_background' => true,
+                'automatic' => true,
+            ], self::BEFORE_CONTENT_PRIORITY);
+
+            dispatch(new SendOnesiBoxCommand($command))->afterCommit();
+        }
+    }
+
+    private function wasSentRecently(OnesiBox $onesiBox, CustomCommand $customCommand): bool
+    {
+        return $onesiBox->commands()
+            ->where('type', CommandType::CustomScript)
+            ->where('payload->custom_command_id', $customCommand->id)
+            ->where('created_at', '>=', now()->subSeconds(self::BEFORE_CONTENT_COOLDOWN_SECONDS))
+            ->exists();
     }
 
     /**

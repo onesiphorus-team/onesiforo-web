@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Enums\CommandType;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
+use App\Enums\PlaybackSessionStatus;
 use App\Livewire\Dashboard\Controls\BottomBar;
 use App\Models\OnesiBox;
+use App\Models\PlaybackSession;
 use App\Models\User;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -69,15 +72,16 @@ it('renders a modal trigger that mounts the VolumeControl component', function (
         ->assertSet('showVolume', true);
 });
 
-it('openNew() dispatches open-quick-play without a preselected tab', function (): void {
+it('opens the new-content sheet directly from the browser, without a server round trip', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
     Livewire::actingAs($user)
         ->test(BottomBar::class, ['onesiBox' => $box])
-        ->call('openNew')
-        ->assertDispatched('open-quick-play');
+        ->assertSeeHtml(<<<'HTML'
+            x-on:click="$dispatch('open-quick-play')"
+            HTML);
 });
 
 it('callAction() dispatches open-quick-play with tab=zoom when no active call', function (): void {
@@ -119,15 +123,18 @@ it('stopAll() is forbidden for a user without Full permission', function (): voi
         ->assertForbidden();
 });
 
-it('openNew() is forbidden for a user without Full permission', function (): void {
+it('stopAll() ends a running playlist instead of only stopping the current item', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
-    // No caregivers attached
+    $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+    $session = PlaybackSession::factory()->for($box, 'onesiBox')->create(['status' => PlaybackSessionStatus::Active]);
 
     Livewire::actingAs($user)
         ->test(BottomBar::class, ['onesiBox' => $box])
-        ->call('openNew')
-        ->assertForbidden();
+        ->call('stopAll');
+
+    expect($session->refresh()->status)->toBe(PlaybackSessionStatus::Stopped)
+        ->and($box->commands()->where('type', CommandType::StopMedia)->count())->toBe(1);
 });
 
 it('callAction() is forbidden for a user without Full permission', function (): void {

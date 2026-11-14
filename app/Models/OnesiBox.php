@@ -8,6 +8,7 @@ use App\Enums\CommandStatus;
 use App\Enums\MeetingJoinMode;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
+use App\Enums\PlaybackEventType;
 use App\Traits\LogsActivityAllDirty;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -31,6 +32,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int|null $recipient_id
  * @property string|null $firmware_version
  * @property Carbon|null $last_seen_at
+ * @property string|null $connection_state 'online' or 'offline' as last announced on Telegram
  * @property bool $is_active
  * @property OnesiBoxStatus $status
  * @property string|null $notes
@@ -42,6 +44,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string|null $current_meeting_id
  * @property string|null $current_meeting_url
  * @property CarbonInterface|null $current_meeting_joined_at
+ * @property bool|null $current_meeting_audio_connected False when the box reports Zoom without audio
  * @property int $volume
  * @property CarbonInterface|null $last_system_info_at
  * @property int|null $cpu_usage
@@ -76,6 +79,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property CarbonInterface|null $last_log_requested_at
  * @property MeetingJoinMode $meeting_join_mode
  * @property bool $meeting_notifications_enabled
+ * @property bool $activity_notifications_enabled Telegram alerts about this box (on/off, meetings, playback)
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -83,6 +87,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $caregivers
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Command> $commands
  * @property-read \Illuminate\Database\Eloquent\Collection<int, CustomCommand> $customCommands
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ZoomMeeting> $zoomMeetings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackEvent> $playbackEvents
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Playlist> $playlists
  * @property-read \Illuminate\Database\Eloquent\Collection<int, PlaybackSession> $playbackSessions
@@ -259,6 +264,16 @@ class OnesiBox extends Model implements AuthenticatableContract
     }
 
     /**
+     * Zoom meetings known to this box besides its congregation meeting.
+     *
+     * @return HasMany<ZoomMeeting, $this>
+     */
+    public function zoomMeetings(): HasMany
+    {
+        return $this->hasMany(ZoomMeeting::class);
+    }
+
+    /**
      * Get playback events for this OnesiBox.
      *
      * @return HasMany<PlaybackEvent, $this>
@@ -361,6 +376,23 @@ class OnesiBox extends Model implements AuthenticatableContract
             ->first();
     }
 
+    /**
+     * Get when each JW.org media item was last shown on this OnesiBox.
+     *
+     * @return array<string, CarbonInterface> Keyed by JW.org naturalKey
+     */
+    public function lastShownAtByMediaKey(): array
+    {
+        return $this->playbackEvents()
+            ->where('event', PlaybackEventType::Started)
+            ->whereNotNull('media_key')
+            ->groupBy('media_key')
+            ->selectRaw('media_key, MAX(created_at) as last_shown_at')
+            ->pluck('last_shown_at', 'media_key')
+            ->map(fn (string $lastShownAt): CarbonInterface => Carbon::parse($lastShownAt))
+            ->all();
+    }
+
     // ========================================
     // AuthenticatableContract Implementation
     // ========================================
@@ -422,6 +454,8 @@ class OnesiBox extends Model implements AuthenticatableContract
             'current_meeting_joined_at' => 'datetime',
             'meeting_join_mode' => MeetingJoinMode::class,
             'meeting_notifications_enabled' => 'boolean',
+            'activity_notifications_enabled' => 'boolean',
+            'current_meeting_audio_connected' => 'boolean',
             'volume' => 'integer',
             'last_system_info_at' => 'datetime',
             'cpu_usage' => 'integer',

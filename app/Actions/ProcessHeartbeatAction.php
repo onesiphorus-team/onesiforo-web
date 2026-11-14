@@ -10,6 +10,7 @@ use App\Enums\PlaybackSessionStatus;
 use App\Events\OnesiBoxStatusUpdated;
 use App\Models\MeetingAttendance;
 use App\Models\OnesiBox;
+use App\Services\BoxAlerts\BoxActivityMonitor;
 use Illuminate\Support\Facades\Date;
 
 /**
@@ -21,6 +22,10 @@ use Illuminate\Support\Facades\Date;
  */
 class ProcessHeartbeatAction
 {
+    public function __construct(
+        private readonly BoxActivityMonitor $activityMonitor,
+    ) {}
+
     /**
      * Process heartbeat data and update the OnesiBox model.
      *
@@ -29,6 +34,15 @@ class ProcessHeartbeatAction
      */
     public function __invoke(OnesiBox $onesiBox, array $data): void
     {
+        $before = [
+            'connection_state' => $onesiBox->connection_state,
+            'last_seen_at' => $onesiBox->last_seen_at,
+            'status' => $onesiBox->status,
+            'meeting_url' => $onesiBox->current_meeting_url,
+            'meeting_joined_at' => $onesiBox->current_meeting_joined_at,
+            'audio_connected' => $onesiBox->current_meeting_audio_connected,
+        ];
+
         $this->updateStatus($onesiBox, $data);
         $this->updateMediaInfo($onesiBox, $data);
         $this->updateMeetingInfo($onesiBox, $data);
@@ -46,6 +60,8 @@ class ProcessHeartbeatAction
         $this->expireActiveSessionOnIdle($onesiBox, $data);
 
         $onesiBox->recordHeartbeat();
+
+        $this->activityMonitor->heartbeatReceived($onesiBox, $before);
 
         event(new OnesiBoxStatusUpdated($onesiBox));
     }
@@ -67,6 +83,7 @@ class ProcessHeartbeatAction
                 $onesiBox->current_meeting_id = null;
                 $onesiBox->current_meeting_url = null;
                 $onesiBox->current_meeting_joined_at = null;
+                $onesiBox->current_meeting_audio_connected = null;
                 $onesiBox->current_media_position = null;
                 $onesiBox->current_media_duration = null;
             }
@@ -122,6 +139,8 @@ class ProcessHeartbeatAction
         $onesiBox->current_meeting_id = $currentMeeting['meeting_id'] ?? null;
         $onesiBox->current_meeting_url = $currentMeeting['meeting_url'] ?? null;
         $onesiBox->current_meeting_joined_at = $currentMeeting['joined_at'] ?? null;
+        // Reported only by boxes that watch the Zoom audio; null means "unknown".
+        $onesiBox->current_meeting_audio_connected = $currentMeeting['audio_connected'] ?? null;
     }
 
     /**
@@ -277,5 +296,7 @@ class ProcessHeartbeatAction
             'status' => PlaybackSessionStatus::Completed,
             'ended_at' => Date::now(),
         ]);
+
+        $this->activityMonitor->sessionEnded($activeSession, 'expired');
     }
 }

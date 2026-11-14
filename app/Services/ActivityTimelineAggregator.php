@@ -11,11 +11,19 @@ use App\Models\MeetingAttendance;
 use App\Models\OnesiBox;
 use App\Models\PlaybackEvent;
 use App\Support\ActivityTimelineEntry;
+use App\Support\JwMediaKey;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
+/**
+ * @phpstan-import-type JwMediaItem from JwOrgCatalog
+ */
 final class ActivityTimelineAggregator
 {
+    public function __construct(
+        private readonly JwOrgCatalog $catalog,
+    ) {}
+
     /**
      * @return Collection<int, ActivityTimelineEntry>
      */
@@ -35,7 +43,7 @@ final class ActivityTimelineAggregator
         /** @var Collection<int, ActivityTimelineEntry> $entries */
         $entries = collect();
 
-        /** @var array{started_at: CarbonInterface, label: string, media_type: string, pauses: int}|null $open */
+        /** @var array{started_at: CarbonInterface, label: string, media_type: string, pauses: int, thumbnail_url: string|null}|null $open */
         $open = null;
 
         $events = PlaybackEvent::query()
@@ -44,17 +52,21 @@ final class ActivityTimelineAggregator
             ->oldest()
             ->get();
 
+        $jwMediaByKey = $this->jwMediaOf($events);
+
         foreach ($events as $event) {
             switch ($event->event) {
                 case PlaybackEventType::Started:
                     if ($open !== null) {
                         $entries->push($this->buildPlaybackEntry($open, endedAt: $event->created_at));
                     }
+                    $jwMedia = $jwMediaByKey[$event->media_key ?? JwMediaKey::fromUrl((string) $event->media_url) ?? ''] ?? null;
                     $open = [
                         'started_at' => $event->created_at,
-                        'label' => $this->derivePlaybackLabel($event),
+                        'label' => $jwMedia['title'] ?? $this->derivePlaybackLabel($event),
                         'media_type' => (string) $event->media_type,
                         'pauses' => 0,
+                        'thumbnail_url' => $jwMedia['thumbnail_url'] ?? null,
                     ];
                     break;
 
@@ -84,7 +96,7 @@ final class ActivityTimelineAggregator
     }
 
     /**
-     * @param  array{started_at: CarbonInterface, label: string, media_type: string, pauses: int}  $session
+     * @param  array{started_at: CarbonInterface, label: string, media_type: string, pauses: int, thumbnail_url: string|null}  $session
      */
     private function buildPlaybackEntry(array $session, ?CarbonInterface $endedAt): ActivityTimelineEntry
     {
@@ -97,7 +109,27 @@ final class ActivityTimelineAggregator
             metadata: $session['pauses'] > 0
                 ? trans_choice(':count pausa|:count pause', $session['pauses'], ['count' => $session['pauses']])
                 : null,
+            thumbnailUrl: $session['thumbnail_url'],
         );
+    }
+
+    /**
+     * Titles and thumbnails of the JW.org media started in the period, fetched in one go.
+     *
+     * @param  Collection<int, PlaybackEvent>  $events
+     * @return array<string, JwMediaItem>
+     */
+    private function jwMediaOf(Collection $events): array
+    {
+        $mediaKeys = $events
+            ->where('event', PlaybackEventType::Started)
+            ->map(fn (PlaybackEvent $event): ?string => $event->media_key ?? JwMediaKey::fromUrl((string) $event->media_url))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        return $mediaKeys === [] ? [] : $this->catalog->mediaItems($mediaKeys);
     }
 
     private function derivePlaybackLabel(PlaybackEvent $event): string

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
+use App\Actions\Sessions\StopPlaybackSessionAction;
 use App\Concerns\ChecksOnesiBoxPermission;
 use App\Concerns\HandlesOnesiBoxErrors;
 use App\Enums\OnesiBoxStatus;
 use App\Models\OnesiBox;
+use App\Models\PlaybackSession;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -49,26 +51,30 @@ class BottomBar extends Component
         $this->showVolume = true;
     }
 
-    public function stopAll(OnesiBoxCommandServiceInterface $commandService): void
+    /**
+     * Stop everything: the media being played (ending a running playlist, so it does not
+     * start the next item) and an ongoing call.
+     */
+    public function stopAll(OnesiBoxCommandServiceInterface $commandService, StopPlaybackSessionAction $stopSession): void
     {
         $this->authorize('control', $this->onesiBox);
 
         $this->executeWithErrorHandling(
-            callback: function () use ($commandService): void {
-                $commandService->sendStopCommand($this->onesiBox);
+            callback: function () use ($commandService, $stopSession): void {
+                $session = $this->onesiBox->activeSession();
+
+                if ($session instanceof PlaybackSession) {
+                    $stopSession->execute($session);
+                } else {
+                    $commandService->sendStopCommand($this->onesiBox);
+                }
+
                 if ($this->onesiBox->status === OnesiBoxStatus::Calling) {
                     $commandService->sendLeaveZoomCommand($this->onesiBox);
                 }
             },
             successMessage: 'Tutte le riproduzioni sono state interrotte.',
         );
-    }
-
-    public function openNew(): void
-    {
-        $this->authorize('control', $this->onesiBox);
-
-        $this->dispatch('open-quick-play');
     }
 
     public function callAction(OnesiBoxCommandServiceInterface $commandService): void

@@ -11,8 +11,7 @@ use Livewire\Livewire;
 
 it('shows the OnesiBox list component to authenticated users', function (): void {
     $user = User::factory()->role(Roles::Caregiver)->create();
-    $onesiBox = OnesiBox::factory()->online()->create();
-    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+    OnesiBox::factory()->online()->withCaregiver($user)->count(2)->create();
 
     $this->actingAs($user)
         ->get(route('dashboard'))
@@ -46,6 +45,7 @@ it('shows online status for OnesiBox with recent heartbeat', function (): void {
     $user = User::factory()->role(Roles::Caregiver)->create();
     $onesiBox = OnesiBox::factory()->online()->create(['name' => 'OnesiBox Online']);
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+    OnesiBox::factory()->offline()->withCaregiver($user)->create();
 
     Livewire::actingAs($user)
         ->test(OnesiBoxList::class)
@@ -57,6 +57,7 @@ it('shows offline status for OnesiBox without recent heartbeat', function (): vo
     $user = User::factory()->role(Roles::Caregiver)->create();
     $onesiBox = OnesiBox::factory()->offline()->create(['name' => 'OnesiBox Offline']);
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+    OnesiBox::factory()->online()->withCaregiver($user)->create();
 
     Livewire::actingAs($user)
         ->test(OnesiBoxList::class)
@@ -70,6 +71,7 @@ it('does not show unassigned OnesiBoxes', function (): void {
     $unassignedBox = OnesiBox::factory()->create(['name' => 'Unassigned Box']);
 
     $assignedBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+    OnesiBox::factory()->withCaregiver($user)->create(['name' => 'Second Box']);
 
     Livewire::actingAs($user)
         ->test(OnesiBoxList::class)
@@ -81,6 +83,7 @@ it('navigates to OnesiBox detail when selectOnesiBox is called', function (): vo
     $user = User::factory()->role(Roles::Caregiver)->create();
     $onesiBox = OnesiBox::factory()->create();
     $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+    OnesiBox::factory()->withCaregiver($user)->create();
 
     Livewire::actingAs($user)
         ->test(OnesiBoxList::class)
@@ -91,4 +94,40 @@ it('navigates to OnesiBox detail when selectOnesiBox is called', function (): vo
 it('requires authentication to access the dashboard', function (): void {
     $this->get(route('dashboard'))
         ->assertRedirect(route('login'));
+});
+
+it('takes a family member with a single box straight to it', function (): void {
+    $user = User::factory()->role(Roles::Caregiver)->create();
+    $onesiBox = OnesiBox::factory()->withCaregiver($user)->create();
+
+    Livewire::actingAs($user)
+        ->test(OnesiBoxList::class)
+        ->assertRedirect(route('dashboard.show', $onesiBox));
+});
+
+it('keeps administrators on the list even with a single box', function (): void {
+    $admin = User::factory()->role(Roles::Admin)->create();
+    OnesiBox::factory()->withCaregiver($admin)->create(['name' => 'Unico Box']);
+
+    Livewire::actingAs($admin)
+        ->test(OnesiBoxList::class)
+        ->assertNoRedirect()
+        ->assertSee('Unico Box');
+});
+
+it('names each box after the person it serves and says in plain words what it is doing', function (): void {
+    $user = User::factory()->role(Roles::Caregiver)->create();
+    OnesiBox::factory()->online()->withCaregiver($user)->forRecipient()->create([
+        'status' => App\Enums\OnesiBoxStatus::Playing,
+        'current_media_url' => 'https://www.jw.org/video',
+        'current_media_type' => 'video',
+    ]);
+    OnesiBox::factory()->offline()->withCaregiver($user)->create();
+
+    $boxes = $user->onesiBoxes()->with('recipient')->get();
+
+    Livewire::actingAs($user)
+        ->test(OnesiBoxList::class)
+        ->assertSeeInOrder([$boxes->firstWhere('recipient_id', '!=', null)->recipient->full_name, 'sta mostrando un video'])
+        ->assertSee('spento o non connesso');
 });

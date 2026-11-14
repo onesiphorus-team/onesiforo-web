@@ -308,3 +308,42 @@ describe('command bar refresh', function (): void {
         $card->call('refreshBox')->assertNotDispatched('box-state-changed');
     });
 });
+
+describe('accessibility', function (): void {
+    it('announces the status line only, not the counters that change every second', function (): void {
+        $box = boxPlayingAudio($this->user, ['current_media_position' => 10, 'current_media_duration' => 300]);
+
+        $html = Livewire::test(HeroCard::class, ['onesiBox' => $box])->html();
+
+        preg_match('/<section[^>]*data-hero-state[^>]*>/', $html, $section);
+        preg_match('/<[^>]*data-slot="status-label"[^>]*>/', $html, $statusLabel);
+
+        expect($section[0])->not->toContain('aria-live')
+            ->and($statusLabel[0])->toContain('role="status"')
+            ->and(substr_count($html, 'aria-live'))->toBe(0)
+            ->and(substr_count($html, 'role="status"'))->toBe(1);
+    });
+
+    it('opens the enlarged screen picture as a dialog that traps the focus and has a visible close button', function (): void {
+        $box = OnesiBox::factory()->online()->create();
+        ApplianceScreenshot::query()->create([
+            'onesi_box_id' => $box->id,
+            'captured_at' => now()->subMinute(),
+            'width' => 1280,
+            'height' => 720,
+            'bytes' => 1000,
+            'storage_path' => 'screenshots/test.webp',
+        ]);
+
+        $html = Livewire::test(HeroCard::class, ['onesiBox' => $box->refresh()])->html();
+
+        preg_match('/<div[^>]*role="dialog"[^>]*>/', $html, $dialog);
+        preg_match('/<button[^>]*data-slot="screen-zoom-close"[^>]*>.*?<\/button>/s', $html, $closeButton);
+
+        expect($dialog[0])->toContain('aria-modal="true"')
+            ->toContain('x-trap.inert.noscroll="zoomed"')
+            ->and($closeButton[0])->toContain('Chiudi')
+            ->toContain('min-h-11')
+            ->toContain('zoomed = false');
+    });
+});

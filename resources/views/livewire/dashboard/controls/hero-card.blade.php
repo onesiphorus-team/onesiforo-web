@@ -15,11 +15,10 @@
 
 <section data-hero-state="{{ $state }}"
          wire:poll.5s.visible="refreshBox"
-         aria-live="polite"
          aria-label="Cosa succede sul box"
          class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
 
-    {{-- Status line --}}
+    {{-- Status line: the label is the only part announced by screen readers; the counters below change every second --}}
     <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b px-4 py-3 sm:px-6 {{ $statusClasses }}">
         <div class="flex items-center gap-2.5">
             <span class="relative flex size-2.5">
@@ -28,7 +27,7 @@
                 @endif
                 <span class="relative inline-flex size-2.5 rounded-full {{ $dotClasses }}"></span>
             </span>
-            <span class="text-sm font-semibold" data-slot="status-label">{{ $statusLabel }}</span>
+            <span class="text-sm font-semibold" data-slot="status-label" role="status">{{ $statusLabel }}</span>
         </div>
         @if($state !== 'offline' && ($pendingCommands = $this->pendingCommandCount) > 0)
             <span class="flex items-center gap-1.5 text-xs font-medium" data-slot="pending-commands">
@@ -252,8 +251,13 @@
                         </span>
                     </button>
                     <template x-teleport="body">
-                        <div x-show="zoomed" x-cloak x-transition.opacity x-on:click="zoomed = false" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-label="Schermo del box">
-                            <img src="{{ $screenshot->signedUrl(30) }}" alt="" class="max-h-[90vh] max-w-[95vw] rounded-lg object-contain shadow-2xl">
+                        {{-- x-trap moves the focus to "Chiudi", keeps it inside and gives it back to the preview on close --}}
+                        <div x-show="zoomed" x-cloak x-transition.opacity x-trap.inert.noscroll="zoomed" x-on:click="zoomed = false" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-black/85 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]" role="dialog" aria-modal="true" aria-label="Schermo del box ingrandito">
+                            <img src="{{ $screenshot->signedUrl(30) }}" alt="Ultima immagine dello schermo del box, ingrandita" class="max-h-[80vh] max-w-[95vw] rounded-lg object-contain shadow-2xl">
+                            <button type="button" data-slot="screen-zoom-close" x-on:click.stop="zoomed = false" class="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-base font-semibold text-zinc-900 shadow-lg hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                                <flux:icon name="x-mark" variant="mini" class="size-5" />
+                                Chiudi
+                            </button>
                         </div>
                     </template>
                 </div>

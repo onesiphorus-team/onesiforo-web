@@ -38,3 +38,11 @@ Schedule::command('onesibox:collect-logs')
 Schedule::command('onesibox:prune-log-snapshots')
     ->dailyAt('03:30')
     ->withoutOverlapping();
+
+// Exports activity log entries past the retention window to CSV, then deletes
+// them. Kept in the foreground: background runs are killed by the scheduler's
+// systemd unit before they finish.
+Schedule::command('activity-log:archive')
+    ->dailyAt((string) config('onesiforo.activity_log.archive_time'))
+    ->when(fn (): bool => (bool) config('onesiforo.activity_log.archive_enabled'))
+    ->withoutOverlapping(120);

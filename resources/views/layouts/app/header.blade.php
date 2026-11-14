@@ -44,6 +44,7 @@
 
             <flux:spacer />
 
+            <x-app-version class="px-3" />
         </flux:sidebar>
 
         {{ $slot }}

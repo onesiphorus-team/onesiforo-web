@@ -61,7 +61,8 @@ class ProcessHeartbeatAction
 
         $onesiBox->recordHeartbeat();
 
-        $this->activityMonitor->heartbeatReceived($onesiBox, $before);
+        // Alerts are a side effect: a failure there must not fail the heartbeat.
+        rescue(fn () => $this->activityMonitor->heartbeatReceived($onesiBox, $before));
 
         event(new OnesiBoxStatusUpdated($onesiBox));
     }
@@ -295,6 +296,6 @@ class ProcessHeartbeatAction
             'ended_at' => Date::now(),
         ]);
 
-        $this->activityMonitor->sessionEnded($activeSession, 'expired');
+        rescue(fn () => $this->activityMonitor->sessionEnded($activeSession, 'expired'));
     }
 }

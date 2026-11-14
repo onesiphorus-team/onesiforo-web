@@ -48,7 +48,8 @@ class PlaybackController extends Controller
         $playbackEvent = $storeAction->fromArray($onesiBox, $data);
 
         $applyToOnesiBox->execute($onesiBox, $playbackEvent);
-        $activityMonitor->playbackEventReceived($onesiBox, $playbackEvent);
+        // Alerts are a side effect: a failure there must not stop the session from moving on.
+        rescue(fn () => $activityMonitor->playbackEventReceived($onesiBox, $playbackEvent));
 
         broadcast(new PlaybackEventReceived($playbackEvent));
 

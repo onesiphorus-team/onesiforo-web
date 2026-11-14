@@ -119,6 +119,6 @@ class AdvancePlaybackSessionAction
             'ended_at' => now(),
         ]);
 
-        $this->activityMonitor->sessionEnded($session, $reason);
+        rescue(fn () => $this->activityMonitor->sessionEnded($session, $reason));
     }
 }

@@ -112,7 +112,8 @@ class AcknowledgeCommandAction
         $this->storeLogSnapshot->fromFailure($command, $errorMessage);
 
         if ($command->type === CommandType::CustomScript) {
-            $this->activityMonitor->customScriptFailed($command);
+            // Alerts are a side effect: a failure there must not fail the acknowledgment.
+            rescue(fn () => $this->activityMonitor->customScriptFailed($command));
         }
 
         return true;

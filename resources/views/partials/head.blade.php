@@ -18,6 +18,23 @@
     if ('serviceWorker' in navigator && window.isSecureContext) {
         window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
     }
+
+    // Chrome fires beforeinstallprompt once per page load, often before the install hint
+    // exists and never again after wire:navigate: keep it here for the install-app-hint component.
+    if (! window.__installPromptListening) {
+        window.__installPromptListening = true;
+        window.__installPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            window.__installPrompt = event;
+            window.dispatchEvent(new CustomEvent('install-prompt-available'));
+        });
+        window.addEventListener('appinstalled', () => {
+            window.__installPrompt = null;
+            window.dispatchEvent(new CustomEvent('install-prompt-used'));
+        });
+    }
 </script>
 
 <link rel="preconnect" href="https://fonts.bunny.net">

@@ -4,11 +4,15 @@
     - iPhone/iPad: step-by-step instructions (Safari has no install prompt).
     - Other mobile browsers: where to find "Add to home screen" in the menu.
     Hidden when the app is already installed, on desktop, or after "Non ora".
+
+    The browser's install prompt is captured once per page load in partials/head.blade.php
+    (window.__installPrompt), so it is still there after wire:navigate; this component only
+    reads it and listens through Alpine, which removes its listeners with the element.
 --}}
 <div x-data="{
         visible: false,
         platform: 'other',
-        installPrompt: null,
+        fallbackPlatform: 'other',
         init() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
             const isPhone = window.matchMedia('(max-width: 767px)').matches && /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
@@ -19,26 +23,27 @@
                 return;
             }
 
-            this.platform = /iphone|ipad|ipod/i.test(navigator.userAgent) ? 'ios' : 'other';
+            this.fallbackPlatform = /iphone|ipad|ipod/i.test(navigator.userAgent) ? 'ios' : 'other';
             this.visible = true;
-
-            window.addEventListener('beforeinstallprompt', (event) => {
-                event.preventDefault();
-                this.installPrompt = event;
-                this.platform = 'prompt';
-            });
-            window.addEventListener('appinstalled', () => this.visible = false);
+            this.syncPlatform();
+        },
+        syncPlatform() {
+            this.platform = window.__installPrompt ? 'prompt' : this.fallbackPlatform;
         },
         async install() {
-            if (! this.installPrompt) {
+            const installPrompt = window.__installPrompt;
+            if (! installPrompt) {
+                this.syncPlatform();
                 return;
             }
-            this.installPrompt.prompt();
-            const choice = await this.installPrompt.userChoice;
-            this.installPrompt = null;
+            // A prompt can be shown only once: drop it, then fall back to the menu instructions.
+            window.__installPrompt = null;
+            installPrompt.prompt();
+            const choice = await installPrompt.userChoice;
             if (choice.outcome === 'accepted') {
                 this.visible = false;
             }
+            this.syncPlatform();
         },
         dismiss() {
             this.visible = false;
@@ -47,6 +52,8 @@
      }"
      x-show="visible"
      x-cloak
+     x-on:install-prompt-available.window="syncPlatform()"
+     x-on:install-prompt-used.window="visible = false"
      data-slot="install-app-hint"
      {{ $attributes->class('rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm dark:border-indigo-500/30 dark:bg-zinc-800') }}>
     <div class="flex items-start gap-3">

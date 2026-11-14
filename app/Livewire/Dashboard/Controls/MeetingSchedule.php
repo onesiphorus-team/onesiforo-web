@@ -39,7 +39,7 @@ class MeetingSchedule extends Component
         Gate::authorize('view', $onesiBox);
 
         $this->onesiBox = $onesiBox->load('recipient.congregation');
-        $this->shownPendingAttendanceId = $this->pendingAttendance?->id;
+        $this->shownPendingAttendanceId = $this->pendingAttendanceQuery()->value('meeting_attendances.id');
     }
 
     /**
@@ -148,6 +148,13 @@ class MeetingSchedule extends Component
             ->get();
     }
 
+    public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+    {
+        return view('livewire.dashboard.controls.meeting-schedule', [
+            'displayTimezone' => config('app.display_timezone', 'Europe/Rome'),
+        ]);
+    }
+
     /**
      * @return Builder<MeetingAttendance>
      */
@@ -160,12 +167,5 @@ class MeetingSchedule extends Component
                 MeetingInstanceStatus::Completed->value,
                 MeetingInstanceStatus::Cancelled->value,
             ]));
-    }
-
-    public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
-    {
-        return view('livewire.dashboard.controls.meeting-schedule', [
-            'displayTimezone' => config('app.display_timezone', 'Europe/Rome'),
-        ]);
     }
 }

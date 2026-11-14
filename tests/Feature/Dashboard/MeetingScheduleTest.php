@@ -18,6 +18,17 @@ use App\Services\OnesiBoxCommandService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
+/**
+ * Whether the "Collega ora" button carries the `disabled` attribute.
+ */
+function joinNowIsDisabled(string $html): bool
+{
+    expect(preg_match('/<button[^>]*wire:click="joinNow"[^>]*>/', $html, $matches))->toBe(1);
+
+    // The attribute, not the `disabled:` Tailwind variants in the class list
+    return preg_match('/\sdisabled(="[^"]*")?(\s|>)/', (string) preg_replace('/class="[^"]*"/', '', $matches[0])) === 1;
+}
+
 beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
@@ -35,6 +46,45 @@ it('shows next meeting info', function (): void {
     Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box])
         ->assertSee($this->congregation->name)
         ->assertSee('Manuale');
+});
+
+it('says what each join mode means and what the button switches to', function (): void {
+    Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box])
+        ->assertSee('Manuale: lo colleghi tu ogni volta')
+        ->assertSee('Passa ad automatico')
+        ->assertDontSee('Cambia')
+        ->call('toggleJoinMode')
+        ->assertSee("Automatico: il box si collega da solo all'ora dell'adunanza")
+        ->assertSee('Passa a manuale')
+        ->assertDontSee('Passa ad automatico');
+});
+
+it('offers "Collega ora" only while the box is reachable, and again as soon as it comes back', function (): void {
+    $this->box->update(['last_seen_at' => now()->subHour()]);
+
+    $schedule = Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box]);
+
+    expect(joinNowIsDisabled($schedule->html()))->toBeTrue();
+
+    $this->box->update(['last_seen_at' => now()]);
+
+    // The component's own poll renders nothing when no meeting is waiting
+    $schedule->call('checkPendingAttendance');
+    $schedule->dispatch('box-state-changed');
+
+    expect(joinNowIsDisabled($schedule->html()))->toBeFalse();
+});
+
+it('tells in plain words that the box is joining the meeting', function (): void {
+    $this->box->update(['last_seen_at' => now()]);
+
+    $mock = Mockery::mock(OnesiBoxCommandService::class);
+    $mock->shouldReceive('sendZoomUrlCommand')->once();
+    app()->instance(OnesiBoxCommandService::class, $mock);
+
+    Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box])
+        ->call('joinNow')
+        ->assertDispatched('toast-show', fn (string $event, array $params): bool => $params['slots']['text'] === "Sto collegando il box all'adunanza…");
 });
 
 it('can toggle join mode', function (): void {

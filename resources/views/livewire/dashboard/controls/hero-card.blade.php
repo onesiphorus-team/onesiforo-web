@@ -115,9 +115,7 @@
                         @else
                             <flux:button wire:click="pause" wire:loading.attr="disabled" wire:target="pause" variant="primary" color="indigo" icon="pause" class="sm:min-w-36">Pausa</flux:button>
                         @endif
-                        <flux:button wire:click="stop" wire:loading.attr="disabled" wire:target="stop" variant="danger" icon="stop" class="sm:min-w-36">
-                            {{ $session ? 'Ferma tutto' : 'Stop' }}
-                        </flux:button>
+                        <flux:button wire:click="stop" wire:loading.attr="disabled" wire:target="stop" variant="danger" icon="stop" class="sm:min-w-36">Ferma</flux:button>
                     </div>
                 @endif
             @elseif($state === 'call')
@@ -133,7 +131,9 @@
                             @else
                                 Collegamento attivo
                             @endif
-                            · riunione {{ $onesiBox->current_meeting_id }}
+                            @if($meetingName = $this->currentMeetingName)
+                                · <span data-slot="meeting-name">{{ $meetingName }}</span>
+                            @endif
                         </p>
                     </div>
                 </div>
@@ -199,9 +199,11 @@
                         <ol class="mt-2 space-y-2">
                             @foreach($upcomingItems as $index => $upcomingItem)
                                 <li class="flex items-center gap-3" wire:key="upcoming-{{ $index }}">
-                                    <span class="relative shrink-0 overflow-hidden rounded-md bg-white/70 dark:bg-zinc-700 {{ $isAudioSession ? 'size-10' : 'aspect-video w-16' }}">
+                                    <span class="relative shrink-0 overflow-hidden rounded-md bg-zinc-200 dark:bg-zinc-700 {{ $isAudioSession ? 'size-10' : 'aspect-video w-16' }}">
                                         @if($upcomingItem['thumbnail_url'])
                                             <img src="{{ $upcomingItem['thumbnail_url'] }}" alt="" loading="lazy" referrerpolicy="no-referrer" class="size-full object-cover">
+                                        @else
+                                            <flux:icon name="{{ $isAudioSession ? 'musical-note' : 'film' }}" class="absolute inset-0 m-auto size-5 text-zinc-400" />
                                         @endif
                                     </span>
                                     <span class="min-w-0 flex-1 truncate text-sm {{ $index === 0 ? 'font-medium text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-300' }}">{{ $upcomingItem['title'] }}</span>

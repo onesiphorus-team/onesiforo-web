@@ -79,7 +79,7 @@
                 <flux:button x-show="platform === 'prompt'" x-on:click="install()" variant="primary" size="sm" icon="plus">
                     Aggiungi alla schermata Home
                 </flux:button>
-                <flux:button x-on:click="dismiss()" variant="subtle" size="sm">Non ora</flux:button>
+                <flux:button x-on:click="dismiss()" variant="subtle" size="sm" x-bind:class="platform === 'prompt' ? '' : '-ml-3'">Non ora</flux:button>
             </div>
         </div>
     </div>

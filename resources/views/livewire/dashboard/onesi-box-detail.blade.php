@@ -4,7 +4,8 @@
     4. information groups (today, meetings, contacts)  5. technical details, muted and closed.
     The grey page background makes every group stand out as its own white card.
 --}}
-<div class="-m-6 min-h-dvh min-w-0 bg-zinc-100 px-4 pb-28 sm:px-6 md:pb-10 lg:-m-8 lg:px-8 dark:bg-zinc-900" wire:poll.30s.visible="refreshFromDatabase">
+{{-- The bottom padding leaves room for the fixed command bar, which only users who can control the box get --}}
+<div class="-m-6 min-h-dvh min-w-0 bg-zinc-100 px-4 {{ $this->canControl ? 'pb-28' : 'pb-10' }} sm:px-6 md:pb-10 lg:-m-8 lg:px-8 dark:bg-zinc-900" wire:poll.30s.visible="refreshFromDatabase">
     {{-- Header --}}
     <header class="sticky top-0 z-10 -mx-4 mb-4 border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 dark:border-zinc-700 dark:bg-zinc-800/95">
         <div class="mx-auto flex max-w-6xl items-center gap-3">
@@ -25,18 +26,24 @@
                     <span class="size-2 rounded-full bg-green-500"></span> Online
                 </span>
             @else
-                <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300" role="status">
-                    <span class="size-2 rounded-full bg-zinc-400"></span> Offline
+                <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-500/10 dark:text-amber-200" role="status">
+                    <span class="size-2 rounded-full bg-amber-500"></span> Offline
                 </span>
             @endif
         </div>
     </header>
 
     <div class="mx-auto max-w-6xl space-y-4 sm:space-y-6">
-        <x-install-app-hint />
-
         {{-- Commands (inline toolbar on desktop, fixed at the bottom on mobile) --}}
         <livewire:dashboard.controls.bottom-bar :onesiBox="$onesiBox" wire:key="bottom-bar-{{ $onesiBox->id }}" />
+
+        @if(! $this->canControl)
+            <flux:callout icon="lock-closed" data-slot="read-only-notice">
+                <flux:callout.text>
+                    Puoi solo guardare questo box. Per comandarlo chiedi all'amministratore il permesso completo.
+                </flux:callout.text>
+            </flux:callout>
+        @endif
 
         @if($onesiBox->status === \App\Enums\OnesiBoxStatus::Error)
             <flux:callout variant="danger" icon="exclamation-triangle">
@@ -61,7 +68,7 @@
 
         <livewire:dashboard.controls.custom-commands-list :onesiBox="$onesiBox" wire:key="custom-commands-{{ $onesiBox->id }}" />
 
-        <div class="grid gap-4 sm:gap-6 md:grid-cols-2">
+        <div class="grid gap-4 sm:gap-6 md:grid-cols-2 md:items-start">
             <x-box-section title="Oggi sul box" subtitle="Cosa ha mostrato oggi" icon="clock">
                 <livewire:dashboard.controls.activity-timeline :onesiBox="$onesiBox" wire:key="activity-timeline-{{ $onesiBox->id }}" />
             </x-box-section>
@@ -78,6 +85,9 @@
                 @endif
             </div>
         </div>
+
+        {{-- Below what the family uses every day, so it never pushes status and commands off the first screen --}}
+        <x-install-app-hint />
 
         {{-- Technical details: muted (dashed, no background) and closed, so they never compete with the rest --}}
         <section class="overflow-hidden rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700" aria-labelledby="technical-heading">

@@ -28,7 +28,7 @@
                         ! $isOnline => ['spento o non connesso (ultimo contatto '.($box->last_seen_at?->diffForHumans() ?? 'mai').')', 'bg-amber-500'],
                         $box->status === \App\Enums\OnesiBoxStatus::Calling => ['in riunione Zoom', 'bg-green-500'],
                         $box->current_media_url !== null => [$box->current_media_type === 'audio' ? 'sta facendo ascoltare un audio' : 'sta mostrando un video', 'bg-green-500'],
-                        default => ['acceso, in attesa', 'bg-zinc-400'],
+                        default => ['acceso, in attesa', 'bg-green-500'],
                     };
                 @endphp
                 <a href="{{ route('dashboard.show', $box) }}"
@@ -59,7 +59,7 @@
                 </a>
             @empty
                 <flux:callout icon="information-circle">
-                    <flux:callout.heading>Nessuna OnesiBox assegnata</flux:callout.heading>
+                    <flux:callout.heading>Nessun box assegnato</flux:callout.heading>
                     <flux:callout.text>
                         Non hai ancora box da seguire. Chiedi all'amministratore di associarti al box della persona che assisti.
                     </flux:callout.text>

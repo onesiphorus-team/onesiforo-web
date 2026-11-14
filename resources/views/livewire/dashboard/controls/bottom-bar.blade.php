@@ -8,15 +8,17 @@
             $tile = 'flex items-center justify-center rounded-xl border font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500';
             $neutralTile = $tile.' border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700';
             $stopTile = $tile.' border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20';
+            // Red only when there is something to stop: otherwise the button stays available but does not shout
+            $stopButtonTile = $this->hasSomethingToStop ? $stopTile : $tile.' border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700';
             $callTile = $this->isInCall ? $stopTile : $neutralTile;
             $newTile = $tile.' border-indigo-500 bg-indigo-500 text-white shadow-sm hover:bg-indigo-600 dark:border-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400';
         @endphp
 
-        {{-- Desktop command bar: stop | volume, call | new content. Colours follow the page palette: red to stop, indigo for the main action, grey for the rest. --}}
+        {{-- Desktop command bar: stop | volume, call | new content. Colours follow the page palette: red to stop (only while something is running), indigo for the main action, grey for the rest. --}}
         <div class="hidden items-stretch gap-3 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm md:flex dark:border-zinc-700 dark:bg-zinc-800 {{ $this->isOnline ? '' : 'pointer-events-none opacity-40' }}" role="toolbar" aria-label="Comandi del box">
-            <button type="button" data-slot="stop" wire:click="stopAll" class="{{ $stopTile }} h-12 gap-2 px-5 text-sm" aria-label="Ferma tutto">
+            <button type="button" data-slot="stop" wire:click="stopAll" class="{{ $stopButtonTile }} h-12 gap-2 px-5 text-sm" aria-label="Ferma tutto">
                 <flux:icon name="stop-circle" class="size-5" />
-                <span>Stop</span>
+                <span>Ferma</span>
             </button>
 
             <span class="w-px self-stretch bg-zinc-200 dark:bg-zinc-700" aria-hidden="true"></span>
@@ -40,9 +42,9 @@
         <nav class="fixed inset-x-0 bottom-0 z-10 border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden dark:border-zinc-700 dark:bg-zinc-900/95"
              aria-label="Comandi del box">
             <div class="grid grid-cols-5 gap-2 px-3 py-2 {{ $this->isOnline ? '' : 'pointer-events-none opacity-40' }}">
-                <button type="button" data-slot="stop" wire:click="stopAll" class="{{ $stopTile }} min-h-14 flex-col gap-0.5 text-[11px]" aria-label="Ferma tutto">
+                <button type="button" data-slot="stop" wire:click="stopAll" class="{{ $stopButtonTile }} min-h-14 flex-col gap-0.5 text-[11px]" aria-label="Ferma tutto">
                     <flux:icon name="stop-circle" class="size-6" />
-                    <span>Stop</span>
+                    <span>Ferma</span>
                 </button>
                 <button type="button" data-slot="volume" wire:click="openVolume" class="{{ $neutralTile }} min-h-14 flex-col gap-0.5 text-[11px]" aria-label="Volume {{ $this->currentVolume }}%">
                     <flux:icon name="{{ $volumeIcon }}" class="size-6" />

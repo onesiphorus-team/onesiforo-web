@@ -69,6 +69,32 @@ it('shows the activity of today and the meetings to every caregiver, including r
         ->assertSeeLivewire(MeetingSchedule::class);
 });
 
+it('tells a read-only caregiver why there are no commands, and leaves no room for the command bar', function (): void {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::ReadOnly]);
+
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSee('Puoi solo guardare questo box.')
+        ->assertSee('il permesso completo')
+        ->assertDontSeeHtml('pb-28');
+});
+
+it('does not show the read-only notice to who can control the box', function (): void {
+    $box = OnesiBox::factory()->online()->withCaregiver($this->user)->create();
+
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertDontSee('Puoi solo guardare questo box.')
+        ->assertSeeHtml('pb-28');
+});
+
+it('shows the same colour for the status in the header as in the status card', function (): void {
+    $box = OnesiBox::factory()->offline()->withCaregiver($this->user)->create();
+
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSeeHtml('bg-amber-50 px-2.5')
+        ->assertSeeHtml('size-2 rounded-full bg-amber-500');
+});
+
 it('mounts HeroCard, BottomBar and QuickPlaySheet in the detail view', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);

@@ -41,6 +41,22 @@ class BottomBar extends Component
         return $this->onesiBox->status === OnesiBoxStatus::Calling;
     }
 
+    /**
+     * Whether something is running on the box (a media, a playlist or a call): only then
+     * the stop button is shown in red.
+     */
+    #[Computed]
+    public function hasSomethingToStop(): bool
+    {
+        if (! $this->onesiBox->isOnline()) {
+            return false;
+        }
+
+        return $this->onesiBox->current_media_url !== null
+            || $this->onesiBox->status === OnesiBoxStatus::Calling
+            || $this->onesiBox->activeSession() instanceof PlaybackSession;
+    }
+
     #[Computed]
     public function currentVolume(): int
     {
@@ -48,8 +64,8 @@ class BottomBar extends Component
     }
 
     /**
-     * Show the bar again when the box went online or offline, a call started or ended, or
-     * the volume changed (see AnnouncesOnesiBoxState: the status card and the page poll the box and announce it).
+     * Show the bar again when the box went online or offline, a call or a media started or
+     * ended, or the volume changed (see AnnouncesOnesiBoxState: the status card and the page poll the box and announce it).
      *
      * Nothing to reload here: Livewire fetches the box again on every request.
      */

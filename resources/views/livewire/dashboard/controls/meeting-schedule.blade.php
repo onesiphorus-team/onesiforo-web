@@ -11,10 +11,10 @@
                     <p class="mt-0.5 text-sm text-amber-800/80 dark:text-amber-200/80">Vuoi collegare il box all'adunanza?</p>
                     @if($this->canControl)
                         <div class="mt-3 flex gap-2">
-                            <flux:button wire:click="confirmJoin({{ $this->pendingAttendance->id }})" variant="primary" size="sm" icon="check">
+                            <flux:button wire:click="confirmJoin({{ $this->pendingAttendance->id }})" variant="primary" icon="check">
                                 Conferma
                             </flux:button>
-                            <flux:button wire:click="skipMeeting({{ $this->pendingAttendance->id }})" variant="danger" size="sm">
+                            <flux:button wire:click="skipMeeting({{ $this->pendingAttendance->id }})" variant="subtle">
                                 Salta
                             </flux:button>
                         </div>
@@ -35,7 +35,7 @@
                         </p>
                     </div>
                     @if($this->canControl)
-                        <flux:button wire:click="joinNow" variant="primary" size="sm" icon="video-camera">
+                        <flux:button wire:click="joinNow" wire:loading.attr="disabled" wire:target="joinNow" :disabled="! $this->onesiBox->isOnline()" variant="primary" icon="video-camera">
                             Collega ora
                         </flux:button>
                     @endif
@@ -43,14 +43,17 @@
             @endif
 
             {{-- Join mode --}}
-            <div class="flex items-center justify-between gap-3 rounded-xl bg-zinc-50 px-4 py-3 dark:bg-zinc-700/40">
-                <div>
+            <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-xl bg-zinc-50 px-4 py-3 dark:bg-zinc-700/40">
+                @php($joinsAutomatically = $this->onesiBox->meeting_join_mode === \App\Enums\MeetingJoinMode::Auto)
+                <div class="min-w-0 flex-1 basis-56">
                     <p class="text-sm font-medium text-zinc-900 dark:text-white">Collegamento alle adunanze</p>
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $this->onesiBox->meeting_join_mode->getLabel() }}</p>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400" data-slot="join-mode">
+                        {{ $joinsAutomatically ? 'Automatico: il box si collega da solo all\'ora dell\'adunanza' : 'Manuale: lo colleghi tu ogni volta' }}
+                    </p>
                 </div>
                 @if($this->canControl)
-                    <flux:button wire:click="toggleJoinMode" variant="subtle" size="sm">
-                        Cambia
+                    <flux:button wire:click="toggleJoinMode" wire:loading.attr="disabled" wire:target="toggleJoinMode" variant="subtle" class="-ml-4 shrink-0 sm:ml-0">
+                        {{ $joinsAutomatically ? 'Passa a manuale' : 'Passa ad automatico' }}
                     </flux:button>
                 @endif
             </div>

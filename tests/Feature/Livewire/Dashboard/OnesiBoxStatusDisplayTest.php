@@ -60,7 +60,9 @@ test('onesibox detail shows calling status with meeting info', function (): void
     Livewire::actingAs($user)
         ->test(HeroCard::class, ['onesiBox' => $onesiBox])
         ->assertSet('state', 'call')
-        ->assertSee('123456789');
+        ->assertSee('Riunione Zoom in corso')
+        // The Zoom number says nothing to a family member (see HeroCardTest for the meeting name)
+        ->assertDontSee('123456789');
 });
 
 test('onesibox detail shows error status', function (): void {

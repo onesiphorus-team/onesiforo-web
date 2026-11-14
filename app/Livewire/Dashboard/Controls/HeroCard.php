@@ -15,6 +15,7 @@ use App\Models\ApplianceScreenshot;
 use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
 use App\Models\PlaylistItem;
+use App\Models\ZoomMeeting;
 use App\Services\JwOrgCatalog;
 use App\Services\OnesiBoxCommandServiceInterface;
 use App\Support\JwMediaKey;
@@ -47,6 +48,7 @@ use Livewire\Component;
  * @property-read int|null $sessionSecondsLeft
  * @property-read ApplianceScreenshot|null $latestScreenshot
  * @property-read array{label: string, scheduled_at: CarbonInterface}|null $nextMeeting
+ * @property-read string|null $currentMeetingName
  * @property-read int $pendingCommandCount
  * @property-read bool $canControl
  */
@@ -252,6 +254,32 @@ class HeroCard extends Component
         ];
     }
 
+    /**
+     * The name family members know the ongoing call by: the congregation, or a Zoom meeting
+     * saved for this box. Null when the call is to a meeting the box does not know.
+     */
+    #[Computed]
+    public function currentMeetingName(): ?string
+    {
+        $meetingNumber = $this->zoomMeetingNumber($this->onesiBox->current_meeting_url)
+            ?? $this->onesiBox->current_meeting_id;
+
+        if ($meetingNumber === null) {
+            return null;
+        }
+
+        $congregation = $this->onesiBox->recipient?->congregation;
+
+        if ($congregation !== null && $this->zoomMeetingNumber($congregation->zoom_url) === $meetingNumber) {
+            return $congregation->name;
+        }
+
+        return $this->onesiBox->zoomMeetings()
+            ->get(['name', 'zoom_url'])
+            ->first(fn (ZoomMeeting $meeting): bool => $this->zoomMeetingNumber($meeting->zoom_url) === $meetingNumber)
+            ?->name;
+    }
+
     public function pause(OnesiBoxCommandServiceInterface $commandService): void
     {
         $this->authorize('control', $this->onesiBox);
@@ -342,6 +370,17 @@ class HeroCard extends Component
             ->orderBy('position')
             ->get()
             ->toBase();
+    }
+
+    /**
+     * The meeting number in a Zoom link (https://…zoom.us/j/<number>?pwd=…): the same meeting
+     * can be saved with a different host or password, so links are compared by number.
+     */
+    private function zoomMeetingNumber(?string $zoomUrl): ?string
+    {
+        $path = (string) parse_url((string) $zoomUrl, PHP_URL_PATH);
+
+        return preg_match('#\A/[jws]/(\d+)/?\z#', $path, $matches) === 1 ? $matches[1] : null;
     }
 
     /**

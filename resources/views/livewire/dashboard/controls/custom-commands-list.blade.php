@@ -15,7 +15,7 @@
                         :disabled="! $this->onesiBox->isOnline()"
                         variant="outline"
                         icon="{{ $iconName }}"
-                        class="justify-start text-left"
+                        class="h-auto! min-h-12 justify-start py-2 text-left"
                     >
                         <div class="flex flex-col items-start">
                             <span class="font-medium">{{ $command->name }}</span>

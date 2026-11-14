@@ -38,7 +38,7 @@ it('shows empty state when caregiver has no assigned OnesiBoxes', function (): v
 
     Livewire::actingAs($user)
         ->test(OnesiBoxList::class)
-        ->assertSee('Nessuna OnesiBox assegnata');
+        ->assertSee('Nessun box assegnato');
 });
 
 it('shows online status for OnesiBox with recent heartbeat', function (): void {
@@ -51,6 +51,19 @@ it('shows online status for OnesiBox with recent heartbeat', function (): void {
         ->test(OnesiBoxList::class)
         ->assertSee('OnesiBox Online')
         ->assertSee('Online');
+});
+
+it('marks a box with the same colours as its page: green when on, amber when unreachable', function (): void {
+    $user = User::factory()->role(Roles::Caregiver)->create();
+    OnesiBox::factory()->online()->withCaregiver($user)->create(['status' => App\Enums\OnesiBoxStatus::Idle]);
+    OnesiBox::factory()->offline()->withCaregiver($user)->create();
+
+    Livewire::actingAs($user)
+        ->test(OnesiBoxList::class)
+        ->assertSee('acceso, in attesa')
+        ->assertSeeHtml('size-2.5 shrink-0 rounded-full bg-green-500')
+        ->assertSeeHtml('size-2.5 shrink-0 rounded-full bg-amber-500')
+        ->assertDontSeeHtml('rounded-full bg-zinc-400');
 });
 
 it('shows offline status for OnesiBox without recent heartbeat', function (): void {

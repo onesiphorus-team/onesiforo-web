@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class MeetingSchedule extends Component
@@ -58,6 +59,15 @@ class MeetingSchedule extends Component
 
         $this->shownPendingAttendanceId = $pendingAttendanceId;
     }
+
+    /**
+     * Show the box as reachable (or not) again as soon as the page notices: the poll above
+     * renders nothing when no meeting is waiting, so "Collega ora" would stay disabled.
+     *
+     * Nothing to reload here: Livewire fetches the box again on every request.
+     */
+    #[On('box-state-changed')]
+    public function refreshBox(): void {}
 
     public function toggleJoinMode(): void
     {
@@ -117,7 +127,7 @@ class MeetingSchedule extends Component
 
         $this->executeWithErrorHandling(
             fn (): bool => $joinCongregationMeeting->execute($this->onesiBox),
-            'Collegamento ad-hoc in corso...',
+            "Sto collegando il box all'adunanza…",
         );
     }
 

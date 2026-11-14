@@ -11,7 +11,7 @@ use Livewire\Attributes\Locked;
 /**
  * Lets a Livewire component that already refreshes the box (poll, real-time events) tell
  * the rest of the page when what the command bar shows has changed: online or not, in a
- * call or not, volume.
+ * call or not, playing something or not, volume.
  *
  * The other components listen to `box-state-changed` instead of polling on their own, so
  * they cost a request only when there is something new to show.
@@ -39,6 +39,7 @@ trait AnnouncesOnesiBoxState
         $state = implode('|', [
             $this->onesiBox->isOnline() ? 'online' : 'offline',
             $this->onesiBox->status === OnesiBoxStatus::Calling ? 'call' : 'no-call',
+            $this->onesiBox->current_media_url !== null ? 'media' : 'no-media',
             (string) ($this->onesiBox->volume ?? 80),
         ]);
 

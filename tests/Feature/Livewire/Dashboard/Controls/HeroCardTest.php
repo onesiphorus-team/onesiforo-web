@@ -18,6 +18,7 @@ use App\Models\Playlist;
 use App\Models\PlaylistItem;
 use App\Models\Recipient;
 use App\Models\User;
+use App\Models\ZoomMeeting;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
@@ -239,7 +240,8 @@ it('stop() ends a running playlist, so it does not move on to the next item', fu
     $session = PlaybackSession::factory()->forOnesiBox($box)->create();
 
     Livewire::test(HeroCard::class, ['onesiBox' => $box])
-        ->assertSee('Ferma tutto')
+        ->assertSee('Ferma')
+        ->assertDontSee('Ferma tutto')
         ->call('stop');
 
     expect($session->refresh()->status)->toBe(PlaybackSessionStatus::Stopped)
@@ -258,6 +260,43 @@ it('forbids the commands to a user without Full permission', function (string $a
         ->assertForbidden();
 })->with(['pause', 'resume', 'stop', 'leaveZoom']);
 
+it('names the ongoing call the way the family knows it, never by its Zoom number', function (Closure $knownAs, ?string $expectedName): void {
+    $congregation = Congregation::factory()->create(['name' => 'Roma Prati', 'zoom_url' => 'https://us05web.zoom.us/j/5550001111?pwd=congregation']);
+    $box = OnesiBox::factory()->online()->withCaregiver($this->user)->create([
+        'recipient_id' => Recipient::factory()->create(['congregation_id' => $congregation->id])->id,
+        'status' => OnesiBoxStatus::Calling,
+        ...$knownAs(),
+    ]);
+    ZoomMeeting::factory()->for($box)->create(['name' => 'Comitiva Cappelle', 'zoom_url' => 'https://zoom.us/j/81234567890']);
+
+    $card = Livewire::test(HeroCard::class, ['onesiBox' => $box])
+        ->assertSet('currentMeetingName', $expectedName)
+        ->assertDontSee('5550001111')
+        ->assertDontSee('81234567890')
+        ->assertDontSee('7770002222');
+
+    $expectedName === null
+        ? $card->assertDontSeeHtml('data-slot="meeting-name"')
+        : $card->assertSee($expectedName);
+})->with([
+    'the congregation meeting' => [fn (): array => ['current_meeting_id' => '5550001111', 'current_meeting_url' => 'https://us05web.zoom.us/j/5550001111?pwd=congregation'], 'Roma Prati'],
+    'a saved meeting, joined through another Zoom host and password' => [fn (): array => ['current_meeting_id' => '81234567890', 'current_meeting_url' => 'https://us05web.zoom.us/j/81234567890?pwd=abc'], 'Comitiva Cappelle'],
+    'a saved meeting, when the box reports the number only' => [fn (): array => ['current_meeting_id' => '81234567890', 'current_meeting_url' => null], 'Comitiva Cappelle'],
+    'a meeting the box does not know' => [fn (): array => ['current_meeting_id' => '7770002222', 'current_meeting_url' => 'https://zoom.us/j/7770002222'], null],
+]);
+
+it('shows an icon in place of the thumbnail for upcoming playlist items without one', function (): void {
+    $box = boxPlayingAudio($this->user);
+    $playlist = Playlist::factory()->create(['onesi_box_id' => $box->id]);
+    PlaylistItem::factory()->create(['playlist_id' => $playlist->id, 'position' => 0, 'media_url' => 'https://example.com/song.mp3']);
+    PlaylistItem::factory()->create(['playlist_id' => $playlist->id, 'position' => 1, 'media_url' => 'https://example.com/next.mp3', 'title' => 'Il prossimo']);
+    PlaybackSession::factory()->forOnesiBox($box)->create(['playlist_id' => $playlist->id, 'current_position' => 0]);
+
+    Livewire::test(HeroCard::class, ['onesiBox' => $box])
+        ->assertSee('Il prossimo')
+        ->assertSeeHtml('absolute inset-0 m-auto size-5 text-zinc-400');
+});
+
 describe('command bar refresh', function (): void {
     it('tells the page when the box comes back online', function (): void {
         $box = OnesiBox::factory()->offline()->withCaregiver($this->user)->create();
@@ -268,7 +307,7 @@ describe('command bar refresh', function (): void {
         $card->call('refreshBox')->assertDispatched('box-state-changed');
     });
 
-    it('tells the page when a call starts and when the volume changes', function (array $change): void {
+    it('tells the page when a call or a media starts and when the volume changes', function (array $change): void {
         $box = OnesiBox::factory()->online()->withCaregiver($this->user)->create(['status' => OnesiBoxStatus::Idle, 'volume' => 80]);
         $card = Livewire::test(HeroCard::class, ['onesiBox' => $box]);
 
@@ -278,6 +317,7 @@ describe('command bar refresh', function (): void {
     })->with([
         'call started' => [['status' => OnesiBoxStatus::Calling]],
         'volume changed' => [['volume' => 40]],
+        'media started' => [['current_media_url' => 'https://example.com/song.mp3', 'current_media_type' => 'audio']],
     ]);
 
     it('tells the page when the box stops answering, even if nothing changed in the database', function (): void {

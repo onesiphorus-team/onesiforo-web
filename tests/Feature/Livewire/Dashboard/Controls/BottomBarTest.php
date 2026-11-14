@@ -225,3 +225,47 @@ it('refreshes with a couple of queries only', function (): void {
 
     expect(count(DB::getQueryLog()))->toBeLessThanOrEqual(3);
 });
+
+it('shows the stop button in red only while something is running on the box', function (Closure $makeBox, bool $hasSomethingToStop): void {
+    $user = User::factory()->create();
+    $box = $makeBox();
+    $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $bar = Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSet('hasSomethingToStop', $hasSomethingToStop)
+        ->assertSeeHtml('aria-label="Ferma tutto"')
+        ->assertSeeHtml('<span>Ferma</span>')
+        ->assertDontSeeHtml('<span>Stop</span>');
+
+    // Without a call the stop button is the only red one on the bar
+    $hasSomethingToStop
+        ? $bar->assertSeeHtml('bg-red-50')
+        : $bar->assertDontSeeHtml('bg-red-50');
+})->with([
+    'idle' => [fn () => OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]), false],
+    'playing a media' => [fn () => OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Playing, 'current_media_url' => 'https://x/y.mp3', 'current_media_type' => 'audio']), true],
+    'in a call' => [fn () => OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Calling]), true],
+    'running a playlist between two items' => [function () {
+        $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
+        PlaybackSession::factory()->forOnesiBox($box)->create();
+
+        return $box;
+    }, true],
+    'offline, with the last media still recorded' => [fn () => OnesiBox::factory()->offline()->create(['current_media_url' => 'https://x/y.mp3', 'current_media_type' => 'audio']), false],
+]);
+
+it('turns the stop button red when a media starts, without reloading the page', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->withCaregiver($user)->create(['status' => OnesiBoxStatus::Idle]);
+
+    $bar = Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSet('hasSomethingToStop', false);
+
+    $box->update(['status' => OnesiBoxStatus::Playing, 'current_media_url' => 'https://x/y.mp3', 'current_media_type' => 'audio']);
+
+    $bar->dispatch('box-state-changed')
+        ->assertSet('hasSomethingToStop', true)
+        ->assertSeeHtml('bg-red-50');
+});

@@ -27,7 +27,7 @@ describe('full_address accessor', function (): void {
         expect($recipient->full_address)->toBeNull();
     });
 
-    it('joins all parts with the province in parentheses when complete', function (): void {
+    it('joins all parts, with the province in parentheses right after the city', function (): void {
         $recipient = Recipient::factory()->make([
             'street' => 'Via Roma 123',
             'postal_code' => '20100',
@@ -35,7 +35,7 @@ describe('full_address accessor', function (): void {
             'province' => 'MI',
         ]);
 
-        expect($recipient->full_address)->toBe('Via Roma 123, 20100, Milano, (MI)');
+        expect($recipient->full_address)->toBe('Via Roma 123, 20100, Milano (MI)');
     });
 
     it('skips missing parts but keeps the rest', function (): void {

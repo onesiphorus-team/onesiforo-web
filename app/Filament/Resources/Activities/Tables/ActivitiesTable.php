@@ -11,6 +11,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Models\Activity;
 
 class ActivitiesTable
@@ -55,12 +56,7 @@ class ActivitiesTable
 
                 SelectFilter::make('description')
                     ->label(__('Tipo Azione'))
-                    ->options(fn (): array => Activity::query()
-                        ->select('description')
-                        ->distinct()
-                        ->pluck('description', 'description')
-                        ->toArray()
-                    ),
+                    ->options(fn (): array => self::descriptionOptions()),
 
                 SelectFilter::make('subject_type')
                     ->label(__('Tipo Oggetto'))
@@ -96,5 +92,29 @@ class ActivitiesTable
                 ViewAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
+    }
+
+    /**
+     * The distinct actions recorded in the log, for the action filter.
+     *
+     * `description` is a TEXT column, so listing its distinct values reads
+     * the whole table. Filament asks for these options on every render of the
+     * page, hence the cache. After ten minutes the list is refreshed in the
+     * background once the response has been sent, so nobody waits for the
+     * scan; a brand new kind of action shows up on the page view after that.
+     *
+     * @return array<string, string>
+     */
+    public static function descriptionOptions(): array
+    {
+        return Cache::flexible(
+            'activity-log:description-options',
+            [600, 86400],
+            fn (): array => Activity::query()
+                ->select('description')
+                ->distinct()
+                ->pluck('description', 'description')
+                ->toArray(),
+        );
     }
 }

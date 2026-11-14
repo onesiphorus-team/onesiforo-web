@@ -44,9 +44,14 @@
 
             <flux:spacer />
 
+            <x-app-version class="px-3" />
         </flux:sidebar>
 
         {{ $slot }}
+
+        <footer class="fixed bottom-2 right-3 hidden lg:block">
+            <x-app-version />
+        </footer>
 
         @persist('toast')
             <flux:toast position="top center" />

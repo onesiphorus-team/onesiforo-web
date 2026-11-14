@@ -38,6 +38,10 @@
                 </div>
             </div>
         </div>
+        <footer class="fixed bottom-2 right-3">
+            <x-app-version />
+        </footer>
+
         @fluxScripts
     </body>
 </html>

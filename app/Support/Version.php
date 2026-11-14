@@ -6,42 +6,96 @@ namespace App\Support;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Process;
+use Throwable;
 
+/**
+ * The version shown to users, taken from the git tag of the deployed checkout.
+ *
+ * A VERSION file wins when present, for builds shipped without a repository
+ * (the Docker image). Anything that cannot be resolved reads as "dev".
+ */
 class Version
 {
-    /**
-     * Get the application version from git tag or VERSION file.
-     */
+    private const string FALLBACK = 'dev';
+
     public static function get(): string
     {
-        return Cache::remember('app_version', now()->addHour(), function (): string {
-            // First try to read from VERSION file (for production without .git)
-            $versionFile = base_path('VERSION');
-            if (file_exists($versionFile)) {
-                $content = file_get_contents($versionFile);
-                if ($content !== false) {
-                    return trim($content);
-                }
+        try {
+            return Cache::remember(self::cacheKey(), now()->addHour(), self::resolve(...));
+        } catch (Throwable $exception) {
+            // The version is decoration: it must never take a page down.
+            report($exception);
+
+            return self::FALLBACK;
+        }
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget(self::cacheKey());
+    }
+
+    private static function resolve(): string
+    {
+        $versionFile = base_path('VERSION');
+
+        if (is_file($versionFile)) {
+            $content = trim((string) file_get_contents($versionFile));
+
+            if ($content !== '') {
+                return $content;
             }
+        }
 
-            // Fallback to git describe
-            if (is_dir(base_path('.git'))) {
-                $result = Process::run('git describe --tags --abbrev=0 2>/dev/null');
+        // `.git` is a directory in a clone and a plain file in a worktree, so
+        // only its existence is checked. On a tagged commit this prints the tag
+        // alone; anywhere else it adds the distance and the short hash, so a
+        // checkout that is ahead of its tag does not pass for the release.
+        if (file_exists(base_path('.git'))) {
+            $result = Process::path(base_path())->run(['git', 'describe', '--tags', '--always']);
+            $described = trim($result->output());
 
-                if ($result->successful() && ! in_array(trim($result->output()), ['', '0'], true)) {
-                    return trim($result->output());
-                }
+            if ($result->successful() && $described !== '') {
+                return $described;
             }
+        }
 
-            return 'dev';
-        });
+        return self::FALLBACK;
     }
 
     /**
-     * Clear the cached version.
+     * The key changes whenever the checkout moves to another commit, so a
+     * deploy shows its own version at once instead of the previous one until
+     * the cache expires. Superseded keys simply expire.
      */
-    public static function clearCache(): void
+    private static function cacheKey(): string
     {
-        Cache::forget('app_version');
+        $fingerprint = collect([base_path('VERSION'), self::gitHeadFile()])
+            ->filter(fn (?string $path): bool => $path !== null && is_file($path))
+            ->map(fn (string $path): string => $path.'@'.filemtime($path))
+            ->implode('|');
+
+        return 'app_version:'.md5(base_path().'|'.$fingerprint);
+    }
+
+    /**
+     * The reflog of HEAD, which git appends to on every checkout, commit and
+     * pull (the HEAD file itself where reflogs are off). Resolved through the
+     * `gitdir:` pointer when `.git` is a worktree file.
+     */
+    private static function gitHeadFile(): ?string
+    {
+        $git = base_path('.git');
+
+        if (is_file($git) && preg_match('/^gitdir:\s*(.+)$/m', (string) file_get_contents($git), $matches) === 1) {
+            $gitDir = trim($matches[1]);
+            $git = str_starts_with($gitDir, '/') ? $gitDir : base_path($gitDir);
+        }
+
+        if (! is_dir($git)) {
+            return null;
+        }
+
+        return is_file($git.'/logs/HEAD') ? $git.'/logs/HEAD' : $git.'/HEAD';
     }
 }

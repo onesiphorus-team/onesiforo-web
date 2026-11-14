@@ -20,6 +20,9 @@
 
             <flux:spacer />
 
+            {{-- At the foot of the menu rather than fixed over the page, where it covered the cards and the phone command bar --}}
+            <x-app-version class="px-3" />
+
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
@@ -79,10 +82,6 @@
         </flux:header>
 
         {{ $slot }}
-
-        <footer class="fixed bottom-2 right-3 text-xs text-zinc-400 dark:text-zinc-600">
-            {{ \App\Support\Version::get() }}
-        </footer>
 
         @persist('toast')
             <flux:toast position="top center" />

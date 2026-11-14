@@ -21,7 +21,20 @@ class Version
     public static function get(): string
     {
         try {
-            return Cache::remember(self::cacheKey(), now()->addHour(), self::resolve(...));
+            $key = self::cacheKey();
+            $cached = Cache::get($key);
+
+            if (is_string($cached)) {
+                return $cached;
+            }
+
+            $version = self::resolve();
+
+            // A failed lookup is retried soon, so one bad moment right after
+            // a deploy does not label the release "dev" for an hour.
+            Cache::put($key, $version, $version === self::FALLBACK ? now()->addMinute() : now()->addHour());
+
+            return $version;
         } catch (Throwable $exception) {
             // The version is decoration: it must never take a page down.
             report($exception);
@@ -75,7 +88,7 @@ class Version
             ->map(fn (string $path): string => $path.'@'.filemtime($path))
             ->implode('|');
 
-        return 'app_version:'.md5(base_path().'|'.$fingerprint);
+        return 'app_version:'.hash('xxh128', base_path().'|'.$fingerprint);
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -160,13 +161,14 @@ it('deletes nothing when the CSV cannot be written', function (): void {
     expect(Activity::query()->count())->toBe(1);
 });
 
-it('deletes nothing when the stored CSV is shorter than what was exported', function (): void {
+it('deletes nothing and removes the file when the stored CSV is shorter than what was exported', function (): void {
     activityLoggedAt(now()->subYear());
 
     Storage::shouldReceive('disk')->with('local')->andReturn($disk = Mockery::mock());
     $disk->shouldReceive('exists')->andReturnFalse();
     $disk->shouldReceive('writeStream')->once()->andReturnTrue();
     $disk->shouldReceive('size')->once()->andReturn(3);
+    $disk->shouldReceive('delete')->once()->andReturnTrue();
 
     $this->artisan('activity-log:archive')->assertFailed();
 
@@ -210,4 +212,47 @@ it('is scheduled once a day and can be switched off from the environment', funct
     config(['onesiforo.activity_log.archive_enabled' => false]);
 
     expect($event->filtersPass(app()))->toBeFalse();
+});
+
+it('deletes nothing when the rows to delete no longer match the export', function (): void {
+    activityLoggedAt(now()->subYear(), ['id' => 10]);
+
+    // A backdated entry slips in below the highest exported id after the export has read past it.
+    Storage::shouldReceive('disk')->with('local')->andReturn($disk = Mockery::mock());
+    $disk->shouldReceive('exists')->andReturnFalse();
+    $size = 0;
+    $disk->shouldReceive('writeStream')->once()->andReturnUsing(function (string $file, $stream) use (&$size): bool {
+        $size = fstat($stream)['size'];
+        activityLoggedAt(now()->subYears(2), ['id' => 5]);
+
+        return true;
+    });
+    $disk->shouldReceive('size')->once()->andReturnUsing(function () use (&$size): int {
+        return $size;
+    });
+
+    $this->artisan('activity-log:archive')
+        ->expectsOutputToContain('but 2 now match')
+        ->assertFailed();
+
+    expect(Activity::query()->count())->toBe(2);
+});
+
+it('keeps exactly six months even when the shorter month would overflow', function (): void {
+    $this->travelTo('2026-08-31 12:00:00');
+
+    $kept = activityLoggedAt(Date::parse('2026-03-01 00:00:00'));
+    activityLoggedAt(Date::parse('2026-02-28 11:00:00'));
+
+    $this->artisan('activity-log:archive')->assertSuccessful();
+
+    expect(Activity::query()->pluck('id')->all())->toBe([$kept]);
+});
+
+it('exports NULL columns as empty fields', function (): void {
+    activityLoggedAt(now()->subYear());
+
+    $this->artisan('activity-log:archive')->assertSuccessful();
+
+    expect(archivedRows()[0])->toMatchArray(['subject_type' => '', 'causer_id' => '', 'properties' => '']);
 });

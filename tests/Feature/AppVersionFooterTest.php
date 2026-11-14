@@ -41,5 +41,8 @@ it('shows the version in the footer of the admin panel', function (): void {
 it('still renders pages when the version cannot be resolved', function (): void {
     Process::fake(['*' => Process::result(exitCode: 128)]);
 
-    $this->get(route('login'))->assertOk()->assertSee('dev');
+    $response = $this->get(route('login'))->assertOk();
+
+    expect(preg_match('/data-slot="app-version"[^>]*>\s*([^<\s]+)\s*</', $response->getContent(), $matches))->toBe(1)
+        ->and($matches[1])->toBe('dev');
 });

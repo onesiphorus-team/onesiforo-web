@@ -132,3 +132,19 @@ test('clearCache forgets the cached version', function (): void {
 
     expect(Version::get())->toBe('v2.0.0');
 });
+
+test('retries soon after a failed lookup instead of keeping dev for the hour', function (): void {
+    File::makeDirectory(versionSandbox().'/.git');
+    Process::fake(['*' => Process::sequence()->push(Process::result(exitCode: 128))->push(Process::result(output: 'v1.0.0'))]);
+
+    expect(Version::get())->toBe('dev');
+
+    $this->travel(2)->minutes();
+
+    expect(Version::get())->toBe('v1.0.0');
+
+    $this->travel(30)->minutes();
+
+    expect(Version::get())->toBe('v1.0.0');
+    Process::assertRanTimes(fn (): bool => true, 2);
+});

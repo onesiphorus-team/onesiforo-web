@@ -25,6 +25,9 @@ use Throwable;
  * failure at any point before the delete leaves the table untouched; a failure
  * during the delete leaves rows that the next run exports again, so an entry
  * can end up in two files but never in none.
+ *
+ * Values are exported as stored: timestamps are in the application timezone
+ * (UTC) and JSON columns are raw JSON.
  */
 #[Description('Export activity log entries older than the retention window to CSV, then delete them')]
 #[Signature('activity-log:archive
@@ -48,7 +51,7 @@ class ArchiveActivityLogCommand extends Command
             return self::FAILURE;
         }
 
-        $cutoff = Date::now()->subMonths($months);
+        $cutoff = Date::now()->subMonthsNoOverflow($months);
         $lastId = $this->expired($cutoff)->max('id');
 
         if ($lastId === null) {
@@ -80,6 +83,18 @@ class ArchiveActivityLogCommand extends Command
             return self::FAILURE;
         }
 
+        // The delete selects rows again instead of replaying the exported
+        // ids, so it only runs if that selection is still exactly the export.
+        $pending = $this->expired($cutoff, $lastId)->count();
+
+        if ($pending !== $exported) {
+            $message = "activity-log:archive: {$exported} entries were exported to {$disk}:{$file} but {$pending} now match; nothing was deleted.";
+            Log::error($message);
+            $this->error($message);
+
+            return self::FAILURE;
+        }
+
         $deleted = $this->deleteExported($cutoff, $lastId);
 
         $summary = sprintf(
@@ -87,14 +102,15 @@ class ArchiveActivityLogCommand extends Command
             $exported, $deleted, $cutoff->toDateString(), $disk, $file
         );
 
-        if ($deleted === $exported) {
-            Log::info($summary);
-            $this->info($summary);
-        } else {
-            // Only possible if rows changed between the export and the delete.
-            Log::warning($summary.' (counts differ)');
-            $this->warn($summary.' (counts differ)');
+        if ($deleted !== $exported) {
+            Log::error($summary.' (counts differ)');
+            $this->error($summary.' (counts differ)');
+
+            return self::FAILURE;
         }
+
+        Log::info($summary);
+        $this->info($summary);
 
         return self::SUCCESS;
     }
@@ -119,68 +135,67 @@ class ArchiveActivityLogCommand extends Command
      */
     private function export(CarbonInterface $cutoff, int $lastId, string $disk, string $file): int
     {
-        $temporary = tempnam(sys_get_temp_dir(), 'activity-log-');
+        $handle = tmpfile();
 
-        throw_if($temporary === false, RuntimeException::class, 'Unable to create a temporary file.');
+        throw_if($handle === false, RuntimeException::class, 'Unable to create a temporary file.');
 
         try {
-            $handle = fopen($temporary, 'w');
-
-            throw_if($handle === false, RuntimeException::class, 'Unable to open the temporary file.');
-
             $activity = new Activity;
             $columns = Schema::connection($activity->getConnectionName())->getColumnListing($activity->getTable());
             $exported = 0;
-
-            $this->writeRow($handle, $columns);
+            $bytes = $this->writeRow($handle, $columns);
 
             foreach ($this->expired($cutoff, $lastId)->select($columns)->lazyById(self::CHUNK_SIZE) as $row) {
-                $this->writeRow($handle, array_map(
+                $bytes += $this->writeRow($handle, array_map(
                     fn (string $column): mixed => $row->{$column},
                     $columns,
                 ));
                 $exported++;
             }
 
-            throw_unless(fclose($handle), RuntimeException::class, 'Unable to finish writing the temporary file.');
+            throw_unless(fflush($handle), RuntimeException::class, 'Unable to finish writing the temporary file.');
+
+            // A full disk can cut a row short without fputcsv() reporting it.
+            throw_unless((fstat($handle)['size'] ?? null) === $bytes, RuntimeException::class, 'The temporary file is shorter than what was written.');
+
+            throw_unless(rewind($handle), RuntimeException::class, 'Unable to reread the temporary file.');
 
             $storage = Storage::disk($disk);
 
             throw_if($storage->exists($file), RuntimeException::class, "The archive file {$file} already exists.");
+            throw_unless($storage->writeStream($file, $handle), RuntimeException::class, "Unable to write {$file} to the {$disk} disk.");
 
-            $stream = fopen($temporary, 'r');
+            if ($storage->size($file) !== $bytes) {
+                // Do not leave a truncated file that looks like a good archive.
+                $storage->delete($file);
 
-            throw_if($stream === false, RuntimeException::class, 'Unable to reopen the temporary file.');
-
-            try {
-                throw_unless($storage->writeStream($file, $stream), RuntimeException::class, "Unable to write {$file} to the {$disk} disk.");
-            } finally {
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
+                throw new RuntimeException("The archive file {$file} on the {$disk} disk was incomplete and has been removed.");
             }
-
-            throw_unless(
-                $storage->size($file) === filesize($temporary),
-                RuntimeException::class,
-                "The archive file {$file} on the {$disk} disk is incomplete.",
-            );
 
             return $exported;
         } finally {
-            @unlink($temporary);
+            // Closing a tmpfile() handle also removes the file. Some disks
+            // close the stream themselves once it has been written.
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
         }
     }
 
     /**
      * @param  resource  $handle
      * @param  array<int, mixed>  $row
+     * @return int bytes written
      */
-    private function writeRow($handle, array $row): void
+    private function writeRow($handle, array $row): int
     {
         // An empty escape character gives RFC 4180 output: quotes are doubled
         // and nothing else is special, so JSON columns survive a round trip.
-        throw_if(fputcsv($handle, $row, escape: '') === false, RuntimeException::class, 'Unable to write to the temporary file.');
+        $bytes = fputcsv($handle, $row, escape: '');
+
+        throw_if($bytes === false, RuntimeException::class, 'Unable to write to the temporary file.');
+
+        return $bytes;
     }
 
     private function deleteExported(CarbonInterface $cutoff, int $lastId): int
@@ -205,7 +220,7 @@ class ArchiveActivityLogCommand extends Command
     {
         return sprintf(
             'activity-log_before-%s_archived-%s.csv',
-            $cutoff->format('Y-m-d'),
+            $cutoff->format('Y-m-d_His'),
             Date::now()->format('Y-m-d_His'),
         );
     }

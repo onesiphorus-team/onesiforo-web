@@ -5,7 +5,11 @@ declare(strict_types=1);
 use App\Filament\Resources\Activities\ActivityResource;
 use App\Filament\Resources\Activities\Pages\ListActivities;
 use App\Filament\Resources\Activities\Pages\ViewActivity;
+use App\Filament\Resources\Activities\Tables\ActivitiesTable;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Oltrematica\RoleLite\Models\Role;
 use Spatie\Activitylog\Models\Activity;
 
@@ -181,4 +185,37 @@ it('can view an activity without properties', function (): void {
     // This activity has empty properties, so Details section is hidden
     $this->get(ActivityResource::getUrl('view', ['record' => $activity]))
         ->assertSuccessful();
+});
+
+it('has an index on the activity log creation date used by the default sort', function (): void {
+    expect(Schema::hasIndex('activity_log', ['created_at']))->toBeTrue();
+});
+
+it('does not rescan the activity log for the action filter options on every render', function (): void {
+    activity()->log('Test activity');
+
+    $scans = 0;
+    DB::listen(function (QueryExecuted $query) use (&$scans): void {
+        if (str_contains($query->sql, 'distinct') && str_contains($query->sql, 'description')) {
+            $scans++;
+        }
+    });
+
+    livewire(ListActivities::class)->assertSuccessful();
+    livewire(ListActivities::class)->assertSuccessful();
+
+    expect($scans)->toBe(1);
+});
+
+it('still offers every logged action in the action filter', function (): void {
+    activity()->log('First action');
+    activity()->log('Second action');
+
+    livewire(ListActivities::class)
+        ->filterTable('description', 'Second action')
+        ->assertCanSeeTableRecords(Activity::query()->where('description', 'Second action')->get())
+        ->assertCanNotSeeTableRecords(Activity::query()->where('description', 'First action')->get());
+
+    expect(ActivitiesTable::descriptionOptions())
+        ->toHaveKeys(['First action', 'Second action']);
 });

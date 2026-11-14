@@ -219,3 +219,13 @@ it('still offers every logged action in the action filter', function (): void {
     expect(ActivitiesTable::descriptionOptions())
         ->toHaveKeys(['First action', 'Second action']);
 });
+
+it('can run the creation date index migration where the index already exists', function (): void {
+    $migration = require database_path('migrations/2026_11_14_223154_add_created_at_index_to_activity_log_table.php');
+
+    expect(Schema::hasIndex('activity_log', ['created_at']))->toBeTrue();
+
+    $migration->up();
+
+    expect(Schema::hasIndex('activity_log', ['created_at']))->toBeTrue();
+});

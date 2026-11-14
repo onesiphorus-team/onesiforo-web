@@ -10,6 +10,7 @@ use App\Concerns\HandlesOnesiBoxErrors;
 use App\Models\Congregation;
 use App\Models\OnesiBox;
 use App\Models\ZoomMeeting;
+use App\Rules\ZoomUrl;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -17,7 +18,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 /**
@@ -38,17 +38,6 @@ class ZoomCall extends Component
     #[Locked]
     public OnesiBox $onesiBox;
 
-    #[Validate([
-        'zoomUrl' => [
-            'required',
-            'url',
-            'regex:/^https:\/\/[a-z0-9]+\.zoom\.us\/j\/[0-9]+(\?pwd=.+)?$/i',
-        ],
-    ], message: [
-        'zoomUrl.required' => 'Il link Zoom è obbligatorio.',
-        'zoomUrl.url' => 'Inserisci un URL valido.',
-        'zoomUrl.regex' => 'Il link deve essere un URL Zoom valido (es: https://us05web.zoom.us/j/123456789?pwd=...)',
-    ])]
     public string $zoomUrl = '';
 
     public bool $saveMeeting = false;
@@ -111,7 +100,17 @@ class ZoomCall extends Component
     {
         $this->authorize('control', $this->onesiBox);
 
-        $this->validate();
+        // Links are pasted from chats and emails: drop the spaces and newlines that come along.
+        $this->zoomUrl = trim($this->zoomUrl);
+
+        $this->validate(
+            ['zoomUrl' => ['required', 'url', 'max:'.ZoomUrl::MAX_LENGTH, new ZoomUrl]],
+            [
+                'zoomUrl.required' => 'Incolla qui il link della riunione Zoom.',
+                'zoomUrl.url' => ZoomUrl::ERROR_MESSAGE,
+                'zoomUrl.max' => 'Questo link è troppo lungo per essere un link Zoom. Controlla di aver copiato solo il link.',
+            ],
+        );
 
         if ($this->saveMeeting) {
             $this->validate(

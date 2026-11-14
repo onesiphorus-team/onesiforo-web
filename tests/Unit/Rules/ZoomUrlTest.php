@@ -25,6 +25,11 @@ it('accepts valid Zoom URLs', function (string $url): void {
     'trailing slash' => ['https://us05web.zoom.us/j/1234567890/'],
     'uppercase host' => ['https://US05WEB.ZOOM.US/j/1234567890'],
     'with fragment' => ['https://us05web.zoom.us/j/1234567890#anchor'],
+    'bare zoom.us with password' => ['https://zoom.us/j/123456789?pwd=abc'],
+    'extra query parameters before the password' => ['https://us05web.zoom.us/j/123456789?omn=1&pwd=abc'],
+    'webinar with password' => ['https://us05web.zoom.us/w/123456789?pwd=abc'],
+    'password with dots and dashes' => ['https://us05web.zoom.us/j/85099838349?pwd=DATUPW-NZhaXX_UwkvuiA5OKWUfgbdTb.1'],
+    'percent-encoded query' => ['https://us05web.zoom.us/j/123456789?pwd=abc%3D'],
 ]);
 
 it('rejects invalid URLs', function (mixed $url): void {
@@ -42,4 +47,17 @@ it('rejects invalid URLs', function (mixed $url): void {
     'no path' => ['https://zoom.us'],
     'ftp scheme' => ['ftp://zoom.us/j/1234567890'],
     'garbage' => ['not-a-url'],
+    'trailing newline' => ["https://us05web.zoom.us/j/1234567890\n"],
+    'trailing newline after the query' => ["https://us05web.zoom.us/j/1234567890?pwd=abc\n"],
+    'leading space' => [' https://us05web.zoom.us/j/1234567890'],
+    'trailing space' => ['https://us05web.zoom.us/j/1234567890 '],
+    'space in the query' => ['https://us05web.zoom.us/j/1234567890?pwd=abc def'],
+    'tab in the query' => ["https://us05web.zoom.us/j/1234567890?pwd=abc\tdef"],
+    'carriage return' => ["https://us05web.zoom.us/j/1234567890\r\n"],
+    'null byte' => ["https://us05web.zoom.us/j/1234567890\0"],
+    'quote in the query' => ['https://us05web.zoom.us/j/1234567890?pwd=abc";rm'],
+    'backslash before the host' => ['https://evil.com\\@zoom.us/j/1234567890'],
+    'credentials in the URL' => ['https://user:pass@zoom.us/j/1234567890'],
+    'non-ASCII characters' => ['https://zoom.us/j/1234567890?pwd=àbc'],
+    'too long' => ['https://zoom.us/j/1234567890?pwd='.str_repeat('a', 2048)],
 ]);

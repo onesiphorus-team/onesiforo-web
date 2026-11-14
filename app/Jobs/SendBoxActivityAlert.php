@@ -8,6 +8,7 @@ use App\Models\OnesiBox;
 use App\Notifications\BoxActivityNotification;
 use App\Services\JwOrgCatalog;
 use App\Support\JwMediaKey;
+use App\Support\TelegramToken;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
@@ -21,6 +22,9 @@ use Throwable;
  * caregiver ever wait for Telegram (or for JW.org, when a title has to be looked up).
  *
  * The text may contain {titolo}: it is replaced by the title of $mediaUrl.
+ *
+ * One job per chat: when Telegram cannot be reached (timeout, 429) the job is tried again
+ * later, and a retry never writes a second time to a chat that already got the alert.
  */
 class SendBoxActivityAlert implements ShouldQueue
 {
@@ -28,15 +32,17 @@ class SendBoxActivityAlert implements ShouldQueue
 
     public int $tries = 3;
 
-    public int $backoff = 30;
-
     /**
-     * @param  array<int, string>  $chatIds
+     * Seconds to wait before the second and the third attempt.
+     *
+     * @var list<int>
      */
+    public array $backoff = [30, 120];
+
     public function __construct(
         public int $onesiBoxId,
         public string $text,
-        public array $chatIds,
+        public string $chatId,
         public ?int $topicId = null,
         public ?string $mediaUrl = null,
     ) {}
@@ -51,14 +57,37 @@ class SendBoxActivityAlert implements ShouldQueue
 
         $html = $this->header($onesiBox)."\n".str_replace('{titolo}', $this->mediaTitle($catalog), e($this->text));
 
-        foreach ($this->chatIds as $chatId) {
-            try {
-                Notification::route('telegram', $chatId)->notifyNow(new BoxActivityNotification($html, $this->topicId));
-            } catch (Throwable $exception) {
-                // One unreachable chat must not stop the others.
-                Log::warning('Telegram box alert not delivered', ['chat_id' => $chatId, 'error' => $exception->getMessage()]);
-            }
+        try {
+            Notification::route('telegram', $this->chatId)->notifyNow(new BoxActivityNotification($html, $this->topicId));
+        } catch (Throwable $exception) {
+            $this->retryLater($exception);
         }
+    }
+
+    /**
+     * The exception is not thrown again: its message may quote the Telegram URL, bot token
+     * included, and would end up in the logs and in the failed jobs.
+     */
+    private function retryLater(Throwable $exception): void
+    {
+        $attempt = $this->attempts();
+        $context = [
+            'onesi_box_id' => $this->onesiBoxId,
+            'chat_id' => $this->chatId,
+            'attempt' => $attempt,
+            'exception' => $exception::class,
+            'error' => TelegramToken::redact($exception->getMessage()),
+        ];
+
+        if ($attempt >= $this->tries) {
+            Log::error('Telegram box alert not delivered, giving up', $context);
+
+            return;
+        }
+
+        Log::warning('Telegram box alert not delivered, trying again later', $context);
+
+        $this->release($this->backoff[$attempt - 1] ?? 120);
     }
 
     private function header(OnesiBox $onesiBox): string

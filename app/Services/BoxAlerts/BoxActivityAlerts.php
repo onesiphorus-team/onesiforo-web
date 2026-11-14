@@ -41,7 +41,9 @@ class BoxActivityAlerts
             return false;
         }
 
-        dispatch(new SendBoxActivityAlert($onesiBox->id, $text, $chatIds, $this->topicId(), $mediaUrl))->afterCommit();
+        foreach ($chatIds as $chatId) {
+            dispatch(new SendBoxActivityAlert($onesiBox->id, $text, $chatId, $this->topicId(), $mediaUrl))->afterCommit();
+        }
 
         return true;
     }

@@ -51,8 +51,8 @@
                 @endif
             </div>
 
-            <!-- Remember Me -->
-            <flux:checkbox name="remember" :label="__('Remember me')" :checked="old('remember', true)" />
+            <!-- Remember Me: ticked by default, but an unticked box stays unticked after a failed attempt -->
+            <flux:checkbox name="remember" :label="__('Remember me')" :checked="session()->hasOldInput() ? (bool) old('remember') : true" />
 
             <div class="flex items-center justify-end">
                 <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">

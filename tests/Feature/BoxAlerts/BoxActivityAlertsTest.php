@@ -15,6 +15,7 @@ use App\Models\PlaylistItem;
 use App\Models\Recipient;
 use App\Models\User;
 use App\Notifications\BoxActivityNotification;
+use App\Services\BoxAlerts\BoxActivityAlerts;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -245,6 +246,14 @@ describe('who gets the alerts', function (): void {
 
         $this->artisan('onesibox:check-connections')->assertSuccessful();
         playbackEvent(['event' => 'completed', 'media_url' => 'https://www.jw.org/video/a']);
+
+        Notification::assertNothingSent();
+    });
+
+    it('sends nothing for a deactivated box', function (): void {
+        $this->box->update(['is_active' => false]);
+
+        resolve(BoxActivityAlerts::class)->send($this->box, 'Spento o non connesso.');
 
         Notification::assertNothingSent();
     });

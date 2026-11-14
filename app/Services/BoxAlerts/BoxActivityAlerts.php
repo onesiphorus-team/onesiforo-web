@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Decides whether and where a box activity alert goes on Telegram.
  *
- * - Boxes with activity alerts turned off get none.
+ * - Deactivated boxes and boxes with activity alerts turned off get none.
  * - Destination: the support chat (and topic) from config, otherwise the Telegram chats of the
  *   caregivers of the box, each chat once (several caregivers may share the same group).
  * - Alerts of the same kind can be held back for a while, so a flapping box or a playlist with
@@ -26,7 +26,7 @@ class BoxActivityAlerts
      */
     public function send(OnesiBox $onesiBox, string $text, ?string $mediaUrl = null, ?string $kind = null, int $quietSeconds = 0): void
     {
-        if (! $onesiBox->activity_notifications_enabled) {
+        if (! $onesiBox->is_active || ! $onesiBox->activity_notifications_enabled) {
             return;
         }
 

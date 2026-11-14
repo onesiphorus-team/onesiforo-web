@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.14.1] - 2026-11-14
+
+### Performance
+
+- Speed up the activity log table
+
 ## [0.14.0] - 2026-11-14
 
 ### Bug Fixes

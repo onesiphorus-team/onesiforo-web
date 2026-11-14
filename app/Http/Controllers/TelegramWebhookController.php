@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Livewire\Settings\Telegram;
 use App\Models\User;
+use App\Support\TelegramToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -38,7 +39,8 @@ class TelegramWebhookController extends Controller
         }
 
         $userId = Cache::pull(Telegram::cacheKey($matches[1]));
-        $user = is_int($userId) ? User::query()->whereKey($userId)->first() : null;
+        // Some cache stores (e.g. Redis) give numbers back as strings.
+        $user = is_numeric($userId) ? User::query()->whereKey((int) $userId)->first() : null;
 
         if ($user === null) {
             $this->reply($chatId, 'Questo link è scaduto o è già stato usato. Torna in Onesiforo, Impostazioni › Telegram, e tocca di nuovo «Collega Telegram».');
@@ -61,7 +63,10 @@ class TelegramWebhookController extends Controller
                 'text' => $text,
             ]);
         } catch (Throwable $exception) {
-            Log::warning('Telegram webhook reply not sent', ['error' => $exception->getMessage()]);
+            Log::warning('Telegram webhook reply not sent', [
+                'exception' => $exception::class,
+                'error' => TelegramToken::redact($exception->getMessage()),
+            ]);
         }
     }
 }

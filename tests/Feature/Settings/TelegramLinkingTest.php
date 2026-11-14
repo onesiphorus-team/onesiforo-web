@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Livewire\Settings\Telegram;
 use App\Models\User;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Livewire\Livewire;
 
 function enableTelegramLinking(): void
@@ -50,6 +52,31 @@ it('links the account when the user presses Start in the bot from their personal
         ->and(Cache::has(Telegram::cacheKey($token)))->toBeFalse();
     $page->call('$refresh')->assertSet('isConnected', true)->assertSee('Telegram è collegato');
     Http::assertSent(fn ($request): bool => str_contains($request->url(), '/botbot-token/sendMessage') && $request['chat_id'] === 123456789);
+});
+
+it('links the account when the cache store gives the user id back as a string, as Redis does', function (): void {
+    enableTelegramLinking();
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+    Cache::put(Telegram::cacheKey('token'), (string) $user->id, 60);
+
+    telegramUpdate(['chat' => ['id' => 123456789, 'type' => 'private'], 'text' => '/start token'])->assertOk();
+
+    expect($user->refresh()->telegram_chat_id)->toBe('123456789');
+});
+
+it('keeps the bot token out of the logs when the reply cannot be sent', function (): void {
+    enableTelegramLinking();
+    Log::spy();
+    Http::fake(fn () => throw new ConnectionException('cURL error 28: Operation timed out for https://api.telegram.org/botbot-token/sendMessage'));
+
+    telegramUpdate(['chat' => ['id' => 1, 'type' => 'private'], 'text' => '/start expired'])->assertOk();
+
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(fn (string $message, array $context): bool => $message === 'Telegram webhook reply not sent'
+            && ! str_contains(json_encode($context), 'bot-token')
+            && str_contains(json_encode($context), 'cURL error 28'));
 });
 
 it('refuses updates without the webhook secret', function (): void {

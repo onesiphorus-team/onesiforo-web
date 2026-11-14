@@ -120,20 +120,18 @@ class ProcessHeartbeatAction
     {
         $currentMeeting = $data['current_meeting'] ?? null;
 
-        // If meeting_url was set and is now null, complete any active attendance
+        // If meeting_url was set and is now null, complete every active attendance: an ad-hoc
+        // join and the scheduled meeting on the same Zoom room leave two of them.
         $previousUrl = $onesiBox->getOriginal('current_meeting_url');
         if ($previousUrl && ! ($currentMeeting['meeting_url'] ?? null)) {
-            $activeAttendance = MeetingAttendance::query()
+            MeetingAttendance::query()
                 ->where('onesi_box_id', $onesiBox->id)
                 ->active()
-                ->first();
-
-            if ($activeAttendance) {
-                $activeAttendance->update([
+                ->get()
+                ->each(fn (MeetingAttendance $attendance) => $attendance->update([
                     'status' => MeetingAttendanceStatus::Completed,
                     'left_at' => now(),
-                ]);
-            }
+                ]));
         }
 
         $onesiBox->current_meeting_id = $currentMeeting['meeting_id'] ?? null;

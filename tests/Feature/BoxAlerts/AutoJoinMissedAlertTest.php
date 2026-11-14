@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Actions\Meetings\JoinCongregationMeetingAction;
+use App\Actions\ProcessHeartbeatAction;
 use App\Enums\MeetingAttendanceStatus;
+use App\Enums\MeetingJoinMode;
 use App\Enums\MeetingType;
 use App\Enums\OnesiBoxStatus;
 use App\Models\Congregation;
@@ -129,4 +132,51 @@ it('ignores manual boxes, skipped meetings and boxes with alerts turned off', fu
         test()->box->update(['activity_notifications_enabled' => false]);
         autoAttendance();
     }],
+    'inactive box' => [function (): void {
+        test()->box->update(['is_active' => false, 'last_seen_at' => now()->subDays(30)]);
+        autoAttendance();
+    }],
+    'ad-hoc meeting' => [function (): void {
+        test()->meeting->update(['type' => MeetingType::Adhoc]);
+        autoAttendance(['status' => MeetingAttendanceStatus::Joined, 'joined_at' => now()->subMinutes(6)]);
+    }],
 ]);
+
+it('stays quiet after the caregiver left on purpose a meeting joined by hand before its start', function (): void {
+    $start = Date::parse('2026-11-19 18:00:00', 'UTC');
+    $this->meeting->delete();
+    $this->box->update(['meeting_join_mode' => MeetingJoinMode::Auto]);
+
+    // 18:20 in Rome: the caregiver taps "Adunanza".
+    $this->travelTo($start->copy()->subMinutes(40));
+    $this->box->update(['last_seen_at' => now()]);
+    resolve(JoinCongregationMeetingAction::class)->execute($this->box);
+
+    // 18:30: the scheduled meeting is prepared; the box is in the Zoom room.
+    $this->travelTo($start->copy()->subMinutes(30));
+    $meeting = MeetingInstance::factory()->create([
+        'congregation_id' => $this->congregation->id,
+        'type' => MeetingType::Midweek,
+        'scheduled_at' => $start,
+        'zoom_url' => $this->congregation->zoom_url,
+    ]);
+    $scheduled = MeetingAttendance::factory()->auto()->create(['meeting_instance_id' => $meeting->id, 'onesi_box_id' => $this->box->id]);
+    $this->box->update(['status' => OnesiBoxStatus::Calling, 'current_meeting_url' => $this->congregation->zoom_url, 'last_seen_at' => now()]);
+
+    // 18:45: the automatic join finds the box already in the meeting.
+    $this->travelTo($start->copy()->subMinutes(15));
+    $this->box->update(['last_seen_at' => now()]);
+    $this->artisan('meetings:auto-join')->assertSuccessful();
+    expect($scheduled->fresh()->status)->toBe(MeetingAttendanceStatus::Joined);
+
+    // 19:10: the caregiver leaves; the box reports idle.
+    $this->travelTo($start->copy()->addMinutes(10));
+    resolve(ProcessHeartbeatAction::class)($this->box->fresh(), ['status' => 'idle']);
+    Notification::fake();
+
+    $this->travelTo($start->copy()->addMinutes(11));
+    $this->artisan('meetings:check-attendance')->assertSuccessful();
+
+    expect(MeetingAttendance::query()->pluck('status')->all())->toBe([MeetingAttendanceStatus::Completed, MeetingAttendanceStatus::Completed]);
+    Notification::assertNothingSent();
+});

@@ -13,6 +13,7 @@ use App\Models\MeetingInstance;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Connects an OnesiBox to its congregation Zoom meeting right now.
@@ -47,35 +48,39 @@ class JoinCongregationMeetingAction
         }
 
         try {
-            $isAttendingMeetingInProgress = MeetingAttendance::query()
-                ->where('onesi_box_id', $onesiBox->id)
-                ->where('status', MeetingAttendanceStatus::Joined)
-                ->whereHas('meetingInstance', fn ($query) => $query->where('status', MeetingInstanceStatus::InProgress))
-                ->exists();
+            // One transaction: when the command cannot be sent (box offline), no ad-hoc meeting
+            // or attendance is left behind.
+            DB::transaction(function () use ($onesiBox, $congregation): void {
+                $isAttendingMeetingInProgress = MeetingAttendance::query()
+                    ->where('onesi_box_id', $onesiBox->id)
+                    ->where('status', MeetingAttendanceStatus::Joined)
+                    ->whereHas('meetingInstance', fn ($query) => $query->where('status', MeetingInstanceStatus::InProgress))
+                    ->exists();
 
-            if (! $isAttendingMeetingInProgress) {
-                $instance = MeetingInstance::query()->create([
-                    'congregation_id' => $congregation->id,
-                    'type' => MeetingType::Adhoc,
-                    'scheduled_at' => now(),
-                    'zoom_url' => $congregation->zoom_url,
-                    'status' => MeetingInstanceStatus::InProgress,
-                ]);
+                if (! $isAttendingMeetingInProgress) {
+                    $instance = MeetingInstance::query()->create([
+                        'congregation_id' => $congregation->id,
+                        'type' => MeetingType::Adhoc,
+                        'scheduled_at' => now(),
+                        'zoom_url' => $congregation->zoom_url,
+                        'status' => MeetingInstanceStatus::InProgress,
+                    ]);
 
-                MeetingAttendance::query()->create([
-                    'meeting_instance_id' => $instance->id,
-                    'onesi_box_id' => $onesiBox->id,
-                    'join_mode' => $onesiBox->meeting_join_mode,
-                    'status' => MeetingAttendanceStatus::Joined,
-                    'joined_at' => now(),
-                ]);
-            }
+                    MeetingAttendance::query()->create([
+                        'meeting_instance_id' => $instance->id,
+                        'onesi_box_id' => $onesiBox->id,
+                        'join_mode' => $onesiBox->meeting_join_mode,
+                        'status' => MeetingAttendanceStatus::Joined,
+                        'joined_at' => now(),
+                    ]);
+                }
 
-            $this->commandService->sendZoomUrlCommand(
-                $onesiBox,
-                $congregation->zoom_url,
-                $onesiBox->recipient->full_name ?? $onesiBox->name,
-            );
+                $this->commandService->sendZoomUrlCommand(
+                    $onesiBox,
+                    $congregation->zoom_url,
+                    $onesiBox->recipient->full_name ?? $onesiBox->name,
+                );
+            });
 
             return true;
         } finally {

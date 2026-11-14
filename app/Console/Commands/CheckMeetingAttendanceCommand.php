@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingJoinMode;
+use App\Enums\MeetingType;
 use App\Enums\OnesiBoxStatus;
 use App\Models\MeetingAttendance;
 use App\Services\BoxAlerts\BoxActivityMonitor;
@@ -62,10 +63,13 @@ class CheckMeetingAttendanceCommand extends Command
         return MeetingAttendance::query()
             ->where('join_mode', MeetingJoinMode::Auto)
             ->whereIn('status', [MeetingAttendanceStatus::Pending, MeetingAttendanceStatus::Confirmed, MeetingAttendanceStatus::Joined])
-            ->whereHas('meetingInstance', fn ($query) => $query->whereBetween('scheduled_at', [
-                now()->subMinutes(self::AUTO_WINDOW_MINUTES),
-                now()->subMinutes(self::AUTO_GRACE_MINUTES),
-            ]))
+            // Ad-hoc meetings are joined by hand: there is no automatic join to miss.
+            ->whereHas('meetingInstance', fn ($query) => $query
+                ->where('type', '!=', MeetingType::Adhoc)
+                ->whereBetween('scheduled_at', [
+                    now()->subMinutes(self::AUTO_WINDOW_MINUTES),
+                    now()->subMinutes(self::AUTO_GRACE_MINUTES),
+                ]))
             ->with(['onesiBox.recipient', 'meetingInstance.congregation'])
             ->get()
             ->reject(fn (MeetingAttendance $attendance): bool => $this->isInMeeting($attendance))

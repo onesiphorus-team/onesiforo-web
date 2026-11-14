@@ -252,6 +252,14 @@ it('starts a random video session', function (string $device): void {
     $page->click('button[aria-pressed]:has-text("1 ora"):visible');
     $page->click('summary:has-text("Categorie"):visible');
     Shots::see($page, 'Seleziona tutte');
+
+    // The panel stays open while categories are picked (each pick is a Livewire update)
+    $page->click('details ui-checkbox[value="VODStudio"]:visible');
+    Shots::see($page, 'Categorie (2 di 3)');
+    $page->assertSee('Seleziona tutte');
+    $page->click('button:has-text("Seleziona tutte"):visible');
+    Shots::see($page, 'Categorie (3 di 3)');
+    $page->assertSee('Seleziona tutte');
     Shots::take($page, '33-casuali-video-categorie', $device, fullPage: false);
 
     $page->click('button:has-text("Avvia video casuali"):visible');

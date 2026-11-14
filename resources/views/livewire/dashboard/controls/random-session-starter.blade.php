@@ -42,7 +42,9 @@
             <flux:error name="durationMinutes" />
         </fieldset>
 
-        <details class="group rounded-lg border border-zinc-200 dark:border-zinc-700">
+        {{-- wire:ignore.self: Livewire must not strip the "open" attribute at each update, or the
+             panel closes whenever a duration or a category is picked. --}}
+        <details wire:ignore.self class="group rounded-lg border border-zinc-200 dark:border-zinc-700">
             <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2">
                 <span class="text-sm font-medium">
                     Categorie ({{ count($selectedCategories) }} di {{ count($this->categories) }})

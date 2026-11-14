@@ -24,8 +24,8 @@ test('two factor settings page can be rendered', function (): void {
         ->withSession(['auth.password_confirmed_at' => time()])
         ->get(route('two-factor.show'))
         ->assertOk()
-        ->assertSee('Two Factor Authentication')
-        ->assertSee('Disabled');
+        ->assertSee('Verifica in due passaggi')
+        ->assertSee('Non attiva');
 });
 
 test('two factor settings page requires password confirmation when enabled', function (): void {

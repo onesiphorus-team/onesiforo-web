@@ -8,6 +8,7 @@
             {{-- Left Panel --}}
             <div class="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-center lg:px-16 xl:px-24 bg-gradient-to-br from-stone-300 via-stone-200 to-stone-100 dark:from-stone-900 dark:via-stone-900 dark:to-stone-950">
                 <div class="max-w-md">
+                    <img src="/icons/icon-192.png" alt="" class="mb-6 size-20 rounded-3xl shadow-sm">
                     <h1 class="text-6xl font-semibold tracking-tight text-stone-900 dark:text-stone-100 xl:text-7xl">
                         Onesiforo
                     </h1>
@@ -18,7 +19,8 @@
             <div class="flex w-full flex-col items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12 bg-white dark:bg-stone-950">
                 <div class="w-full max-w-sm">
                     {{-- Mobile Logo --}}
-                    <div class="mb-10 lg:hidden">
+                    <div class="mb-10 flex items-center gap-3 lg:hidden">
+                        <img src="/icons/icon-192.png" alt="" class="size-12 rounded-2xl shadow-sm">
                         <h1 class="text-4xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">
                             Onesiforo
                         </h1>

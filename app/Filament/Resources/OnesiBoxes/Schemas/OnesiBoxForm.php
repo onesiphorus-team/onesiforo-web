@@ -43,6 +43,11 @@ class OnesiBoxForm
                             ->label(__('Attivo'))
                             ->default(true)
                             ->helperText(__('Se disabilitato, il dispositivo non potrà comunicare con il server.')),
+
+                        Toggle::make('activity_notifications_enabled')
+                            ->label(__('Avvisi Telegram'))
+                            ->default(true)
+                            ->helperText(__('Avvisa su Telegram quando il box si accende o si spegne, entra o esce da una riunione, resta senza audio in Zoom, inizia o finisce un contenuto o una playlist, o una riproduzione si interrompe. Spegnilo per i box di prova.')),
                     ]),
 
                 Section::make(__('Assegnazione Beneficiario'))

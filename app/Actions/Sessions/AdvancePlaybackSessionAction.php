@@ -10,6 +10,7 @@ use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
 use App\Models\PlaylistItem;
+use App\Services\BoxAlerts\BoxActivityMonitor;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +25,7 @@ class AdvancePlaybackSessionAction
 {
     public function __construct(
         private readonly OnesiBoxCommandServiceInterface $commandService,
+        private readonly BoxActivityMonitor $activityMonitor,
     ) {}
 
     /**
@@ -66,7 +68,7 @@ class AdvancePlaybackSessionAction
             $session->refresh();
 
             if ($session->isExpired()) {
-                $this->endSession($session);
+                $this->endSession($session, 'expired');
 
                 return;
             }
@@ -74,7 +76,7 @@ class AdvancePlaybackSessionAction
             $nextItem = $session->currentItem();
 
             if (! $nextItem instanceof PlaylistItem) {
-                $this->endSession($session);
+                $this->endSession($session, 'completed');
 
                 return;
             }
@@ -83,7 +85,7 @@ class AdvancePlaybackSessionAction
                 $this->commandService->sendSessionMediaCommand(
                     $onesiBox,
                     $nextItem->media_url,
-                    'video',
+                    $session->media_type,
                     $session->uuid,
                 );
             } catch (OnesiBoxOfflineException) {
@@ -107,11 +109,16 @@ class AdvancePlaybackSessionAction
         }
     }
 
-    private function endSession(PlaybackSession $session): void
+    /**
+     * @param  'completed'|'expired'  $reason
+     */
+    private function endSession(PlaybackSession $session, string $reason): void
     {
         $session->update([
             'status' => PlaybackSessionStatus::Completed,
             'ended_at' => now(),
         ]);
+
+        $this->activityMonitor->sessionEnded($session, $reason);
     }
 }

@@ -14,6 +14,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -29,6 +30,10 @@ class AdminPanelServiceProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->brandName('Onesiforo')
+            ->brandLogo(fn (): View => view('filament.brand'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('favicon.svg'))
             ->colors([
                 'primary' => Color::Amber,
             ])

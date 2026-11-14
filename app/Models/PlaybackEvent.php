@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\PlaybackEventType;
+use App\Support\JwMediaKey;
 use App\Traits\LogsActivityAllDirty;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property PlaybackEventType $event
  * @property string $media_url
  * @property string $media_type
+ * @property string|null $media_key
  * @property int|null $position
  * @property int|null $duration
  * @property string|null $error_message
@@ -32,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'event',
     'media_url',
     'media_type',
+    'media_key',
     'position',
     'duration',
     'error_message',
@@ -67,6 +70,10 @@ class PlaybackEvent extends Model
         static::creating(function (PlaybackEvent $playbackEvent): void {
             if (empty($playbackEvent->created_at)) {
                 $playbackEvent->created_at = \Illuminate\Support\Facades\Date::now();
+            }
+
+            if (empty($playbackEvent->media_key) && ! empty($playbackEvent->media_url)) {
+                $playbackEvent->media_key = JwMediaKey::fromUrl($playbackEvent->media_url);
             }
         });
     }

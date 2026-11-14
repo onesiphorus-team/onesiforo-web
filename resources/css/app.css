@@ -23,16 +23,17 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
+    /* Project colour: indigo marks the main actions everywhere (see the palette in components/box-section) */
+    --color-accent: var(--color-indigo-500);
+    --color-accent-content: var(--color-indigo-600);
     --color-accent-foreground: var(--color-white);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: var(--color-indigo-500);
+        --color-accent-content: var(--color-indigo-300);
+        --color-accent-foreground: var(--color-white);
     }
 }
 
@@ -75,3 +76,8 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+/* Alpine: keep x-cloak elements hidden until Alpine has initialised them */
+[x-cloak] {
+    display: none !important;
+}

@@ -16,6 +16,7 @@ final readonly class ActivityTimelineEntry
         public string $label,
         public string $iconName,
         public ?string $metadata = null,
+        public ?string $thumbnailUrl = null,
     ) {}
 
     public function isInProgress(): bool

@@ -10,12 +10,14 @@ enum PlaylistSourceType: string implements HasLabel
 {
     case Manual = 'manual';
     case JworgSection = 'jworg_section';
+    case JworgRandom = 'jworg_random';
 
     public function getLabel(): string
     {
         return match ($this) {
             self::Manual => __('Manuale'),
             self::JworgSection => __('Sezione JW.org'),
+            self::JworgRandom => __('Casuale da JW.org'),
         };
     }
 }

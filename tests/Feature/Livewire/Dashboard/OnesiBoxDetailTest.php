@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
-use App\Enums\OnesiBoxStatus;
-use App\Enums\PlaybackSessionStatus;
+use App\Livewire\Dashboard\Controls\ActivityTimeline;
 use App\Livewire\Dashboard\Controls\BottomBar;
+use App\Livewire\Dashboard\Controls\CommandQueue;
 use App\Livewire\Dashboard\Controls\HeroCard;
+use App\Livewire\Dashboard\Controls\LogViewer;
+use App\Livewire\Dashboard\Controls\MeetingSchedule;
 use App\Livewire\Dashboard\Controls\QuickPlaySheet;
+use App\Livewire\Dashboard\Controls\SystemInfo;
 use App\Livewire\Dashboard\OnesiBoxDetail;
 use App\Models\Command;
 use App\Models\OnesiBox;
-use App\Models\PlaybackEvent;
-use App\Models\PlaybackSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -27,122 +28,45 @@ beforeEach(function (): void {
     $this->actingAs($this->user);
 });
 
-it('heroState returns offline when the box is offline', function (): void {
-    $box = OnesiBox::factory()->offline()->create();
-    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
-
-    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
-        ->assertSet('heroState', 'offline');
-});
-
-it('heroState returns call when the box is in a Zoom call', function (): void {
-    $box = OnesiBox::factory()->online()->create([
-        'status' => OnesiBoxStatus::Calling,
-        'current_meeting_id' => '1234567890',
-    ]);
-    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
-
-    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
-        ->assertSet('heroState', 'call');
-});
-
-it('heroState returns media when a media is playing and no call is active', function (): void {
-    $box = OnesiBox::factory()->online()->create([
-        'status' => OnesiBoxStatus::Playing,
-        'current_media_url' => 'https://example.com/song.mp3',
-        'current_media_type' => 'audio',
-    ]);
-    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
-
-    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
-        ->assertSet('heroState', 'media');
-});
-
-it('heroState returns idle when the box is online and nothing is playing', function (): void {
-    $box = OnesiBox::factory()->online()->create([
-        'status' => OnesiBoxStatus::Idle,
-    ]);
-    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
-
-    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
-        ->assertSet('heroState', 'idle');
-});
-
-// Task 5 tests
-
-it('isInCall reflects the Calling status', function (): void {
-    $boxInCall = OnesiBox::factory()->online()->create([
-        'status' => OnesiBoxStatus::Calling,
-        'current_meeting_id' => '1234567890',
-    ]);
-    $boxInCall->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
-
-    livewire(OnesiBoxDetail::class, ['onesiBox' => $boxInCall])
-        ->assertSet('isInCall', true);
-
-    $boxIdle = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
-    $boxIdle->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
-
-    livewire(OnesiBoxDetail::class, ['onesiBox' => $boxIdle])
-        ->assertSet('isInCall', false);
-});
-
-it('isMediaPaused is true only when the last PlaybackEvent is Paused', function (): void {
-    $box = OnesiBox::factory()->online()->create([
-        'status' => OnesiBoxStatus::Playing,
-        'current_media_url' => 'https://example.com/song.mp3',
-        'current_media_type' => 'audio',
-    ]);
-    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
-
-    PlaybackEvent::factory()->for($box, 'onesiBox')->started()->create();
-    PlaybackEvent::factory()->for($box, 'onesiBox')->paused()->create();
-
-    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
-        ->assertSet('isMediaPaused', true);
-});
-
-it('isMediaPaused is false when the last PlaybackEvent is not Paused', function (): void {
-    $box = OnesiBox::factory()->online()->create([
-        'status' => OnesiBoxStatus::Playing,
-        'current_media_url' => 'https://example.com/song.mp3',
-        'current_media_type' => 'audio',
-    ]);
-    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
-
-    PlaybackEvent::factory()->for($box, 'onesiBox')->paused()->create();
-    PlaybackEvent::factory()->for($box, 'onesiBox')->resumed()->create();
-
-    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
-        ->assertSet('isMediaPaused', false);
-});
-
-it('accordionDefaults opens session when an active session exists', function (): void {
+it('keeps the technical details closed, and their components unmounted, until asked', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
 
-    PlaybackSession::factory()->for($box, 'onesiBox')->create([
-        'status' => PlaybackSessionStatus::Active,
-    ]);
-
-    $defaults = livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
-        ->get('accordionDefaults');
-
-    expect($defaults)->toHaveKey('session', true);
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSee('Altro')
+        ->assertDontSeeLivewire(CommandQueue::class)
+        ->call('toggleTechnicalDetails')
+        ->assertSeeLivewire(CommandQueue::class)
+        ->call('toggleTechnicalDetails')
+        ->assertDontSeeLivewire(CommandQueue::class);
 });
 
-it('accordionDefaults opens commands when pending commands exist', function (): void {
+it('shows system, network and logs only to administrators', function (): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
 
-    Command::factory()->for($box, 'onesiBox')->create([
-        'status' => CommandStatus::Pending,
-    ]);
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->call('toggleTechnicalDetails')
+        ->assertDontSeeLivewire(SystemInfo::class)
+        ->assertDontSeeLivewire(LogViewer::class);
+});
 
-    $defaults = livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
-        ->get('accordionDefaults');
+it('counts the commands still waiting to reach the box next to "Altro"', function (): void {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
+    Command::factory()->for($box, 'onesiBox')->count(2)->create(['status' => CommandStatus::Pending]);
 
-    expect($defaults)->toHaveKey('commands', true);
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSee('2 in coda');
+});
+
+it('shows the activity of today and the meetings to every caregiver, including read-only ones', function (): void {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::ReadOnly]);
+
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSeeLivewire(ActivityTimeline::class)
+        ->assertSeeLivewire(MeetingSchedule::class);
 });
 
 it('mounts HeroCard, BottomBar and QuickPlaySheet in the detail view', function (): void {
@@ -154,4 +78,27 @@ it('mounts HeroCard, BottomBar and QuickPlaySheet in the detail view', function 
         ->assertSeeLivewire(HeroCard::class)
         ->assertSeeLivewire(BottomBar::class)
         ->assertSeeLivewire(QuickPlaySheet::class);
+});
+
+it('offers the way back to the list only to who follows more than one box', function (): void {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
+
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSet('canGoBackToList', false)
+        ->assertDontSeeHtml('aria-label="Torna ai miei box"');
+
+    OnesiBox::factory()->create()->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
+
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSet('canGoBackToList', true)
+        ->assertSeeHtml('aria-label="Torna ai miei box"');
+});
+
+it('names the page after the person the box serves', function (): void {
+    $box = OnesiBox::factory()->online()->forRecipient()->create(['name' => 'OnesiBox Cucina']);
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full]);
+
+    livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
+        ->assertSeeInOrder([$box->recipient->full_name, 'OnesiBox Cucina']);
 });

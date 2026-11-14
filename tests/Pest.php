@@ -71,3 +71,38 @@ function releaseTestTime(): void
 {
     Illuminate\Support\Carbon::setTestNow();
 }
+
+/**
+ * Fake the JW.org Mediator API so that each given category key answers with its payload.
+ * Any other outbound request fails the test.
+ *
+ * @param  array<string, array<string, mixed>>  $categoriesByKey  Raw Mediator `category` payloads keyed by category key
+ */
+function fakeJwOrgCategories(array $categoriesByKey): void
+{
+    Illuminate\Support\Facades\Http::preventStrayRequests();
+
+    Illuminate\Support\Facades\Http::fake(collect($categoriesByKey)
+        ->mapWithKeys(fn (array $category, string $key): array => [
+            "b.jw-cdn.org/apis/mediator/v1/categories/I/{$key}?*" => Illuminate\Support\Facades\Http::response(['category' => $category]),
+        ])
+        ->all());
+}
+
+/**
+ * Build a raw Mediator media item identified by its language-agnostic natural key.
+ *
+ * @return array<string, mixed>
+ */
+function jwOrgMedia(string $naturalKey, string $title, float $durationSeconds = 300, string $type = 'video'): array
+{
+    return [
+        'naturalKey' => "italian-{$naturalKey}",
+        'languageAgnosticNaturalKey' => $naturalKey,
+        'title' => $title,
+        'type' => $type,
+        'duration' => $durationSeconds,
+        'primaryCategory' => 'TestCategory',
+        'images' => ['wss' => ['sm' => "https://cms-imgp.jw-cdn.org/img/{$naturalKey}_wss_sm.jpg"]],
+    ];
+}

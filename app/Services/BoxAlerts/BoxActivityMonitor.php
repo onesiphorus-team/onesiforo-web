@@ -16,6 +16,7 @@ use App\Models\PlaybackEvent;
 use App\Models\PlaybackSession;
 use App\Models\ZoomMeeting;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 
 /**
@@ -36,6 +37,11 @@ class BoxActivityMonitor
      * Starting several contents in a row (e.g. trying a few videos) is reported once in this time.
      */
     public const int START_QUIET_SECONDS = 2 * 60;
+
+    /**
+     * How long an announced loss of the Zoom audio waits for its "audio is back" (longer than a meeting).
+     */
+    private const int AUDIO_LOSS_MEMORY_SECONDS = 3 * 60 * 60;
 
     /**
      * A playback that stops this close to its end is considered finished.
@@ -225,7 +231,8 @@ class BoxActivityMonitor
             'stopped' => "⏹️ {$name} fermata da Onesiforo dopo {$shown} di {$total} contenuti.",
         };
 
-        $this->alerts->send($onesiBox, $text);
+        // A session ends once: the scheduler and a heartbeat may both find it expired.
+        $this->alerts->send($onesiBox, $text, kind: "session-end:{$session->uuid}", quietSeconds: 24 * 60 * 60);
     }
 
     private function announceStart(OnesiBox $onesiBox, PlaybackEvent $playbackEvent, ?PlaybackSession $session): void
@@ -342,16 +349,24 @@ class BoxActivityMonitor
     {
         $audioNow = $onesiBox->current_meeting_audio_connected;
 
+        $lossAnnouncedKey = "box-alert:{$onesiBox->id}:meeting-audio-loss-announced";
+
         if ($audioNow === false && $audioBefore !== false) {
-            $this->alerts->send(
+            $announced = $this->alerts->send(
                 $onesiBox,
                 "🔇 È nella riunione ma Zoom non ha l'audio collegato: il box sta provando a ricollegarlo da solo.",
                 kind: 'meeting-audio',
                 quietSeconds: self::PROBLEM_QUIET_SECONDS,
             );
+
+            if ($announced) {
+                Cache::put($lossAnnouncedKey, true, self::AUDIO_LOSS_MEMORY_SECONDS);
+            }
         }
 
-        if ($audioNow === true && $audioBefore === false) {
+        // The recovery is announced only for a loss that was announced: an audio that keeps
+        // dropping and coming back is held back exactly like its 🔇.
+        if ($audioNow === true && $audioBefore === false && Cache::pull($lossAnnouncedKey) === true) {
             $this->alerts->send($onesiBox, "🔊 L'audio della riunione è di nuovo collegato.");
         }
     }

@@ -16,6 +16,7 @@ use App\Models\Recipient;
 use App\Models\User;
 use App\Notifications\BoxActivityNotification;
 use App\Services\BoxAlerts\BoxActivityAlerts;
+use App\Services\BoxAlerts\BoxActivityMonitor;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -134,6 +135,27 @@ describe('meetings', function (): void {
             ->and(sentAlerts()[2])->toContain('di nuovo collegato');
     });
 
+    it('does not flood the chat when the Zoom audio keeps dropping and coming back', function (): void {
+        $meeting = ['meeting_id' => '123', 'meeting_url' => 'https://us05web.zoom.us/j/123', 'joined_at' => now()->toIso8601String()];
+
+        foreach ([true, false, true, false, true, false, true] as $audioConnected) {
+            heartbeat(['status' => OnesiBoxStatus::Calling->value, 'current_meeting' => [...$meeting, 'audio_connected' => $audioConnected]]);
+            $this->travel(30)->seconds();
+        }
+
+        expect(sentAlerts())->toHaveCount(3)
+            ->and(sentAlerts()[1])->toContain('Zoom non ha l&#039;audio collegato')
+            ->and(sentAlerts()[2])->toContain('di nuovo collegato');
+
+        // Once the quiet time is over, a new loss and its recovery are announced again.
+        $this->travel(10)->minutes();
+        heartbeat(['status' => OnesiBoxStatus::Calling->value, 'current_meeting' => [...$meeting, 'audio_connected' => false]]);
+        heartbeat(['status' => OnesiBoxStatus::Calling->value, 'current_meeting' => [...$meeting, 'audio_connected' => true]]);
+
+        expect(sentAlerts())->toHaveCount(5)
+            ->and(sentAlerts()[4])->toContain('di nuovo collegato');
+    });
+
     it('does not warn about audio when the box does not report it', function (): void {
         heartbeat(['status' => OnesiBoxStatus::Calling->value, 'current_meeting' => ['meeting_id' => '123', 'meeting_url' => 'https://us05web.zoom.us/j/123', 'joined_at' => now()->toIso8601String()]]);
         heartbeat(['status' => OnesiBoxStatus::Calling->value, 'current_meeting' => ['meeting_id' => '123', 'meeting_url' => 'https://us05web.zoom.us/j/123', 'joined_at' => now()->toIso8601String()]]);
@@ -209,6 +231,18 @@ describe('playlists', function (): void {
             ->and(sentAlerts()[0])->toContain('Playlist di video avviata: 2 contenuti · circa 20 minuti')
             ->and(sentAlerts()[1])->toContain('Playlist di video finita: 2 di 2 contenuti mostrati')
             ->and($session->refresh()->status)->toBe(PlaybackSessionStatus::Completed);
+    });
+
+    it('announces the end of a playlist once, even when the scheduler and the heartbeat both see it expired', function (): void {
+        $playlist = Playlist::factory()->forOnesiBox($this->box)->create(['name' => 'Playlist di video']);
+        PlaylistItem::factory()->for($playlist)->atPosition(0)->create();
+        $session = PlaybackSession::factory()->forOnesiBox($this->box)->forPlaylist($playlist)->create();
+
+        resolve(BoxActivityMonitor::class)->sessionEnded($session, 'expired');
+        resolve(BoxActivityMonitor::class)->sessionEnded($session->fresh(), 'expired');
+
+        expect(sentAlerts())->toHaveCount(1)
+            ->and(sentAlerts()[0])->toContain('finita perché è scaduto il tempo');
     });
 });
 

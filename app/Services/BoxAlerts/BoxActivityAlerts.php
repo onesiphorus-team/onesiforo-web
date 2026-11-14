@@ -23,24 +23,27 @@ class BoxActivityAlerts
     /**
      * @param  string  $text  Plain text (escaped when sent); {titolo} becomes the title of $mediaUrl
      * @param  string|null  $kind  Alerts of the same kind for the same box are sent at most once every $quietSeconds
+     * @return bool Whether the alert was sent, i.e. not dropped or held back
      */
-    public function send(OnesiBox $onesiBox, string $text, ?string $mediaUrl = null, ?string $kind = null, int $quietSeconds = 0): void
+    public function send(OnesiBox $onesiBox, string $text, ?string $mediaUrl = null, ?string $kind = null, int $quietSeconds = 0): bool
     {
         if (! $onesiBox->is_active || ! $onesiBox->activity_notifications_enabled) {
-            return;
+            return false;
         }
 
         $chatIds = $this->chatIdsFor($onesiBox);
 
         if ($chatIds === []) {
-            return;
+            return false;
         }
 
         if ($kind !== null && $quietSeconds > 0 && ! Cache::add("box-alert:{$onesiBox->id}:{$kind}", true, $quietSeconds)) {
-            return;
+            return false;
         }
 
         dispatch(new SendBoxActivityAlert($onesiBox->id, $text, $chatIds, $this->topicId(), $mediaUrl))->afterCommit();
+
+        return true;
     }
 
     /**

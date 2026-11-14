@@ -66,7 +66,7 @@
                         @foreach($this->recentAttendances as $attendance)
                             <li class="flex items-center justify-between gap-3 py-2">
                                 <span class="min-w-0">
-                                    <span class="block text-zinc-800 dark:text-zinc-100">{{ $attendance->meetingInstance->scheduled_at->format('d/m/Y H:i') }} · {{ $attendance->meetingInstance->type->getLabel() }}</span>
+                                    <span class="block text-zinc-800 dark:text-zinc-100">{{ $attendance->meetingInstance->scheduled_at->copy()->setTimezone($displayTimezone)->format('d/m/Y H:i') }} · {{ $attendance->meetingInstance->type->getLabel() }}</span>
                                     @if($attendance->joined_at && $attendance->left_at)
                                         <span class="block text-xs text-zinc-500 dark:text-zinc-400">Durata {{ $attendance->joined_at->diffForHumans($attendance->left_at, true) }}</span>
                                     @endif

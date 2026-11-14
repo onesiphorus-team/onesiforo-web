@@ -164,6 +164,8 @@ class MeetingSchedule extends Component
 
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
-        return view('livewire.dashboard.controls.meeting-schedule');
+        return view('livewire.dashboard.controls.meeting-schedule', [
+            'displayTimezone' => config('app.display_timezone', 'Europe/Rome'),
+        ]);
     }
 }

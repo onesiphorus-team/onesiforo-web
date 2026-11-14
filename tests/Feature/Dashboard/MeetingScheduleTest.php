@@ -311,3 +311,20 @@ it('polls for a meeting to confirm while it is on screen', function (): void {
     Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box])
         ->assertSeeHtml('wire:poll.30s.visible="checkPendingAttendance"');
 });
+
+it('shows the meeting history in the display timezone, not in UTC', function (): void {
+    config(['app.display_timezone' => 'Europe/Rome']);
+
+    $instance = MeetingInstance::factory()->completed()->create([
+        'congregation_id' => $this->congregation->id,
+        'scheduled_at' => '2026-07-01 17:30:00',
+    ]);
+    MeetingAttendance::factory()->completed()->create([
+        'meeting_instance_id' => $instance->id,
+        'onesi_box_id' => $this->box->id,
+    ]);
+
+    Livewire::test(MeetingSchedule::class, ['onesiBox' => $this->box])
+        ->assertSee('01/07/2026 19:30')
+        ->assertDontSee('01/07/2026 17:30');
+});

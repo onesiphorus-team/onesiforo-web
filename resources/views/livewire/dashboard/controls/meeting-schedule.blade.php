@@ -1,4 +1,5 @@
-<div>
+{{-- The poll only looks for a meeting to confirm, and re-renders nothing when there is no news --}}
+<div wire:poll.30s.visible="checkPendingAttendance">
     @if($this->onesiBox->recipient?->congregation)
         <div class="space-y-4">
             {{-- Pending attendance: needs a decision --}}

@@ -15,6 +15,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class BottomBar extends Component
@@ -45,6 +46,15 @@ class BottomBar extends Component
     {
         return (int) ($this->onesiBox->volume ?? 80);
     }
+
+    /**
+     * Show the bar again when the box went online or offline, a call started or ended, or
+     * the volume changed (see AnnouncesOnesiBoxState: the status card and the page poll the box and announce it).
+     *
+     * Nothing to reload here: Livewire fetches the box again on every request.
+     */
+    #[On('box-state-changed')]
+    public function refreshBox(): void {}
 
     public function openVolume(): void
     {

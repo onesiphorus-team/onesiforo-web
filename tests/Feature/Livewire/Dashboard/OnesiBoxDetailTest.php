@@ -102,3 +102,13 @@ it('names the page after the person the box serves', function (): void {
     livewire(OnesiBoxDetail::class, ['onesiBox' => $box])
         ->assertSeeInOrder([$box->recipient->full_name, 'OnesiBox Cucina']);
 });
+
+it('tells the command bar when the box comes back online, even if the status card is scrolled away', function (): void {
+    $box = OnesiBox::factory()->offline()->withCaregiver($this->user)->create();
+    $page = Livewire::test(OnesiBoxDetail::class, ['onesiBox' => $box]);
+
+    $box->update(['last_seen_at' => now()]);
+
+    $page->call('refreshFromDatabase')->assertDispatched('box-state-changed');
+    $page->call('refreshFromDatabase')->assertNotDispatched('box-state-changed');
+});

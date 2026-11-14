@@ -257,3 +257,54 @@ it('forbids the commands to a user without Full permission', function (string $a
         ->call($action)
         ->assertForbidden();
 })->with(['pause', 'resume', 'stop', 'leaveZoom']);
+
+describe('command bar refresh', function (): void {
+    it('tells the page when the box comes back online', function (): void {
+        $box = OnesiBox::factory()->offline()->withCaregiver($this->user)->create();
+        $card = Livewire::test(HeroCard::class, ['onesiBox' => $box]);
+
+        $box->update(['last_seen_at' => now()]);
+
+        $card->call('refreshBox')->assertDispatched('box-state-changed');
+    });
+
+    it('tells the page when a call starts and when the volume changes', function (array $change): void {
+        $box = OnesiBox::factory()->online()->withCaregiver($this->user)->create(['status' => OnesiBoxStatus::Idle, 'volume' => 80]);
+        $card = Livewire::test(HeroCard::class, ['onesiBox' => $box]);
+
+        $box->update($change);
+
+        $card->call('refreshBox')->assertDispatched('box-state-changed');
+    })->with([
+        'call started' => [['status' => OnesiBoxStatus::Calling]],
+        'volume changed' => [['volume' => 40]],
+    ]);
+
+    it('tells the page when the box stops answering, even if nothing changed in the database', function (): void {
+        $box = OnesiBox::factory()->withCaregiver($this->user)->create(['last_seen_at' => now()]);
+        $card = Livewire::test(HeroCard::class, ['onesiBox' => $box]);
+
+        $this->travel(10)->minutes();
+
+        $card->call('refreshBox')->assertDispatched('box-state-changed');
+    });
+
+    it('stays quiet while nothing relevant changes', function (): void {
+        $box = OnesiBox::factory()->online()->withCaregiver($this->user)->create(['current_media_position' => 10]);
+        $card = Livewire::test(HeroCard::class, ['onesiBox' => $box]);
+
+        $box->update(['current_media_position' => 15, 'last_seen_at' => now()]);
+
+        $card->call('refreshBox')->assertNotDispatched('box-state-changed');
+    });
+
+    it('announces a change only once', function (): void {
+        $box = OnesiBox::factory()->offline()->withCaregiver($this->user)->create();
+        $card = Livewire::test(HeroCard::class, ['onesiBox' => $box]);
+
+        $box->update(['last_seen_at' => now()]);
+
+        $card->call('refreshBox')->assertDispatched('box-state-changed');
+        $card->call('refreshBox')->assertNotDispatched('box-state-changed');
+    });
+});

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Dashboard\Controls;
 
 use App\Actions\Sessions\StopPlaybackSessionAction;
+use App\Concerns\AnnouncesOnesiBoxState;
 use App\Concerns\ChecksOnesiBoxPermission;
 use App\Concerns\HandlesOnesiBoxErrors;
 use App\Enums\CommandStatus;
@@ -51,6 +52,7 @@ use Livewire\Component;
  */
 class HeroCard extends Component
 {
+    use AnnouncesOnesiBoxState;
     use AuthorizesRequests;
     use ChecksOnesiBoxPermission;
     use HandlesOnesiBoxErrors;
@@ -70,13 +72,21 @@ class HeroCard extends Component
      */
     private ?Collection $upcomingPlaylistItemsCache = null;
 
+    public function mount(): void
+    {
+        $this->announceBoxStateChange();
+    }
+
     /**
-     * Reload the box state (called by the card's own poll and by real-time events).
+     * Reload the box state (called by the card's own poll and by real-time events), and
+     * tell the command bar when it has to follow.
      */
     #[On('echo-private:onesibox.{onesiBox.id},StatusUpdated')]
     public function refreshBox(): void
     {
         $this->onesiBox->refresh();
+
+        $this->announceBoxStateChange();
     }
 
     /**

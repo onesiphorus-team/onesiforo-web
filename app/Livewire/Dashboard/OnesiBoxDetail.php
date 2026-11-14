@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard;
 
+use App\Concerns\AnnouncesOnesiBoxState;
 use App\Concerns\ChecksOnesiBoxPermission;
 use App\Enums\CommandStatus;
 use App\Enums\OnesiBoxPermission;
@@ -23,6 +24,7 @@ use Livewire\Component;
 #[Title('Dettaglio OnesiBox')]
 class OnesiBoxDetail extends Component
 {
+    use AnnouncesOnesiBoxState;
     use AuthorizesRequests;
     use ChecksOnesiBoxPermission;
 
@@ -34,6 +36,7 @@ class OnesiBoxDetail extends Component
     {
         $this->authorize('view', $onesiBox);
         $this->onesiBox = $onesiBox->load('recipient');
+        $this->announceBoxStateChange();
     }
 
     /**
@@ -131,14 +134,19 @@ class OnesiBoxDetail extends Component
     public function refreshStatus(array $payload): void
     {
         $this->onesiBox->refresh();
+
+        $this->announceBoxStateChange();
     }
 
     /**
-     * Refresh model data from the database (called by wire:poll).
+     * Refresh model data from the database (called by wire:poll), and tell the command bar
+     * when it has to follow: this poll keeps running when the status card is scrolled away.
      */
     public function refreshFromDatabase(): void
     {
         $this->onesiBox->refresh();
+
+        $this->announceBoxStateChange();
     }
 
     /**

@@ -14,8 +14,10 @@ use App\Enums\MeetingType;
 use App\Models\MeetingAttendance;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class MeetingSchedule extends Component
@@ -26,11 +28,35 @@ class MeetingSchedule extends Component
 
     public OnesiBox $onesiBox;
 
+    /**
+     * The meeting to confirm currently on screen, to re-render only when it changes.
+     */
+    #[Locked]
+    public ?int $shownPendingAttendanceId = null;
+
     public function mount(OnesiBox $onesiBox): void
     {
         Gate::authorize('view', $onesiBox);
 
         $this->onesiBox = $onesiBox->load('recipient.congregation');
+        $this->shownPendingAttendanceId = $this->pendingAttendance?->id;
+    }
+
+    /**
+     * Called by the poll: show (or hide) the "meeting coming up, confirm or skip" box as
+     * soon as it changes. When nothing changed the component is not rendered again.
+     */
+    public function checkPendingAttendance(): void
+    {
+        $pendingAttendanceId = $this->pendingAttendanceQuery()->value('meeting_attendances.id');
+
+        if ($pendingAttendanceId === $this->shownPendingAttendanceId) {
+            $this->skipRender();
+
+            return;
+        }
+
+        $this->shownPendingAttendanceId = $pendingAttendanceId;
     }
 
     public function toggleJoinMode(): void
@@ -108,15 +134,7 @@ class MeetingSchedule extends Component
 
     public function getPendingAttendanceProperty(): ?MeetingAttendance
     {
-        return MeetingAttendance::query()
-            ->where('onesi_box_id', $this->onesiBox->id)
-            ->whereIn('status', [MeetingAttendanceStatus::Pending, MeetingAttendanceStatus::Confirmed])
-            ->whereHas('meetingInstance', fn ($q) => $q->whereNotIn('status', [
-                MeetingInstanceStatus::Completed->value,
-                MeetingInstanceStatus::Cancelled->value,
-            ]))
-            ->with('meetingInstance')
-            ->first();
+        return $this->pendingAttendanceQuery()->with('meetingInstance')->first();
     }
 
     /** @return \Illuminate\Database\Eloquent\Collection<int, MeetingAttendance> */
@@ -128,6 +146,20 @@ class MeetingSchedule extends Component
             ->latest('id')
             ->limit(10)
             ->get();
+    }
+
+    /**
+     * @return Builder<MeetingAttendance>
+     */
+    private function pendingAttendanceQuery(): Builder
+    {
+        return MeetingAttendance::query()
+            ->where('onesi_box_id', $this->onesiBox->id)
+            ->whereIn('status', [MeetingAttendanceStatus::Pending, MeetingAttendanceStatus::Confirmed])
+            ->whereHas('meetingInstance', fn ($q) => $q->whereNotIn('status', [
+                MeetingInstanceStatus::Completed->value,
+                MeetingInstanceStatus::Cancelled->value,
+            ]));
     }
 
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View

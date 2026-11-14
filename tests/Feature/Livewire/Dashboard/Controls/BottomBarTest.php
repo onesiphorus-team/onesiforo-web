@@ -12,6 +12,7 @@ use App\Models\PlaybackSession;
 use App\Models\User;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 
@@ -182,4 +183,45 @@ it('renders the call slot labelled "Zoom" when not in a call', function (): void
         ->assertSeeHtml('>Zoom<')
         ->assertSeeHtml('Avvia chiamata Zoom')
         ->assertDontSeeHtml('>Chiama<');
+});
+
+it('becomes usable again when the box comes back online, without reloading the page', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->offline()->withCaregiver($user)->create();
+
+    $bar = Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSeeHtml('pointer-events-none opacity-40');
+
+    $box->update(['last_seen_at' => now()]);
+
+    $bar->dispatch('box-state-changed')
+        ->assertDontSeeHtml('pointer-events-none opacity-40');
+});
+
+it('turns the Zoom button into "Termina" when a call starts, without reloading the page', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->withCaregiver($user)->create(['status' => OnesiBoxStatus::Idle]);
+
+    $bar = Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSeeHtml('aria-label="Avvia chiamata Zoom"');
+
+    $box->update(['status' => OnesiBoxStatus::Calling]);
+
+    $bar->dispatch('box-state-changed')
+        ->assertSeeHtml('aria-label="Termina chiamata Zoom"')
+        ->assertDontSeeHtml('aria-label="Avvia chiamata Zoom"');
+});
+
+it('refreshes with a couple of queries only', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->withCaregiver($user)->create();
+
+    $bar = Livewire::actingAs($user)->test(BottomBar::class, ['onesiBox' => $box]);
+
+    DB::enableQueryLog();
+    $bar->dispatch('box-state-changed');
+
+    expect(count(DB::getQueryLog()))->toBeLessThanOrEqual(3);
 });

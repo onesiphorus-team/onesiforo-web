@@ -2,6 +2,17 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.15.0] - 2026-11-14
+
+### Bug Fixes
+
+- Harden the archive and the version lookup after review
+
+### Features
+
+- Show the version from the git tag on every page
+- Archive old entries to CSV every day
+
 ## [0.14.2] - 2026-11-14
 
 ### Bug Fixes

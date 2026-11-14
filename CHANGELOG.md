@@ -2,6 +2,62 @@
 
 Tutte le modifiche rilevanti di questo progetto sono documentate in questo file.
 
+## [0.14.0] - 2026-11-14
+
+### Bug Fixes
+
+- Filament 5.11.2 filter form and follow-redirects advisory
+- Send no activity alerts for deactivated boxes
+- No missed-join alarm after leaving a meeting on purpose
+- Throttle the audio-restored alert and announce a session end once
+- A failing alert cannot fail heartbeats, acks or session advance
+- Link with string user ids from the cache and keep the bot token out of logs
+- Retry a Telegram alert that could not be delivered
+- An attendance is joined when the box is in the meeting, not when the join is sent
+- Accept every valid pasted Zoom link and refuse stray whitespace
+- Keep the command bar and the meeting prompt up to date
+- Keep "remember me" unticked after a failed login
+- Announce only the box status and make the screen zoom a real dialog
+- Show the meeting history in the display timezone
+- Stop waiting once the personal link has expired
+- Do not blame the phone connection when Onesiforo is unreachable
+- Keep the Android install prompt across wire:navigate
+- Translate the settings heading and the two-factor setup dialog
+- Show toasts, fix JW browser loading targets and polish the "Mostra" sheet
+- Explain read-only access and polish the box page
+- Keep the random session categories open while picking
+
+### Features
+
+- Simpler caregiver experience, JW.org library, meetings and Telegram alerts
+
+### Build
+
+- Bump livewire/livewire from 4.4.7 to 4.4.8
+- Bump dedoc/scramble from 0.13.49 to 0.13.51
+- Bump livewire/flux from 2.20.1 to 2.21.0
+- Bump larastan/larastan from 3.13.0 to 3.13.2
+- Bump rector/rector from 2.7.0 to 2.8.1
+- Bump laravel/framework from 13.38.0 to 13.39.0
+- Bump filament/filament from 5.10.3 to 5.11.0
+- Bump driftingly/rector-laravel from 2.7.0 to 2.7.3
+- Bump larastan/larastan from 3.13.2 to 3.14.0
+- Bump dedoc/scramble from 0.13.51 to 0.13.53
+- Bump laravel/boost from 2.10.3 to 2.10.4
+- Bump laravel/framework from 13.39.0 to 13.40.0
+- Bump barryvdh/laravel-debugbar from 4.4.4 to 4.4.5
+- Bump rector/rector from 2.8.3 to 2.8.4
+- Bump filament/filament from 5.11.0 to 5.11.1
+- Bump laravel/pulse from 1.8.1 to 1.10.0
+- Bump laravel/fortify from 1.41.0 to 1.42.0
+- Bump filament/filament from 5.11.1 to 5.11.2
+- Bump laravel/framework from 13.40.0 to 13.42.0
+- Bump laravel/sanctum from 4.3.3 to 4.4.0
+- Bump laravel/pail from 1.2.7 to 1.3.0
+- Bump nunomaduro/collision from 8.9.5 to 8.9.6
+- Bump laravel/sail from 1.69.0 to 1.70.0
+- Bump spatie/laravel-activitylog from 5.1.3 to 5.1.4
+
 ## [0.13.4] - 2026-10-22
 
 ### Bug Fixes

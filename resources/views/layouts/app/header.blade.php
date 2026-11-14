@@ -48,6 +48,10 @@
 
         {{ $slot }}
 
+        @persist('toast')
+            <flux:toast position="top center" />
+        @endpersist
+
         @fluxScripts
     </body>
 </html>

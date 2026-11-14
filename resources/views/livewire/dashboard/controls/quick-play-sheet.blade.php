@@ -1,13 +1,13 @@
 <div>
     {{-- Tighter padding on phones. The dialog keeps its first-render attributes (wire:ignore.self), so per-tab sizing lives on the inner content. --}}
-    <flux:modal wire:model="open" variant="flyout" position="bottom" :closable="false" class="w-full p-4! sm:p-8! md:max-w-xl">
+    <flux:modal wire:model="open" variant="flyout" position="bottom" :closable="false" class="w-full p-4! sm:p-8! md:mx-auto md:min-w-0! md:max-w-2xl md:rounded-t-2xl">
         {{-- Our own top bar, pinned while the sheet scrolls (Flux's close button would scroll away with the content).
              The negative top cancels the sheet padding, so nothing scrolls through above the bar. --}}
         <div data-slot="sheet-header" class="sticky -top-4 z-20 sm:-top-8 -mx-4 -mt-4 flex h-14 items-center gap-2 border-b border-zinc-200 bg-white px-4 sm:-mx-8 sm:-mt-8 sm:px-8 dark:border-zinc-700 dark:bg-zinc-800">
             @if($tab === null)
                 <flux:heading size="lg" class="min-w-0 flex-1 truncate">Cosa vuoi mostrare sul box?</flux:heading>
             @else
-                <flux:button wire:click="back" variant="subtle" icon="arrow-left" class="-ml-2">Indietro</flux:button>
+                <flux:button wire:click="back" variant="subtle" icon="arrow-left" class="-ml-2" aria-label="Torna al menu">Menu</flux:button>
                 <span class="flex-1"></span>
             @endif
             <flux:button wire:click="close" variant="subtle" icon="x-mark" class="-mr-2" aria-label="Chiudi" />
@@ -44,7 +44,8 @@
                     </button>
                 @endforeach
 
-                <button type="button" x-on:click="showMore = ! showMore" x-bind:aria-expanded="showMore" class="{{ $choiceRow }} mt-1 border-t border-zinc-100 pt-3 dark:border-zinc-700">
+                {{-- Once expanded (x-collapse takes 250ms), bring the extra entries into view on short screens --}}
+                <button type="button" x-on:click="showMore = ! showMore; if (showMore) setTimeout(() => $refs.moreChoices.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 300)" x-bind:aria-expanded="showMore" class="{{ $choiceRow }} mt-1 border-t border-zinc-100 pt-3 dark:border-zinc-700">
                     <span class="{{ $choiceIcon }}" aria-hidden="true"><flux:icon name="ellipsis-horizontal" class="size-5" /></span>
                     <span class="min-w-0 flex-1">
                         <span class="block font-medium text-zinc-900 dark:text-white">Altro</span>
@@ -53,7 +54,7 @@
                     <flux:icon name="chevron-down" class="size-5 shrink-0 text-zinc-400 transition-transform" x-bind:class="showMore && 'rotate-180'" />
                 </button>
 
-                <div x-show="showMore" x-collapse class="ml-7 flex flex-col border-l border-zinc-200 pl-3 dark:border-zinc-700">
+                <div x-show="showMore" x-collapse x-ref="moreChoices" class="ml-7 flex flex-col border-l border-zinc-200 pl-3 dark:border-zinc-700">
                     @foreach($moreChoices as [$choiceTab, $choiceIconName, $choiceLabel, $choiceHint])
                         <button type="button" wire:click="selectTab('{{ $choiceTab }}')" wire:key="choice-{{ $choiceTab }}" class="{{ $choiceRow }}">
                             <flux:icon :name="$choiceIconName" class="size-5 shrink-0 text-zinc-500" />

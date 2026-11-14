@@ -228,10 +228,14 @@ class JwMediaBrowser extends Component
             return;
         }
 
-        $this->executeWithErrorHandling(
+        $isSent = $this->executeWithErrorHandling(
             callback: fn () => $commandService->sendMediaCommand($this->onesiBox, $item['url'], $item['media_type']),
             successMessage: "«{$item['title']}» inviato al box",
         );
+
+        if ($isSent) {
+            $this->closeSheet();
+        }
     }
 
     /**
@@ -303,12 +307,21 @@ class JwMediaBrowser extends Component
 
         if ($isStarted) {
             $this->saveQueue([]);
+            $this->closeSheet();
         }
     }
 
     public function render(): View
     {
         return view('livewire.dashboard.controls.jw-media-browser');
+    }
+
+    /**
+     * Close the "Mostra" sheet once something has started, so the caregiver sees it on the box status card.
+     */
+    private function closeSheet(): void
+    {
+        $this->dispatch('close-quick-play');
     }
 
     /**

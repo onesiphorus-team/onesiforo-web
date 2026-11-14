@@ -33,7 +33,8 @@ it('starts a random session for the chosen duration', function (): void {
     Livewire::test(RandomSessionStarter::class, ['onesiBox' => $this->box, 'mediaType' => 'video'])
         ->set('durationMinutes', 30)
         ->call('start')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertDispatched('close-quick-play');
 
     expect($this->box->activeSession())
         ->duration_minutes->toBe(30)

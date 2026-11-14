@@ -74,7 +74,8 @@ it('sends the tapped video to the box', function (): void {
     Livewire::test(JwMediaBrowser::class, ['onesiBox' => $this->box, 'mediaType' => 'video'])
         ->call('selectCategory', 'VODStudio')
         ->call('openSubcategory', 'StudioTalks')
-        ->call('play', 'pub-talk-2_I_VIDEO');
+        ->call('play', 'pub-talk-2_I_VIDEO')
+        ->assertDispatched('close-quick-play');
 
     expect($this->box->commands()->where('type', CommandType::PlayMedia)->sole()->payload)->toMatchArray([
         'url' => 'https://www.jw.org/it/biblioteca-digitale/video/#it/mediaitems/TestCategory/pub-talk-2_I_VIDEO',
@@ -86,7 +87,21 @@ it('does not send media that is not in the open category', function (): void {
     Livewire::test(JwMediaBrowser::class, ['onesiBox' => $this->box, 'mediaType' => 'video'])
         ->call('selectCategory', 'VODStudio')
         ->call('openSubcategory', 'StudioTalks')
-        ->call('play', 'pub-unknown_I_VIDEO');
+        ->call('play', 'pub-unknown_I_VIDEO')
+        ->assertNotDispatched('close-quick-play');
+
+    expect($this->box->commands()->count())->toBe(0);
+});
+
+it('keeps the sheet open when the box is offline and nothing could be sent', function (): void {
+    $this->box->update(['last_seen_at' => now()->subHour()]);
+
+    openTalks(Livewire::test(JwMediaBrowser::class, ['onesiBox' => $this->box, 'mediaType' => 'video']))
+        ->call('play', 'pub-talk-2_I_VIDEO')
+        ->call('toggleQueued', 'pub-talk-1_I_VIDEO')
+        ->call('startQueue')
+        ->assertNotDispatched('close-quick-play')
+        ->assertCount('queue', 1);
 
     expect($this->box->commands()->count())->toBe(0);
 });
@@ -181,7 +196,8 @@ it('plays the playlist in order and empties it', function (): void {
         ->call('toggleQueued', 'pub-talk-1_I_VIDEO')
         ->call('startQueue')
         ->assertSet('queue', [])
-        ->assertDontSee('Avvia playlist');
+        ->assertDontSee('Avvia playlist')
+        ->assertDispatched('close-quick-play');
 
     $session = $this->box->playbackSessions()->sole();
 

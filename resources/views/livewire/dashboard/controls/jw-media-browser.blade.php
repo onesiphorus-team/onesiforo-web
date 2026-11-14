@@ -27,12 +27,15 @@
                             @if($category['is_container']) aria-expanded="{{ $isExpanded ? 'true' : 'false' }}" @endif>
                         <span class="font-medium">{{ $category['name'] }}</span>
                         <span class="flex items-center gap-2 text-zinc-400">
-                            <flux:icon.loading class="size-5" wire:loading wire:target="selectCategory(@js($category['key']))" />
-                            @if($category['is_container'])
-                                <flux:icon name="{{ $isExpanded ? 'chevron-up' : 'chevron-down' }}" class="size-5" wire:loading.remove wire:target="selectCategory(@js($category['key']))" />
-                            @else
-                                <flux:icon name="chevron-right" class="size-5" wire:loading.remove wire:target="selectCategory(@js($category['key']))" />
-                            @endif
+                            {{-- Native spans: Blade does not compile @js inside component attributes --}}
+                            <span wire:loading wire:target="selectCategory(@js($category['key']))"><flux:icon.loading class="size-5" /></span>
+                            <span wire:loading.remove wire:target="selectCategory(@js($category['key']))">
+                                @if($category['is_container'])
+                                    <flux:icon name="{{ $isExpanded ? 'chevron-up' : 'chevron-down' }}" class="size-5" />
+                                @else
+                                    <flux:icon name="chevron-right" class="size-5" />
+                                @endif
+                            </span>
                         </span>
                     </button>
 
@@ -51,8 +54,8 @@
                                             @if(count($subcategory['media']) > 0)
                                                 {{ count($subcategory['media']) }}
                                             @endif
-                                            <flux:icon.loading class="size-4" wire:loading wire:target="openSubcategory(@js($subcategory['key']))" />
-                                            <flux:icon name="chevron-right" class="size-4" wire:loading.remove wire:target="openSubcategory(@js($subcategory['key']))" />
+                                            <span wire:loading wire:target="openSubcategory(@js($subcategory['key']))"><flux:icon.loading class="size-4" /></span>
+                                            <span wire:loading.remove wire:target="openSubcategory(@js($subcategory['key']))"><flux:icon name="chevron-right" class="size-4" /></span>
                                         </span>
                                     </button>
                                 @endforeach
@@ -125,8 +128,8 @@
                             </span>
 
                             <span class="shrink-0 text-indigo-600 dark:text-indigo-400">
-                                <flux:icon.loading class="size-7" wire:loading wire:target="play(@js($item['key']))" />
-                                <flux:icon name="play-circle" class="size-8" wire:loading.remove wire:target="play(@js($item['key']))" />
+                                <span wire:loading wire:target="play(@js($item['key']))"><flux:icon.loading class="size-7" /></span>
+                                <span wire:loading.remove wire:target="play(@js($item['key']))"><flux:icon name="play-circle" variant="solid" class="size-8" /></span>
                             </span>
                         </button>
 
@@ -143,11 +146,8 @@
                                 @if($isQueued)
                                     <flux:icon name="check-circle" variant="solid" class="size-7 text-green-600 dark:text-green-400" />
                                 @else
-                                    <span class="relative inline-flex size-6 items-center justify-center rounded-full border-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400">
-                                        <flux:icon name="play" variant="micro" class="size-3" />
-                                        <span class="absolute -right-1.5 -top-1.5 flex size-3.5 items-center justify-center rounded-full bg-indigo-600 text-white ring-2 ring-white dark:bg-indigo-400 dark:text-zinc-900 dark:ring-zinc-800">
-                                            <flux:icon name="plus" variant="micro" class="size-2.5" />
-                                        </span>
+                                    <span class="flex size-8 items-center justify-center rounded-full border-2 border-zinc-300 text-zinc-600 dark:border-zinc-600 dark:text-zinc-300">
+                                        <flux:icon name="plus" variant="mini" class="size-5" />
                                     </span>
                                 @endif
                             </button>
@@ -170,7 +170,7 @@
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between gap-2 sm:justify-start">
                         <flux:heading size="sm">Playlist ({{ count($queue) }})</flux:heading>
-                        <flux:button wire:click="clearQueue" variant="subtle" size="sm">Svuota</flux:button>
+                        <flux:button wire:click="clearQueue" variant="subtle">Svuota</flux:button>
                     </div>
                     <ol class="mt-1 max-h-32 space-y-1 overflow-y-auto pr-1 sm:max-h-36" aria-label="Contenuti nella playlist">
                         @foreach($queue as $position => $queuedItem)

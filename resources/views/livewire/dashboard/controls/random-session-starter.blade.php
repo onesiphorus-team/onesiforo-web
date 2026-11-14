@@ -33,7 +33,7 @@
                             wire:click="$set('durationMinutes', {{ $option }})"
                             aria-pressed="{{ $durationMinutes === $option ? 'true' : 'false' }}"
                             class="min-h-12 rounded-lg border px-3 text-base font-medium {{ $durationMinutes === $option
-                                ? 'border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-500'
+                                ? 'border-indigo-500 bg-indigo-500 text-white'
                                 : 'border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:hover:bg-zinc-700' }}">
                         {{ $this->formatDuration($option) }}
                     </button>
@@ -50,7 +50,7 @@
                 <flux:icon name="chevron-down" class="size-5 text-zinc-400 transition group-open:rotate-180" />
             </summary>
             <div class="space-y-3 border-t border-zinc-200 px-4 py-3 dark:border-zinc-700">
-                <flux:button size="sm" variant="subtle" wire:click="selectAllCategories">Seleziona tutte</flux:button>
+                <flux:button variant="subtle" wire:click="selectAllCategories">Seleziona tutte</flux:button>
                 <flux:checkbox.group wire:model.live="selectedCategories">
                     @foreach($this->categories as $category)
                         <flux:checkbox wire:key="random-category-{{ $category['key'] }}" value="{{ $category['key'] }}" label="{{ $category['name'] }}" />

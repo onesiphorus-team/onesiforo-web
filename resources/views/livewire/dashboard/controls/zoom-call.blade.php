@@ -34,12 +34,12 @@
             @endif
 
             @foreach($this->savedMeetings as $meeting)
-                <li class="flex items-center gap-2" wire:key="zoom-meeting-{{ $meeting->id }}">
+                <li class="flex items-center rounded-xl border border-zinc-200 pr-1 dark:border-zinc-700" wire:key="zoom-meeting-{{ $meeting->id }}">
                     <button type="button"
                             wire:click="joinSavedMeeting({{ $meeting->id }})"
                             wire:loading.attr="disabled"
                             @disabled(! $this->canControl)
-                            class="{{ $choice }} min-w-0 flex-1">
+                            class="{{ $choice }} min-w-0 flex-1 border-0">
                         <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
                             <flux:icon name="video-camera" variant="mini" class="size-5" />
                         </span>
@@ -86,7 +86,7 @@
 
         <flux:checkbox wire:model="saveMeeting" label="Salva questa riunione per la prossima volta" />
 
-        <div x-show="$wire.saveMeeting" x-collapse x-cloak>
+        <div x-show="$wire.saveMeeting" x-transition.opacity x-cloak>
             <flux:input wire:model="meetingName" label="Nome della riunione" placeholder="Es. Adunanza Loreto" maxlength="100" class="[&_input]:text-base" />
         </div>
 

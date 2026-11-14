@@ -115,7 +115,7 @@ class RandomSessionStarter extends Component
         $kindLabel = $this->mediaType === 'audio' ? 'audio' : 'video';
 
         try {
-            $this->executeWithErrorHandling(
+            $isStarted = $this->executeWithErrorHandling(
                 callback: fn (): PlaybackSession => $startRandomSession->execute(
                     $this->onesiBox,
                     $this->mediaType === 'audio' ? 'audio' : 'video',
@@ -125,6 +125,11 @@ class RandomSessionStarter extends Component
                 ),
                 successMessage: "Sessione di {$kindLabel} casuali avviata",
             );
+
+            // Close the "Mostra" sheet so the caregiver sees the session on the box status card
+            if ($isStarted) {
+                $this->dispatch('close-quick-play');
+            }
         } catch (NoRandomMediaAvailableException) {
             Flux::toast("Nessun {$kindLabel} disponibile nelle categorie scelte.", variant: 'warning');
         } catch (RuntimeException|ConnectionException) {

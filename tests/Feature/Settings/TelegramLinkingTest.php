@@ -130,3 +130,73 @@ it('registers the webhook with Telegram only when asked', function (): void {
         && $request['url'] === route('telegram.webhook')
         && $request['secret_token'] === 'webhook-secret');
 });
+
+it('stops waiting when the personal link has expired, and says how to start again', function (): void {
+    enableTelegramLinking();
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+
+    $page = Livewire::actingAs($user)->test(Telegram::class)
+        ->call('startLinking')
+        ->assertSee('In attesa che tu prema Avvia nel bot')
+        ->assertSeeHtml('wire:poll.3s');
+
+    $this->travel(Telegram::LINK_TTL_MINUTES - 1)->minutes();
+
+    $page->call('$refresh')->assertSee('In attesa che tu prema Avvia nel bot');
+
+    $this->travel(2)->minutes();
+
+    $page->call('$refresh')
+        ->assertSet('linkToken', null)
+        ->assertDontSee('In attesa che tu prema Avvia nel bot')
+        ->assertDontSeeHtml('wire:poll')
+        ->assertSee('Il collegamento è scaduto')
+        ->assertSee('Collega Telegram');
+});
+
+it('clears the expiry message when the user starts linking again', function (): void {
+    enableTelegramLinking();
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+
+    $page = Livewire::actingAs($user)->test(Telegram::class)->call('startLinking');
+
+    $this->travel(Telegram::LINK_TTL_MINUTES + 1)->minutes();
+
+    $page->call('$refresh')
+        ->assertSee('Il collegamento è scaduto')
+        ->call('startLinking')
+        ->assertDontSee('Il collegamento è scaduto')
+        ->assertSee('In attesa che tu prema Avvia nel bot');
+});
+
+it('invalidates the previous personal link when a new one is asked', function (): void {
+    enableTelegramLinking();
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+
+    $firstToken = Livewire::actingAs($user)->test(Telegram::class)->call('startLinking')->get('linkToken');
+
+    // A new visit to the page: the component no longer knows the first token.
+    $secondToken = Livewire::actingAs($user)->test(Telegram::class)->call('startLinking')->get('linkToken');
+
+    expect($secondToken)->not->toBe($firstToken)
+        ->and(Cache::has(Telegram::cacheKey($firstToken)))->toBeFalse()
+        ->and(Cache::get(Telegram::cacheKey($secondToken)))->toBe($user->id);
+
+    telegramUpdate(['chat' => ['id' => 111, 'type' => 'private'], 'text' => "/start {$firstToken}"])->assertOk();
+    expect($user->refresh()->telegram_chat_id)->toBeNull();
+
+    telegramUpdate(['chat' => ['id' => 222, 'type' => 'private'], 'text' => "/start {$secondToken}"])->assertOk();
+    expect($user->refresh()->telegram_chat_id)->toBe('222');
+});
+
+it('does not invalidate the links of other users', function (): void {
+    enableTelegramLinking();
+    $firstUser = User::factory()->create(['telegram_chat_id' => null]);
+    $secondUser = User::factory()->create(['telegram_chat_id' => null]);
+
+    $firstToken = Livewire::actingAs($firstUser)->test(Telegram::class)->call('startLinking')->get('linkToken');
+    Livewire::actingAs($secondUser)->test(Telegram::class)->call('startLinking');
+
+    expect(Cache::get(Telegram::cacheKey($firstToken)))->toBe($firstUser->id);
+});

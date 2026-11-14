@@ -15,7 +15,7 @@
                 </flux:button>
             </div>
         @elseif($this->linkUrl)
-            {{-- Waiting for the user to press Start in the bot: check every few seconds --}}
+            {{-- Waiting for the user to press Start in the bot: check every few seconds, until the link expires --}}
             <div class="space-y-4" wire:poll.3s>
                 <ol class="list-decimal space-y-2 ps-5 text-sm text-zinc-700 dark:text-zinc-300">
                     <li>Tocca <strong>Apri Telegram</strong>: si apre la chat con il bot di Onesiforo.</li>
@@ -29,6 +29,12 @@
             </div>
         @else
             <div class="space-y-4">
+                @if($linkExpired)
+                    <flux:callout icon="clock" color="amber" role="status">
+                        <flux:callout.heading>Il collegamento è scaduto</flux:callout.heading>
+                        <flux:callout.text>Sono passati più di {{ \App\Livewire\Settings\Telegram::LINK_TTL_MINUTES }} minuti senza premere Avvia nel bot. Tocca di nuovo «Collega Telegram» per riprovare.</flux:callout.text>
+                    </flux:callout>
+                @endif
                 <flux:text>Collegando Telegram riceverai, ad esempio, l'avviso delle adunanze in arrivo per i box che segui.</flux:text>
                 <flux:button wire:click="startLinking" variant="primary" icon="link">Collega Telegram</flux:button>
             </div>

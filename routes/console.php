@@ -11,10 +11,12 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:expire-sessions')->everyMinute()->withoutOverlapping();
+Schedule::command('onesibox:check-connections')->everyMinute()->withoutOverlapping(5);
 Schedule::command('app:prune-playback-events')->daily()->at('03:00');
 
 Schedule::command('meetings:check-upcoming')->everyMinute()->withoutOverlapping(10);
 Schedule::command('meetings:auto-join')->everyMinute()->withoutOverlapping(10);
+Schedule::command('meetings:check-attendance')->everyMinute()->withoutOverlapping(5);
 Schedule::command('meetings:cleanup')->daily()->at('04:00')->withoutOverlapping(60);
 
 Schedule::command('onesibox:prune-screenshots')

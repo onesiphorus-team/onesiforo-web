@@ -14,24 +14,6 @@ use App\Models\Playlist;
 class CreatePlaylistAction
 {
     /**
-     * Create a playlist from a simple list of URLs.
-     *
-     * @param  list<string>  $urls
-     */
-    public function executeFromUrls(
-        OnesiBox $onesiBox,
-        array $urls,
-        PlaylistSourceType $sourceType = PlaylistSourceType::Manual,
-        ?string $sourceUrl = null,
-        ?string $name = null,
-        bool $isSaved = false,
-    ): Playlist {
-        $videos = array_map(fn (string $url): array => ['url' => $url], $urls);
-
-        return $this->execute($onesiBox, $videos, $sourceType, $sourceUrl, $name, $isSaved);
-    }
-
-    /**
      * Execute the action to create a playlist.
      *
      * @param  array<int, array{url: string, title?: string|null, duration_seconds?: int|null}>  $videos

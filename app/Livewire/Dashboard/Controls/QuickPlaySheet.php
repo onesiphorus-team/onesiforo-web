@@ -15,7 +15,10 @@ class QuickPlaySheet extends Component
 {
     use AuthorizesRequests;
 
-    private const array VALID_TABS = ['audio', 'video', 'stream', 'zoom', 'playlists', 'session'];
+    private const array VALID_TABS = [
+        'jw-video', 'jw-audio', 'random-video', 'random-audio',
+        'audio', 'video', 'stream', 'zoom',
+    ];
 
     #[Locked]
     public OnesiBox $onesiBox;
@@ -47,6 +50,10 @@ class QuickPlaySheet extends Component
         $this->tab = null;
     }
 
+    /**
+     * Also closed by the tabs once their job is done (e.g. a Zoom call is being joined).
+     */
+    #[On('close-quick-play')]
     public function close(): void
     {
         $this->open = false;

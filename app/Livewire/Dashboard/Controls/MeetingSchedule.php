@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard\Controls;
 
+use App\Actions\Meetings\JoinCongregationMeetingAction;
 use App\Concerns\ChecksOnesiBoxPermission;
 use App\Concerns\HandlesOnesiBoxErrors;
 use App\Enums\MeetingAttendanceStatus;
@@ -11,12 +12,13 @@ use App\Enums\MeetingInstanceStatus;
 use App\Enums\MeetingJoinMode;
 use App\Enums\MeetingType;
 use App\Models\MeetingAttendance;
-use App\Models\MeetingInstance;
 use App\Models\OnesiBox;
 use App\Services\OnesiBoxCommandService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class MeetingSchedule extends Component
@@ -27,12 +29,45 @@ class MeetingSchedule extends Component
 
     public OnesiBox $onesiBox;
 
+    /**
+     * The meeting to confirm currently on screen, to re-render only when it changes.
+     */
+    #[Locked]
+    public ?int $shownPendingAttendanceId = null;
+
     public function mount(OnesiBox $onesiBox): void
     {
         Gate::authorize('view', $onesiBox);
 
         $this->onesiBox = $onesiBox->load('recipient.congregation');
+        $this->shownPendingAttendanceId = $this->pendingAttendanceQuery()->value('meeting_attendances.id');
     }
+
+    /**
+     * Called by the poll: show (or hide) the "meeting coming up, confirm or skip" box as
+     * soon as it changes. When nothing changed the component is not rendered again.
+     */
+    public function checkPendingAttendance(): void
+    {
+        $pendingAttendanceId = $this->pendingAttendanceQuery()->value('meeting_attendances.id');
+
+        if ($pendingAttendanceId === $this->shownPendingAttendanceId) {
+            $this->skipRender();
+
+            return;
+        }
+
+        $this->shownPendingAttendanceId = $pendingAttendanceId;
+    }
+
+    /**
+     * Show the box as reachable (or not) again as soon as the page notices: the poll above
+     * renders nothing when no meeting is waiting, so "Collega ora" would stay disabled.
+     *
+     * Nothing to reload here: Livewire fetches the box again on every request.
+     */
+    #[On('box-state-changed')]
+    public function refreshBox(): void {}
 
     public function toggleJoinMode(): void
     {
@@ -82,70 +117,18 @@ class MeetingSchedule extends Component
             ->update(['status' => MeetingAttendanceStatus::Skipped]);
     }
 
-    public function joinNow(): void
+    public function joinNow(JoinCongregationMeetingAction $joinCongregationMeeting): void
     {
         $this->authorize('control', $this->onesiBox);
 
-        $congregation = $this->onesiBox->recipient?->congregation;
-        if (! $congregation) {
+        if ($this->onesiBox->recipient?->congregation === null) {
             return;
         }
 
-        $participantName = $this->onesiBox->recipient->full_name ?? $this->onesiBox->name;
-
-        $lock = Cache::lock("onesi-box:{$this->onesiBox->id}:join-now", 10);
-
-        if (! $lock->get()) {
-            return;
-        }
-
-        try {
-            $existingAttendance = MeetingAttendance::query()
-                ->where('onesi_box_id', $this->onesiBox->id)
-                ->where('status', MeetingAttendanceStatus::Joined)
-                ->whereHas('meetingInstance', fn ($q) => $q->where('status', MeetingInstanceStatus::InProgress))
-                ->first();
-
-            if ($existingAttendance !== null) {
-                $this->executeWithErrorHandling(
-                    fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
-                        $this->onesiBox,
-                        $congregation->zoom_url,
-                        $participantName,
-                    ),
-                    'Collegamento ad-hoc in corso...',
-                );
-
-                return;
-            }
-
-            $instance = MeetingInstance::query()->create([
-                'congregation_id' => $congregation->id,
-                'type' => MeetingType::Adhoc,
-                'scheduled_at' => now(),
-                'zoom_url' => $congregation->zoom_url,
-                'status' => MeetingInstanceStatus::InProgress,
-            ]);
-
-            MeetingAttendance::query()->create([
-                'meeting_instance_id' => $instance->id,
-                'onesi_box_id' => $this->onesiBox->id,
-                'join_mode' => $this->onesiBox->meeting_join_mode,
-                'status' => MeetingAttendanceStatus::Joined,
-                'joined_at' => now(),
-            ]);
-
-            $this->executeWithErrorHandling(
-                fn () => resolve(OnesiBoxCommandService::class)->sendZoomUrlCommand(
-                    $this->onesiBox,
-                    $congregation->zoom_url,
-                    $participantName,
-                ),
-                'Collegamento ad-hoc in corso...',
-            );
-        } finally {
-            $lock->release();
-        }
+        $this->executeWithErrorHandling(
+            fn (): bool => $joinCongregationMeeting->execute($this->onesiBox),
+            "Sto collegando il box all'adunanza…",
+        );
     }
 
     /** @return array{type: MeetingType, scheduled_at: \Carbon\Carbon}|null */
@@ -161,15 +144,7 @@ class MeetingSchedule extends Component
 
     public function getPendingAttendanceProperty(): ?MeetingAttendance
     {
-        return MeetingAttendance::query()
-            ->where('onesi_box_id', $this->onesiBox->id)
-            ->whereIn('status', [MeetingAttendanceStatus::Pending, MeetingAttendanceStatus::Confirmed])
-            ->whereHas('meetingInstance', fn ($q) => $q->whereNotIn('status', [
-                MeetingInstanceStatus::Completed->value,
-                MeetingInstanceStatus::Cancelled->value,
-            ]))
-            ->with('meetingInstance')
-            ->first();
+        return $this->pendingAttendanceQuery()->with('meetingInstance')->first();
     }
 
     /** @return \Illuminate\Database\Eloquent\Collection<int, MeetingAttendance> */
@@ -185,6 +160,22 @@ class MeetingSchedule extends Component
 
     public function render(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
     {
-        return view('livewire.dashboard.controls.meeting-schedule');
+        return view('livewire.dashboard.controls.meeting-schedule', [
+            'displayTimezone' => config('app.display_timezone', 'Europe/Rome'),
+        ]);
+    }
+
+    /**
+     * @return Builder<MeetingAttendance>
+     */
+    private function pendingAttendanceQuery(): Builder
+    {
+        return MeetingAttendance::query()
+            ->where('onesi_box_id', $this->onesiBox->id)
+            ->whereIn('status', [MeetingAttendanceStatus::Pending, MeetingAttendanceStatus::Confirmed])
+            ->whereHas('meetingInstance', fn ($q) => $q->whereNotIn('status', [
+                MeetingInstanceStatus::Completed->value,
+                MeetingInstanceStatus::Cancelled->value,
+            ]));
     }
 }

@@ -1,0 +1,202 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Livewire\Settings\Telegram;
+use App\Models\User;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Livewire\Livewire;
+
+function enableTelegramLinking(): void
+{
+    config([
+        'services.telegram-bot-api.token' => 'bot-token',
+        'services.telegram-bot-api.linking_enabled' => true,
+        'services.telegram-bot-api.bot_username' => 'OnesiforoBot',
+        'services.telegram-bot-api.webhook_secret' => 'webhook-secret',
+    ]);
+}
+
+/**
+ * @param  array<string, mixed>  $message
+ */
+function telegramUpdate(array $message, string $secret = 'webhook-secret'): Illuminate\Testing\TestResponse
+{
+    return test()->postJson(route('telegram.webhook'), ['update_id' => 1, 'message' => $message], ['X-Telegram-Bot-Api-Secret-Token' => $secret]);
+}
+
+it('is off by default: no page, no menu entry, no webhook', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get(route('telegram.edit'))->assertNotFound();
+    $this->actingAs($user)->get(route('appearance.edit'))->assertDontSee(route('telegram.edit'));
+    telegramUpdate(['chat' => ['id' => 1, 'type' => 'private'], 'text' => '/start x'])->assertNotFound();
+});
+
+it('links the account when the user presses Start in the bot from their personal link', function (): void {
+    enableTelegramLinking();
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+
+    $page = Livewire::actingAs($user)->test(Telegram::class)->call('startLinking');
+    $token = $page->get('linkToken');
+
+    expect($page->get('linkUrl'))->toBe("https://t.me/OnesiforoBot?start={$token}");
+
+    telegramUpdate(['chat' => ['id' => 123456789, 'type' => 'private'], 'text' => "/start {$token}"])->assertOk();
+
+    expect($user->refresh()->telegram_chat_id)->toBe('123456789')
+        ->and(Cache::has(Telegram::cacheKey($token)))->toBeFalse();
+    $page->call('$refresh')->assertSet('isConnected', true)->assertSee('Telegram è collegato');
+    Http::assertSent(fn ($request): bool => str_contains($request->url(), '/botbot-token/sendMessage') && $request['chat_id'] === 123456789);
+});
+
+it('links the account when the cache store gives the user id back as a string, as Redis does', function (): void {
+    enableTelegramLinking();
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+    Cache::put(Telegram::cacheKey('token'), (string) $user->id, 60);
+
+    telegramUpdate(['chat' => ['id' => 123456789, 'type' => 'private'], 'text' => '/start token'])->assertOk();
+
+    expect($user->refresh()->telegram_chat_id)->toBe('123456789');
+});
+
+it('keeps the bot token out of the logs when the reply cannot be sent', function (): void {
+    enableTelegramLinking();
+    Log::spy();
+    Http::fake(fn () => throw new ConnectionException('cURL error 28: Operation timed out for https://api.telegram.org/botbot-token/sendMessage'));
+
+    telegramUpdate(['chat' => ['id' => 1, 'type' => 'private'], 'text' => '/start expired'])->assertOk();
+
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(fn (string $message, array $context): bool => $message === 'Telegram webhook reply not sent'
+            && ! str_contains(json_encode($context), 'bot-token')
+            && str_contains(json_encode($context), 'cURL error 28'));
+});
+
+it('refuses updates without the webhook secret', function (): void {
+    enableTelegramLinking();
+    $user = User::factory()->create();
+    Cache::put(Telegram::cacheKey('token'), $user->id, 60);
+
+    telegramUpdate(['chat' => ['id' => 1, 'type' => 'private'], 'text' => '/start token'], 'wrong')->assertForbidden();
+
+    expect($user->refresh()->telegram_chat_id)->toBeNull();
+});
+
+it('does not link with an expired link, and tells the user how to retry', function (): void {
+    enableTelegramLinking();
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
+
+    telegramUpdate(['chat' => ['id' => 1, 'type' => 'private'], 'text' => '/start expired'])->assertOk();
+
+    Http::assertSent(fn ($request): bool => str_contains((string) $request['text'], 'link è scaduto'));
+});
+
+it('ignores group chats, so a group cannot take over an account', function (): void {
+    enableTelegramLinking();
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+    Cache::put(Telegram::cacheKey('token'), $user->id, 60);
+
+    telegramUpdate(['chat' => ['id' => -100123, 'type' => 'supergroup'], 'text' => '/start token'])->assertOk();
+
+    expect($user->refresh()->telegram_chat_id)->toBeNull();
+});
+
+it('lets the user disconnect Telegram', function (): void {
+    enableTelegramLinking();
+    $user = User::factory()->create(['telegram_chat_id' => '123']);
+
+    Livewire::actingAs($user)->test(Telegram::class)
+        ->assertSee('Telegram è collegato')
+        ->call('disconnect')
+        ->assertSee('Collega Telegram');
+
+    expect($user->refresh()->telegram_chat_id)->toBeNull();
+});
+
+it('registers the webhook with Telegram only when asked', function (): void {
+    enableTelegramLinking();
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => true])]);
+
+    $this->artisan('telegram:set-webhook', ['--force' => true])->assertSuccessful();
+
+    Http::assertSent(fn ($request): bool => str_ends_with($request->url(), '/botbot-token/setWebhook')
+        && $request['url'] === route('telegram.webhook')
+        && $request['secret_token'] === 'webhook-secret');
+});
+
+it('stops waiting when the personal link has expired, and says how to start again', function (): void {
+    enableTelegramLinking();
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+
+    $page = Livewire::actingAs($user)->test(Telegram::class)
+        ->call('startLinking')
+        ->assertSee('In attesa che tu prema Avvia nel bot')
+        ->assertSeeHtml('wire:poll.3s');
+
+    $this->travel(Telegram::LINK_TTL_MINUTES - 1)->minutes();
+
+    $page->call('$refresh')->assertSee('In attesa che tu prema Avvia nel bot');
+
+    $this->travel(2)->minutes();
+
+    $page->call('$refresh')
+        ->assertSet('linkToken', null)
+        ->assertDontSee('In attesa che tu prema Avvia nel bot')
+        ->assertDontSeeHtml('wire:poll')
+        ->assertSee('Il collegamento è scaduto')
+        ->assertSee('Collega Telegram');
+});
+
+it('clears the expiry message when the user starts linking again', function (): void {
+    enableTelegramLinking();
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+
+    $page = Livewire::actingAs($user)->test(Telegram::class)->call('startLinking');
+
+    $this->travel(Telegram::LINK_TTL_MINUTES + 1)->minutes();
+
+    $page->call('$refresh')
+        ->assertSee('Il collegamento è scaduto')
+        ->call('startLinking')
+        ->assertDontSee('Il collegamento è scaduto')
+        ->assertSee('In attesa che tu prema Avvia nel bot');
+});
+
+it('invalidates the previous personal link when a new one is asked', function (): void {
+    enableTelegramLinking();
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true])]);
+    $user = User::factory()->create(['telegram_chat_id' => null]);
+
+    $firstToken = Livewire::actingAs($user)->test(Telegram::class)->call('startLinking')->get('linkToken');
+
+    // A new visit to the page: the component no longer knows the first token.
+    $secondToken = Livewire::actingAs($user)->test(Telegram::class)->call('startLinking')->get('linkToken');
+
+    expect($secondToken)->not->toBe($firstToken)
+        ->and(Cache::has(Telegram::cacheKey($firstToken)))->toBeFalse()
+        ->and(Cache::get(Telegram::cacheKey($secondToken)))->toBe($user->id);
+
+    telegramUpdate(['chat' => ['id' => 111, 'type' => 'private'], 'text' => "/start {$firstToken}"])->assertOk();
+    expect($user->refresh()->telegram_chat_id)->toBeNull();
+
+    telegramUpdate(['chat' => ['id' => 222, 'type' => 'private'], 'text' => "/start {$secondToken}"])->assertOk();
+    expect($user->refresh()->telegram_chat_id)->toBe('222');
+});
+
+it('does not invalidate the links of other users', function (): void {
+    enableTelegramLinking();
+    $firstUser = User::factory()->create(['telegram_chat_id' => null]);
+    $secondUser = User::factory()->create(['telegram_chat_id' => null]);
+
+    $firstToken = Livewire::actingAs($firstUser)->test(Telegram::class)->call('startLinking')->get('linkToken');
+    Livewire::actingAs($secondUser)->test(Telegram::class)->call('startLinking');
+
+    expect(Cache::get(Telegram::cacheKey($firstToken)))->toBe($firstUser->id);
+});

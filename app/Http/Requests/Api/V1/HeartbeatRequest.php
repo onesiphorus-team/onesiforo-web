@@ -115,6 +115,15 @@ class HeartbeatRequest extends FormRequest
                 'string',
                 'date',
             ],
+            'current_meeting.audio_connected' => [
+                'nullable',
+                'boolean',
+            ],
+            'current_meeting.audio_reconnects' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
             'volume' => [
                 'nullable',
                 'integer',

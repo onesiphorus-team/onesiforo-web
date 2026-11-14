@@ -27,7 +27,7 @@ trait HandlesOnesiBoxErrors
     protected function executeWithErrorHandling(
         Closure $callback,
         string $successMessage,
-        string $offlineMessage = 'OnesiBox non raggiungibile'
+        string $offlineMessage = 'Il box è spento o non connesso: riprova quando torna online'
     ): bool {
         try {
             $callback();

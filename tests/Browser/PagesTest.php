@@ -16,15 +16,14 @@ describe('pages load without errors', function (): void {
         $page = visit('/login');
 
         $page->assertPathIs('/login')
-            ->assertSee('Log in')
+            ->assertSee('Accedi')
             ->assertNoJavaScriptErrors();
     });
 
-    it('loads register page', function (): void {
-        $page = visit('/register');
+    it('does not offer self-registration on the login page', function (): void {
+        $page = visit('/login');
 
-        $page->assertPathIs('/register')
-            ->assertSee('Create an account')
+        $page->assertDontSee('Registrati')
             ->assertNoJavaScriptErrors();
     });
 
@@ -75,7 +74,7 @@ describe('login functionality', function (): void {
 
         $page->fill('email', 'test@example.com')
             ->fill('password', 'password')
-            ->click('Log in')
+            ->click('Accedi')
             ->assertPathIs('/dashboard')
             ->assertNoJavaScriptErrors();
 

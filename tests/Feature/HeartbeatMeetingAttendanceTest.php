@@ -74,3 +74,20 @@ it('does not complete attendance when meeting_url transitions directly from one 
     expect($attendance->fresh()->status)->toBe(MeetingAttendanceStatus::Joined);
     expect($attendance->fresh()->left_at)->toBeNull();
 });
+
+it('completes every active attendance of the box when it leaves the meeting', function (): void {
+    $box = OnesiBox::factory()->create([
+        'current_meeting_url' => 'https://us05web.zoom.us/j/123',
+    ]);
+    $otherBoxAttendance = MeetingAttendance::factory()->joined()->create();
+
+    // An ad-hoc join followed by the scheduled meeting on the same Zoom room: two attendances.
+    $attendances = MeetingAttendance::factory()->joined()->count(2)->create(['onesi_box_id' => $box->id]);
+
+    resolve(App\Actions\ProcessHeartbeatAction::class)($box, ['status' => 'idle']);
+
+    expect($attendances[0]->fresh()->status)->toBe(MeetingAttendanceStatus::Completed)
+        ->and($attendances[1]->fresh()->status)->toBe(MeetingAttendanceStatus::Completed)
+        ->and($attendances[1]->fresh()->left_at)->not->toBeNull()
+        ->and($otherBoxAttendance->fresh()->status)->toBe(MeetingAttendanceStatus::Joined);
+});

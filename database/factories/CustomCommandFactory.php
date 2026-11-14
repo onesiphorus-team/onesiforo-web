@@ -37,6 +37,16 @@ class CustomCommandFactory extends Factory
         ]);
     }
 
+    /**
+     * A command that runs by itself whenever the box starts showing something.
+     */
+    public function runsBeforeContent(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'runs_before_content' => true,
+        ]);
+    }
+
     public function forBox(OnesiBox $box): static
     {
         return $this->state(fn (array $attributes): array => [

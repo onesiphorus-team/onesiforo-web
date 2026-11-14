@@ -10,6 +10,7 @@ use App\Enums\PlaybackSessionStatus;
 use App\Exceptions\OnesiBoxOfflineException;
 use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
+use App\Services\BoxAlerts\BoxActivityMonitor;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +21,7 @@ class StopPlaybackSessionAction
 {
     public function __construct(
         private readonly OnesiBoxCommandServiceInterface $commandService,
+        private readonly BoxActivityMonitor $activityMonitor,
     ) {}
 
     /**
@@ -39,6 +41,8 @@ class StopPlaybackSessionAction
                 'status' => PlaybackSessionStatus::Stopped,
                 'ended_at' => now(),
             ]);
+
+            $this->activityMonitor->sessionEnded($session, 'stopped');
 
             // Cancel pending play_media commands for this session
             $onesiBox->commands()

@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Enums\PlaybackSessionStatus;
 use App\Models\PlaybackSession;
+use App\Services\BoxAlerts\BoxActivityMonitor;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class ExpirePlaybackSessionsCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(BoxActivityMonitor $activityMonitor): int
     {
         $now = Date::now();
 
@@ -40,6 +41,8 @@ class ExpirePlaybackSessionsCommand extends Command
                 'status' => PlaybackSessionStatus::Completed,
                 'ended_at' => $now,
             ]);
+
+            $activityMonitor->sessionEnded($session, 'expired');
         }
 
         if ($count > 0) {

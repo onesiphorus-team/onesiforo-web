@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
  * @property string $uuid
  * @property int $onesi_box_id
  * @property int $playlist_id
+ * @property string $media_type
  * @property PlaybackSessionStatus $status
  * @property int $duration_minutes
  * @property CarbonInterface $started_at
@@ -37,6 +38,7 @@ use Illuminate\Support\Str;
     'uuid',
     'onesi_box_id',
     'playlist_id',
+    'media_type',
     'status',
     'duration_minutes',
     'started_at',

@@ -2,9 +2,9 @@
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
             <flux:icon name="queue-list" class="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-            <flux:heading size="lg">Coda Comandi</flux:heading>
+            <flux:heading size="lg">Comandi in coda</flux:heading>
             @if($this->pendingCommands->count() > 0)
-                <flux:badge color="blue" size="sm">{{ $this->pendingCommands->count() }}</flux:badge>
+                <flux:badge color="zinc" size="sm">{{ $this->pendingCommands->count() }}</flux:badge>
             @endif
         </div>
 

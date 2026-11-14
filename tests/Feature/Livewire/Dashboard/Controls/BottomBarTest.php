@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Enums\CommandType;
 use App\Enums\OnesiBoxPermission;
 use App\Enums\OnesiBoxStatus;
+use App\Enums\PlaybackSessionStatus;
 use App\Livewire\Dashboard\Controls\BottomBar;
 use App\Models\OnesiBox;
+use App\Models\PlaybackSession;
 use App\Models\User;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 
@@ -69,15 +73,16 @@ it('renders a modal trigger that mounts the VolumeControl component', function (
         ->assertSet('showVolume', true);
 });
 
-it('openNew() dispatches open-quick-play without a preselected tab', function (): void {
+it('opens the new-content sheet directly from the browser, without a server round trip', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
 
     Livewire::actingAs($user)
         ->test(BottomBar::class, ['onesiBox' => $box])
-        ->call('openNew')
-        ->assertDispatched('open-quick-play');
+        ->assertSeeHtml(<<<'HTML'
+            x-on:click="$dispatch('open-quick-play')"
+            HTML);
 });
 
 it('callAction() dispatches open-quick-play with tab=zoom when no active call', function (): void {
@@ -119,15 +124,18 @@ it('stopAll() is forbidden for a user without Full permission', function (): voi
         ->assertForbidden();
 });
 
-it('openNew() is forbidden for a user without Full permission', function (): void {
+it('stopAll() ends a running playlist instead of only stopping the current item', function (): void {
     $user = User::factory()->create();
     $box = OnesiBox::factory()->online()->create();
-    // No caregivers attached
+    $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+    $session = PlaybackSession::factory()->for($box, 'onesiBox')->create(['status' => PlaybackSessionStatus::Active]);
 
     Livewire::actingAs($user)
         ->test(BottomBar::class, ['onesiBox' => $box])
-        ->call('openNew')
-        ->assertForbidden();
+        ->call('stopAll');
+
+    expect($session->refresh()->status)->toBe(PlaybackSessionStatus::Stopped)
+        ->and($box->commands()->where('type', CommandType::StopMedia)->count())->toBe(1);
 });
 
 it('callAction() is forbidden for a user without Full permission', function (): void {
@@ -175,4 +183,89 @@ it('renders the call slot labelled "Zoom" when not in a call', function (): void
         ->assertSeeHtml('>Zoom<')
         ->assertSeeHtml('Avvia chiamata Zoom')
         ->assertDontSeeHtml('>Chiama<');
+});
+
+it('becomes usable again when the box comes back online, without reloading the page', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->offline()->withCaregiver($user)->create();
+
+    $bar = Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSeeHtml('pointer-events-none opacity-40');
+
+    $box->update(['last_seen_at' => now()]);
+
+    $bar->dispatch('box-state-changed')
+        ->assertDontSeeHtml('pointer-events-none opacity-40');
+});
+
+it('turns the Zoom button into "Termina" when a call starts, without reloading the page', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->withCaregiver($user)->create(['status' => OnesiBoxStatus::Idle]);
+
+    $bar = Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSeeHtml('aria-label="Avvia chiamata Zoom"');
+
+    $box->update(['status' => OnesiBoxStatus::Calling]);
+
+    $bar->dispatch('box-state-changed')
+        ->assertSeeHtml('aria-label="Termina chiamata Zoom"')
+        ->assertDontSeeHtml('aria-label="Avvia chiamata Zoom"');
+});
+
+it('refreshes with a couple of queries only', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->withCaregiver($user)->create();
+
+    $bar = Livewire::actingAs($user)->test(BottomBar::class, ['onesiBox' => $box]);
+
+    DB::enableQueryLog();
+    $bar->dispatch('box-state-changed');
+
+    expect(count(DB::getQueryLog()))->toBeLessThanOrEqual(3);
+});
+
+it('shows the stop button in red only while something is running on the box', function (Closure $makeBox, bool $hasSomethingToStop): void {
+    $user = User::factory()->create();
+    $box = $makeBox();
+    $box->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $bar = Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSet('hasSomethingToStop', $hasSomethingToStop)
+        ->assertSeeHtml('aria-label="Ferma tutto"')
+        ->assertSeeHtml('<span>Ferma</span>')
+        ->assertDontSeeHtml('<span>Stop</span>');
+
+    // Without a call the stop button is the only red one on the bar
+    $hasSomethingToStop
+        ? $bar->assertSeeHtml('bg-red-50')
+        : $bar->assertDontSeeHtml('bg-red-50');
+})->with([
+    'idle' => [fn () => OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]), false],
+    'playing a media' => [fn () => OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Playing, 'current_media_url' => 'https://x/y.mp3', 'current_media_type' => 'audio']), true],
+    'in a call' => [fn () => OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Calling]), true],
+    'running a playlist between two items' => [function () {
+        $box = OnesiBox::factory()->online()->create(['status' => OnesiBoxStatus::Idle]);
+        PlaybackSession::factory()->forOnesiBox($box)->create();
+
+        return $box;
+    }, true],
+    'offline, with the last media still recorded' => [fn () => OnesiBox::factory()->offline()->create(['current_media_url' => 'https://x/y.mp3', 'current_media_type' => 'audio']), false],
+]);
+
+it('turns the stop button red when a media starts, without reloading the page', function (): void {
+    $user = User::factory()->create();
+    $box = OnesiBox::factory()->online()->withCaregiver($user)->create(['status' => OnesiBoxStatus::Idle]);
+
+    $bar = Livewire::actingAs($user)
+        ->test(BottomBar::class, ['onesiBox' => $box])
+        ->assertSet('hasSomethingToStop', false);
+
+    $box->update(['status' => OnesiBoxStatus::Playing, 'current_media_url' => 'https://x/y.mp3', 'current_media_type' => 'audio']);
+
+    $bar->dispatch('box-state-changed')
+        ->assertSet('hasSomethingToStop', true)
+        ->assertSeeHtml('bg-red-50');
 });

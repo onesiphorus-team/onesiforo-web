@@ -76,7 +76,7 @@ class ActivitiesTable
                     ),
 
                 Filter::make('created_at')
-                    ->schema([
+                    ->form([
                         \Filament\Forms\Components\DatePicker::make('from')
                             ->label(__('Da')),
                         \Filament\Forms\Components\DatePicker::make('until')

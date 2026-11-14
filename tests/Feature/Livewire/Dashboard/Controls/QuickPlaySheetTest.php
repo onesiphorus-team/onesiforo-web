@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\OnesiBoxPermission;
 use App\Livewire\Dashboard\Controls\AudioPlayer;
+use App\Livewire\Dashboard\Controls\JwMediaBrowser;
 use App\Livewire\Dashboard\Controls\QuickPlaySheet;
-use App\Livewire\Dashboard\Controls\SavedPlaylists;
-use App\Livewire\Dashboard\Controls\SessionManager;
+use App\Livewire\Dashboard\Controls\RandomSessionStarter;
 use App\Livewire\Dashboard\Controls\StreamPlayer;
 use App\Livewire\Dashboard\Controls\VideoPlayer;
 use App\Livewire\Dashboard\Controls\ZoomCall;
@@ -39,7 +39,7 @@ it('opens and shows the initial menu when receiving open-quick-play', function (
         ->dispatch('open-quick-play')
         ->assertSet('open', true)
         ->assertSet('tab', null)
-        ->assertSee('Cosa vuoi riprodurre?');
+        ->assertSee('Cosa vuoi mostrare sul box?');
 });
 
 it('preselects a tab when open-quick-play carries a tab parameter', function (): void {
@@ -100,14 +100,17 @@ it('mounts ZoomCall when tab=zoom', function (): void {
         ->assertSeeLivewire(ZoomCall::class);
 });
 
-it('mounts SavedPlaylists when tab=playlists', function (): void {
+it('no longer offers the playlist builder tabs', function (string $tab): void {
     $box = OnesiBox::factory()->online()->create();
     $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
 
     Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
-        ->dispatch('open-quick-play', tab: 'playlists')
-        ->assertSeeLivewire(SavedPlaylists::class);
-});
+        ->dispatch('open-quick-play', tab: $tab)
+        ->assertSet('tab', null)
+        ->call('selectTab', $tab)
+        ->assertSet('tab', null)
+        ->assertDontSee(['Sessione playlist', 'Dalle playlist salvate']);
+})->with(['session', 'playlists']);
 
 it('back() clears the active tab', function (): void {
     $box = OnesiBox::factory()->online()->create();
@@ -130,15 +133,6 @@ it('selectTab() ignores invalid tab names', function (): void {
         ->assertSet('tab', null);
 });
 
-it('mounts SessionManager when tab=session', function (): void {
-    $box = OnesiBox::factory()->online()->create();
-    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
-
-    Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
-        ->dispatch('open-quick-play', tab: 'session')
-        ->assertSeeLivewire(SessionManager::class);
-});
-
 it('openSheet() is forbidden for a user without Full permission', function (): void {
     $box = OnesiBox::factory()->online()->create();
     // No caregiver attach — user has no permission
@@ -148,3 +142,31 @@ it('openSheet() is forbidden for a user without Full permission', function (): v
         ->dispatch('open-quick-play')
         ->assertForbidden();
 });
+
+it('shows the JW.org shortcuts first and keeps the other options under Altro', function (): void {
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
+        ->dispatch('open-quick-play')
+        ->assertSeeInOrder(['Video', 'Audio', 'Zoom e adunanze', 'Video casuali', 'Audio casuali', 'Altro', 'Video da un link', 'Audio da un link', 'Programma di JW Stream'])
+        ->assertDontSee('Avvia chiamata Zoom');
+});
+
+it('mounts the JW.org components for the new tabs', function (string $tab, string $component): void {
+    fakeJwOrgCategories([
+        'VideoOnDemand' => ['key' => 'VideoOnDemand', 'name' => 'Categorie', 'type' => 'container', 'subcategories' => []],
+        'Audio' => ['key' => 'Audio', 'name' => 'Audio', 'type' => 'container', 'subcategories' => []],
+    ]);
+    $box = OnesiBox::factory()->online()->create();
+    $box->caregivers()->attach($this->user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    Livewire::test(QuickPlaySheet::class, ['onesiBox' => $box])
+        ->dispatch('open-quick-play', tab: $tab)
+        ->assertSeeLivewire($component);
+})->with([
+    'video browser' => ['jw-video', JwMediaBrowser::class],
+    'audio browser' => ['jw-audio', JwMediaBrowser::class],
+    'random video' => ['random-video', RandomSessionStarter::class],
+    'random audio' => ['random-audio', RandomSessionStarter::class],
+]);

@@ -11,6 +11,7 @@ use App\Models\OnesiBox;
 use App\Models\PlaybackSession;
 use App\Models\Playlist;
 use App\Models\PlaylistItem;
+use App\Services\BoxAlerts\BoxActivityMonitor;
 use App\Services\OnesiBoxCommandServiceInterface;
 
 beforeEach(function (): void {
@@ -246,7 +247,7 @@ test('offline command failure does not mark a replacement session as errored', f
         throw new OnesiBoxOfflineException;
     });
 
-    (new AdvancePlaybackSessionAction($commandService))->execute($this->onesiBox, PlaybackEventType::Completed);
+    (new AdvancePlaybackSessionAction($commandService, resolve(BoxActivityMonitor::class)))->execute($this->onesiBox, PlaybackEventType::Completed);
 
     expect($session->refresh()->status)->toBe(PlaybackSessionStatus::Stopped)
         ->and($replacement->refresh()->status)->toBe(PlaybackSessionStatus::Active)
@@ -264,4 +265,26 @@ test('offline command failure marks the advanced active session as errored', fun
 
     expect($session->refresh()->status)->toBe(PlaybackSessionStatus::Error)
         ->and($session->ended_at)->not->toBeNull();
+});
+
+test('audio session advances with an audio play_media command', function (): void {
+    $playlist = Playlist::factory()->forOnesiBox($this->onesiBox)->create();
+    PlaylistItem::factory()->for($playlist)->atPosition(0)->create(['media_url' => 'https://www.jw.org/it/biblioteca-digitale/audio/#it/mediaitems/Songs/pub-osg_I_1_AUDIO']);
+    PlaylistItem::factory()->for($playlist)->atPosition(1)->create(['media_url' => 'https://www.jw.org/it/biblioteca-digitale/audio/#it/mediaitems/Songs/pub-osg_I_2_AUDIO']);
+
+    PlaybackSession::factory()
+        ->forOnesiBox($this->onesiBox)
+        ->forPlaylist($playlist)
+        ->active()
+        ->withDuration(60)
+        ->create(['current_position' => 0, 'media_type' => 'audio']);
+
+    $this->advanceAction->execute($this->onesiBox, PlaybackEventType::Completed);
+
+    $command = $this->onesiBox->commands()->where('type', CommandType::PlayMedia)->latest()->first();
+
+    expect($command->payload)->toMatchArray([
+        'url' => 'https://www.jw.org/it/biblioteca-digitale/audio/#it/mediaitems/Songs/pub-osg_I_2_AUDIO',
+        'media_type' => 'audio',
+    ]);
 });

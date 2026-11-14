@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Dashboard;
 
+use App\Enums\Roles;
 use App\Models\OnesiBox;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -13,9 +15,28 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
-#[Title('Dashboard')]
+#[Title('I miei box')]
 class OnesiBoxList extends Component
 {
+    /**
+     * A family member who follows a single box goes straight to it: the list would only be an extra step.
+     */
+    public function mount(): void
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if ($user->hasAnyRoles(Roles::SuperAdmin, Roles::Admin)) {
+            return;
+        }
+
+        $onesiBoxIds = $user->onesiBoxes()->limit(2)->pluck('onesi_boxes.id');
+
+        if ($onesiBoxIds->count() === 1) {
+            $this->redirect(route('dashboard.show', $onesiBoxIds->first()), navigate: true);
+        }
+    }
+
     /**
      * Get the OnesiBoxes assigned to the authenticated user.
      *
@@ -24,7 +45,7 @@ class OnesiBoxList extends Component
     #[Computed]
     public function onesiBoxes(): Collection
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         return $user->onesiBoxes()

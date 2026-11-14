@@ -25,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $icon
  * @property int $sort_order
  * @property bool $is_enabled
+ * @property bool $runs_before_content Run by itself whenever the box starts showing something
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -39,6 +40,7 @@ use Illuminate\Support\Carbon;
     'icon',
     'sort_order',
     'is_enabled',
+    'runs_before_content',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'onesi_box_custom_commands')]
 class CustomCommand extends Model
@@ -70,6 +72,18 @@ class CustomCommand extends Model
     }
 
     /**
+     * Enabled commands that must run whenever the box starts showing something.
+     *
+     * @param  Builder<CustomCommand>  $query
+     * @return Builder<CustomCommand>
+     */
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function runningBeforeContent(Builder $query): Builder
+    {
+        return $query->where('is_enabled', true)->where('runs_before_content', true);
+    }
+
+    /**
      * @param  Builder<CustomCommand>  $query
      * @return Builder<CustomCommand>
      */
@@ -88,6 +102,7 @@ class CustomCommand extends Model
             'static_args' => 'array',
             'sort_order' => 'integer',
             'is_enabled' => 'boolean',
+            'runs_before_content' => 'boolean',
         ];
     }
 }

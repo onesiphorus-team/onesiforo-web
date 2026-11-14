@@ -84,6 +84,10 @@
             {{ \App\Support\Version::get() }}
         </footer>
 
+        @persist('toast')
+            <flux:toast position="top center" />
+        @endpersist
+
         @fluxScripts
     </body>
 </html>

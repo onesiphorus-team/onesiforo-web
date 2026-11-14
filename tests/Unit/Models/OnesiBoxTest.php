@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\OnesiBoxPermission;
 use App\Enums\PlaybackSessionStatus;
 use App\Models\OnesiBox;
+use App\Models\PlaybackEvent;
 use App\Models\PlaybackSession;
 use App\Models\Playlist;
 use App\Models\User;
@@ -136,5 +137,24 @@ describe('activeSession', function (): void {
         ]);
 
         expect($box->activeSession()?->id)->toBe($session->id);
+    });
+});
+
+describe('lastShownAtByMediaKey', function (): void {
+    it('returns the latest start of each JW.org media on this box only', function (): void {
+        $box = OnesiBox::factory()->create();
+        $otherBox = OnesiBox::factory()->create();
+        $url = 'https://www.jw.org/it/biblioteca-digitale/video/#it/mediaitems/VODBible/pub-nwtsv_I_1_VIDEO';
+
+        PlaybackEvent::factory()->started()->create(['onesi_box_id' => $box->id, 'media_url' => $url, 'created_at' => now()->subDays(3)]);
+        PlaybackEvent::factory()->started()->create(['onesi_box_id' => $box->id, 'media_url' => $url, 'created_at' => now()->subHour()]);
+        PlaybackEvent::factory()->completed()->create(['onesi_box_id' => $box->id, 'media_url' => $url, 'created_at' => now()->subMinute()]);
+        PlaybackEvent::factory()->started()->create(['onesi_box_id' => $otherBox->id, 'media_url' => $url, 'created_at' => now()]);
+        PlaybackEvent::factory()->started()->create(['onesi_box_id' => $box->id, 'media_url' => 'https://www.jw.org/media/video/file.mp4']);
+
+        $lastShownAt = $box->lastShownAtByMediaKey();
+
+        expect($lastShownAt)->toHaveKeys(['pub-nwtsv_I_1_VIDEO'])->toHaveCount(1)
+            ->and($lastShownAt['pub-nwtsv_I_1_VIDEO']->toDateTimeString())->toBe(now()->subHour()->toDateTimeString());
     });
 });

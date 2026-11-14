@@ -146,7 +146,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // No self-registration: caregivers are invited by an administrator, who links them to the boxes they follow.
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

@@ -6,6 +6,7 @@ use App\Enums\OnesiBoxPermission;
 use App\Livewire\Dashboard\Controls\ZoomCall;
 use App\Models\OnesiBox;
 use App\Models\User;
+use App\Rules\ZoomUrl;
 use App\Services\OnesiBoxCommandServiceInterface;
 use Livewire\Livewire;
 use Mockery\MockInterface;
@@ -97,7 +98,7 @@ it('validates zoom url must be from zoom.us', function (): void {
         ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
         ->set('zoomUrl', 'https://example.com/meeting')
         ->call('startCall')
-        ->assertHasErrors(['zoomUrl' => 'regex']);
+        ->assertHasErrors(['zoomUrl' => ZoomUrl::class]);
 });
 
 it('validates zoom url must contain meeting id', function (): void {
@@ -109,7 +110,7 @@ it('validates zoom url must contain meeting id', function (): void {
         ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
         ->set('zoomUrl', 'https://zoom.us/')
         ->call('startCall')
-        ->assertHasErrors(['zoomUrl' => 'regex']);
+        ->assertHasErrors(['zoomUrl' => ZoomUrl::class]);
 });
 
 it('accepts zoom urls with various subdomains', function (string $zoomUrl): void {
@@ -131,4 +132,58 @@ it('accepts zoom urls with various subdomains', function (string $zoomUrl): void
     'us05web subdomain' => ['https://us05web.zoom.us/j/85099838349?pwd=DATUPWNZhaXXUwkvuiA5OKWUfgbdTb.1'],
     'us02web subdomain' => ['https://us02web.zoom.us/j/123456789?pwd=abc123'],
     'jworg subdomain' => ['https://jworg.zoom.us/j/85942985883?pwd=xyz'],
+    'no subdomain' => ['https://zoom.us/j/123456789?pwd=abc'],
+    'hyphenated subdomain' => ['https://jw-org.zoom.us/j/123456789'],
+    'extra query parameters' => ['https://us05web.zoom.us/j/123456789?omn=1&pwd=abc'],
+    'webinar link' => ['https://us05web.zoom.us/w/123456789?pwd=abc'],
+]);
+
+it('sends and saves the pasted link without the spaces and newlines around it', function (string $pastedUrl): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->forRecipient()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $cleanUrl = 'https://us05web.zoom.us/j/123456789?pwd=abc';
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock) use ($cleanUrl): void {
+        $mock->shouldReceive('sendZoomUrlCommand')
+            ->once()
+            ->withArgs(fn ($box, $url, $name): bool => $url === $cleanUrl);
+    });
+
+    Livewire::actingAs($user)
+        ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
+        ->set('zoomUrl', $pastedUrl)
+        ->set('saveMeeting', true)
+        ->set('meetingName', 'Adunanza Loreto')
+        ->call('startCall')
+        ->assertHasNoErrors();
+
+    expect($onesiBox->zoomMeetings()->sole()->zoom_url)->toBe($cleanUrl);
+})->with([
+    'spaces around' => ['  https://us05web.zoom.us/j/123456789?pwd=abc  '],
+    'trailing newline' => ["https://us05web.zoom.us/j/123456789?pwd=abc\n"],
+    'tabs and carriage returns' => ["\thttps://us05web.zoom.us/j/123456789?pwd=abc\r\n"],
+]);
+
+it('refuses a pasted link with something else inside it, in plain Italian', function (string $zoomUrl): void {
+    $user = User::factory()->create();
+    $onesiBox = OnesiBox::factory()->online()->forRecipient()->create();
+    $onesiBox->caregivers()->attach($user, ['permission' => OnesiBoxPermission::Full->value]);
+
+    $this->mock(OnesiBoxCommandServiceInterface::class, function (MockInterface $mock): void {
+        $mock->shouldNotReceive('sendZoomUrlCommand');
+    });
+
+    Livewire::actingAs($user)
+        ->test(ZoomCall::class, ['onesiBox' => $onesiBox])
+        ->set('zoomUrl', $zoomUrl)
+        ->call('startCall')
+        ->assertHasErrors('zoomUrl')
+        ->assertSee('Questo non sembra un link Zoom');
+})->with([
+    'two lines' => ["https://us05web.zoom.us/j/123456789\nhttps://evil.example/x"],
+    'text after the link' => ['https://us05web.zoom.us/j/123456789?pwd=abc def'],
+    'lookalike domain' => ['https://evil.zoom.us.attacker.com/j/123456789'],
+    'not a link' => ['ciao'],
 ]);

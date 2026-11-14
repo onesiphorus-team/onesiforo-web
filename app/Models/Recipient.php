@@ -87,11 +87,16 @@ class Recipient extends Model
      */
     protected function getFullAddressAttribute(): ?string
     {
+        // City and province read as one piece: "Milano (MI)"
+        $cityAndProvince = implode(' ', array_filter([
+            $this->city,
+            $this->province ? "({$this->province})" : null,
+        ]));
+
         $parts = array_filter([
             $this->street,
             $this->postal_code,
-            $this->city,
-            $this->province ? "({$this->province})" : null,
+            $cityAndProvince,
         ]);
 
         return $parts !== [] ? implode(', ', $parts) : null;

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 use App\Actions\Meetings\JoinCongregationMeetingAction;
 use App\Actions\ProcessHeartbeatAction;
+use App\Enums\CommandStatus;
+use App\Enums\CommandType;
 use App\Enums\MeetingAttendanceStatus;
 use App\Enums\MeetingJoinMode;
 use App\Enums\MeetingType;
 use App\Enums\OnesiBoxStatus;
+use App\Models\Command;
 use App\Models\Congregation;
 use App\Models\MeetingAttendance;
 use App\Models\MeetingInstance;
@@ -44,6 +47,17 @@ function autoAttendance(array $attributes = []): MeetingAttendance
         'meeting_instance_id' => test()->meeting->id,
         'onesi_box_id' => test()->box->id,
         ...$attributes,
+    ]);
+}
+
+function joinCommandFor(MeetingAttendance $attendance, CommandStatus $status): Command
+{
+    return Command::factory()->for($attendance->onesiBox, 'onesiBox')->create([
+        'type' => CommandType::JoinZoom,
+        'payload' => ['meeting_url' => $attendance->meetingInstance->zoom_url],
+        'status' => $status,
+        'created_at' => now()->subMinutes(20),
+        'expires_at' => $status === CommandStatus::Expired ? now()->subMinute() : now()->addMinutes(40),
     ]);
 }
 
@@ -87,6 +101,40 @@ it('alerts when the join was sent but the box is not in the meeting', function (
 
     expect(missedJoinAlerts()[0])->toContain('il box non è entrato nella riunione');
 });
+
+it('promises to connect the box by itself only when it will', function (Closure $setUp, bool $promised): void {
+    $this->box->update(['last_seen_at' => now()->subMinutes(20)]);
+    $setUp();
+
+    $this->artisan('meetings:check-attendance')->assertSuccessful();
+
+    expect(missedJoinAlerts())->toHaveCount(1)
+        ->and(missedJoinAlerts()[0])->toContain('spento o non connesso')
+        ->and(str_contains(missedJoinAlerts()[0], 'lo collegherà da solo appena si riaccende'))->toBe($promised);
+})->with([
+    'join not sent yet' => [fn () => autoAttendance(), true],
+    'join waiting for the box' => [fn () => joinCommandFor(autoAttendance(), CommandStatus::Pending), true],
+    'join expired' => [fn () => joinCommandFor(autoAttendance(), CommandStatus::Expired), true],
+    'join executed, then the box went off' => [fn () => joinCommandFor(autoAttendance(), CommandStatus::Completed), false],
+    'box went off during the meeting' => [fn () => autoAttendance(['status' => MeetingAttendanceStatus::Joined, 'joined_at' => now()->subMinutes(10)]), false],
+]);
+
+it('says what happened to the join when the box is on but not in the meeting', function (?CommandStatus $joinStatus, string $expected): void {
+    $attendance = autoAttendance();
+
+    if ($joinStatus !== null) {
+        joinCommandFor($attendance, $joinStatus);
+    }
+
+    $this->artisan('meetings:check-attendance')->assertSuccessful();
+
+    expect(missedJoinAlerts()[0])->toContain($expected)->not->toContain('lo collegherà da solo');
+})->with([
+    'not sent yet' => [null, 'collegamento automatico non è ancora partito: Onesiforo sta riprovando'],
+    'failed' => [CommandStatus::Failed, 'collegamento automatico non è riuscito: Onesiforo sta riprovando'],
+    'waiting for the box' => [CommandStatus::Pending, 'il box non è entrato nella riunione'],
+    'executed' => [CommandStatus::Completed, 'il box non è entrato nella riunione'],
+]);
 
 it('alerts only once for the same meeting', function (): void {
     autoAttendance();

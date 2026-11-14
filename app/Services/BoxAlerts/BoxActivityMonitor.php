@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\BoxAlerts;
 
+use App\Enums\CommandStatus;
 use App\Enums\CommandType;
-use App\Enums\MeetingAttendanceStatus;
 use App\Enums\OnesiBoxStatus;
 use App\Enums\PlaybackEventType;
 use App\Models\Command;
@@ -116,12 +116,19 @@ class BoxActivityMonitor
         $startedAt = $meeting->scheduled_at->copy()->setTimezone($meeting->congregation->timezone ?? $this->timezone());
         $lines = ['🚨 Adunanza '.mb_strtolower($meeting->type->getLabel())." iniziata alle {$startedAt->format('H:i')}, ma il box non è collegato."];
 
+        // What is promised here must be what the automatic join will really do.
+        $lastJoin = $attendance->latestJoinCommand();
+        $willBeJoinedAutomatically = $attendance->willBeJoinedAutomatically();
+        $lastJoinDidNotWork = $lastJoin !== null && ($lastJoin->status === CommandStatus::Failed || $lastJoin->isExpired());
+
         if (! $onesiBox->isOnline()) {
             $lastSeen = $onesiBox->last_seen_at?->copy()->setTimezone($this->timezone());
             $lines[] = 'Il box è spento o non connesso'.($lastSeen !== null ? " (ultimo contatto alle {$lastSeen->format('H:i')})." : '.')
-                .' Onesiforo lo collegherà da solo appena si riaccende.';
-        } elseif ($attendance->status === MeetingAttendanceStatus::Pending) {
+                .($willBeJoinedAutomatically ? ' Onesiforo lo collegherà da solo appena si riaccende.' : '');
+        } elseif ($willBeJoinedAutomatically && $lastJoin === null) {
             $lines[] = 'Il collegamento automatico non è ancora partito: Onesiforo sta riprovando.';
+        } elseif ($willBeJoinedAutomatically && $lastJoinDidNotWork) {
+            $lines[] = 'Il collegamento automatico non è riuscito: Onesiforo sta riprovando.';
         } else {
             $lines[] = 'Il comando di collegamento è stato inviato, ma il box non è entrato nella riunione.';
         }
